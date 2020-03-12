@@ -1,7 +1,6 @@
 #include "Asset.h"
 #include "rapidjson/document.h"
 #include "rapidjson/rapidjson.h"
-#include <cpr/cpr.h>
 #include <fstream>
 #include <future>
 #include <iostream>
@@ -51,7 +50,7 @@ void Asset::registerTransaction(Asset::Transaction transaction, time_t reg_date,
     else if (transaction == Transaction::ROI)
     {
         _return = _return + value_incl_fees;
-        _return_in_percent =  _return/_balance * 100;
+        _return_in_percent = _return / _balance * 100;
         updateYearlyReturn(reg_date, _balance, value_incl_fees);
     }
     else
@@ -90,76 +89,41 @@ void Asset::updateYearlyReturn(time_t reg_date, float total_value,
     }
 }
 
-void Asset::requestAlphaVantageApi(string symbol, string apikey)
-{
-    // update current price form web api. This function is the worker tasks
-    // called by async create a http REST request using an API key.
-    // std::unique_lock<std::mutex> ulock(_mtx);
-    string url =
-        "https://www.alphavantage.co/query?function=GLOBAL_QUOTE&symbol=" +
-        symbol + "&apikey=" + apikey;
+// void Asset::requestAlphaVantageApi(string symbol, string apikey)
+// {
+//     // update current price form web api. This function is the worker tasks
+//     // called by async create a http REST request using an API key.
+//     // std::unique_lock<std::mutex> ulock(_mtx);
+//     string url =
+//         "https://www.alphavantage.co/query?function=GLOBAL_QUOTE&symbol=" +
+//         symbol + "&apikey=" + apikey;
 
-    auto r = cpr::Get(cpr::Url{url}, cpr::Parameters{{"anon", "true"}});
-    // r.status_code;                  // 200
-    // r.headers["content-type"];      // application/json; charset=utf-8
-    // r.text;                         // JSON text string
+//     auto r = cpr::Get(cpr::Url{url}, cpr::Parameters{{"anon", "true"}});
+//     // r.status_code;                  // 200
+//     // r.headers["content-type"];      // application/json; charset=utf-8
+//     // r.text;                         // JSON text string
 
-    cout << "Result code: " << r.status_code
-         << "\nHeaders: " << r.header["content-type"] << "\n"
-         << r.text << endl
-         << flush;
-    if (r.status_code == 200)
-    {
-        if (r.header["content-type"].find("application/json") !=
-            std::string::npos)
-        {
-            rapidjson::Document json_response;
-            json_response.Parse(r.text.c_str());
-            _curr_price =
-                stof(json_response["Global Quote"]["05. price"].GetString());
+//     cout << "Result code: " << r.status_code
+//          << "\nHeaders: " << r.header["content-type"] << "\n"
+//          << r.text << endl
+//          << flush;
+//     if (r.status_code == 200)
+//     {
+//         if (r.header["content-type"].find("application/json") !=
+//             std::string::npos)
+//         {
+//             rapidjson::Document json_response;
+//             json_response.Parse(r.text.c_str());
+//             _curr_price =
+//                 stof(json_response["Global Quote"]["05. price"].GetString());
 
-            _curr_value = _amount * _curr_price;
-            _diff = _amount * (_curr_price - _avg_price);
-            _diff_in_percent = _diff / _balance * 100;
-        }
-    }
-}
-// return false if the symbol is not found
-bool Asset::requestFmpApi(string symbol)
-{
-    string url = "https://financialmodelingprep.com/api/v3/quote/" + symbol;
-    auto r = cpr::Get(cpr::Url{url});
-    bool is_found = false;
-    // cout << "Result code: " << r.status_code
-    //      << "\nHeaders: " << r.header["content-type"] << "\n"
-    //      << r.text << endl
-    //      << flush;
-    if (r.status_code == 200)
-    {
-        if (r.header["content-type"].find("application/json") !=
-            std::string::npos)
-        {
-            rapidjson::Document json_resp;
-            json_resp.Parse(r.text.c_str());
-            if (json_resp.Size() > 0)
-            {
-                is_found = true;
-                _curr_price = json_resp[0]["price"].GetFloat();
-                _curr_value = _amount * _curr_price;
-                _diff = _amount * (_curr_price - _avg_price);
-                _diff_in_percent = _diff / _balance * 100;
-                _return = _return + _diff;
-                _return_in_percent =  _return/_balance * 100;
-            }
-        }
-    }
-    else
-    {
-        cout << "Request error " << r.status_code << ". " << r.text << endl
-             << flush;
-    }
-    return is_found;
-}
+//             _curr_value = _amount * _curr_price;
+//             _diff = _amount * (_curr_price - _avg_price);
+//             _diff_in_percent = _diff / _balance * 100;
+//         }
+//     }
+// }
+
 void Asset::runDemo()
 {
     _curr_price = _avg_price;
@@ -175,41 +139,6 @@ void Asset::runDemo()
         _diff_in_percent = _diff / _balance * 100;
     }
 }
-void Asset::update(MsgQueue<UpdateData>& msgqueue, bool& isActive,
-                   uint upd_frequency)
-{
-    cout<<"AssetUpdate: Start a thread: "<<this_thread::get_id()<<endl<<flush;
-    // Never use sleep_for more than 100 ms sec to keep the GUI responsive
-    std::chrono::time_point<std::chrono::system_clock> stopWatch;
-    // init stop watch
-    stopWatch = std::chrono::system_clock::now();
-    long diffUpdate = upd_frequency;
-    while (isActive)
-    {
-        // Add 10 ms delay to reduce CPU usage
-        std::this_thread::sleep_for(std::chrono::milliseconds(10));
-        // compute time difference to stop watch
-        if (diffUpdate >= upd_frequency)
-        {
-            if (!requestFmpApi(_id))
-            {
-                //stop the task if symbol not found to save CPU resource
-                return;
-            }
-            unique_ptr<UpdateData> upd(new UpdateData(
-                _id, _curr_price, _curr_value, _diff, _diff_in_percent, _return, _return_in_percent));
-            cout << "  send to async" << endl;
-            auto futureTrfLight =
-                async(&MsgQueue<UpdateData>::send, &msgqueue, move(upd));
-            futureTrfLight.wait();
-            std::this_thread::sleep_for(std::chrono::seconds(1));
-            stopWatch = std::chrono::system_clock::now();
-        }
-        diffUpdate = std::chrono::duration_cast<std::chrono::seconds>(
-                         std::chrono::system_clock::now() - stopWatch)
-                         .count();
-    }
-}
 
 string Asset::getId() const { return _id; }
 string Asset::getName() const { return _name; }
@@ -222,3 +151,13 @@ float Asset::getDiff() const { return _diff; }
 float Asset::getDiffInPercent() const { return _diff_in_percent; }
 float Asset::getReturn() const { return _return; }
 float Asset::getReturnInPercent() const { return _return_in_percent; }
+
+void Asset::setCurrPrice(float price)
+{
+    _curr_price = price;
+    _curr_value = _curr_price * _amount;
+    _diff = _curr_value - _balance;
+    _diff_in_percent = _diff / _balance * 100;
+    _return += _diff;
+    _return_in_percent = _return / _balance * 100;
+}

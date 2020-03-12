@@ -20,33 +20,38 @@ const int WIN_HEIGHT = 800;
 
 int AppGui::wxIdCounter = 1;
 
-wxBEGIN_EVENT_TABLE(AppGui, wxFrame) wxEND_EVENT_TABLE()
+// The periode of the REST API updater in sec
+const uint UPDATE_PERIODE = 20;
+// event mapping
+wxDEFINE_EVENT(UPDATER_EVENT, wxThreadEvent);
+wxBEGIN_EVENT_TABLE(AppGui, wxFrame) wxEND_EVENT_TABLE();
 
-    // wxWidgets FRAME
+// wxWidgets FRAME
 
-    AppGui::AppGui()
+AppGui::AppGui()
     : MainFrame(nullptr), _gridActivities(nullptr), _gridWatchlist(nullptr),
-      _appControl(make_shared<AppControl>())
+      _appControl(make_shared<AppControl>(UPDATE_PERIODE)), updater{}
 {
     _def_activity_column = {"Date", "ID",          "Name",   "AssetType",
                             "Type", "Transaction", "Amount", "Broker"};
     _sbSizer->Show(true);
     _bSizerHorizon->Layout();
+    Bind(UPDATER_EVENT, &AppGui::updateWatchlist, this);
 }
-AppGui::~AppGui() { }
+AppGui::~AppGui() {}
 
 void AppGui::initWatchlistGrid()
 {
-    set<unique_ptr<Asset>> const& assets = _appControl->getAssets();
-    vector<string> labels{
-        "ID",        "Name",          "Amount",        "Balance",
-        "Avg Price", "Current Price", "Current Value", "Diff",
-        "Diff in %", "Return",        "Return in %"};
+    shared_ptr<map<string, shared_ptr<Asset>>> const& assets =
+        _appControl->getAssets();
+    vector<string> labels{"ID",        "Name",       "Amount",     "Balance",
+                          "Avg Price", "Curr.Price", "Curr.Value", "Diff",
+                          "Diff %",    "Return",     "Return %"};
 
     _gridWatchlist = new wxGrid(_sbSizer->GetStaticBox(), wxID_ANY,
                                 wxDefaultPosition, wxDefaultSize, 0);
 
-    _gridWatchlist->CreateGrid(assets.size(), labels.size());
+    _gridWatchlist->CreateGrid(assets->size(), labels.size());
     _gridWatchlist->SetDefaultCellAlignment(wxALIGN_LEFT, wxALIGN_TOP);
     _gridWatchlist->SetRowLabelSize(30);
     // Fill the column labels
@@ -56,39 +61,52 @@ void AppGui::initWatchlistGrid()
     }
 
     int rowPos = 0;
-    for (auto it = _appControl->getAssets().begin();
-         it != _appControl->getAssets().end(); it++)
+    for (auto it = _appControl->getAssets()->begin();
+         it != _appControl->getAssets()->end(); it++)
     {
-        _gridWatchlist->SetCellValue(rowPos, 0, it->get()->getId());
-        _gridWatchlist->SetCellValue(rowPos, 1, it->get()->getName());
+        _gridWatchlist->SetCellValue(rowPos, 0, it->first);
+        _gridWatchlist->SetCellValue(rowPos, 1, it->second->getName());
         _gridWatchlist->SetCellValue(
-            rowPos, 2, convertFloatToString(it->get()->getAmount(), 2));
+            rowPos, 2, convertFloatToString(it->second->getAmount(), 2));
         _gridWatchlist->SetCellValue(
-            rowPos, 3, convertFloatToString(it->get()->getBalance(), 2));
+            rowPos, 3, convertFloatToString(it->second->getBalance(), 2));
         _gridWatchlist->SetCellValue(
-            rowPos, 4, convertFloatToString(it->get()->getAvgPrice(), 2));
+            rowPos, 4, convertFloatToString(it->second->getAvgPrice(), 2));
         _gridWatchlist->SetCellValue(
-            rowPos, 5, convertFloatToString(it->get()->getCurrPrice(), 2));
+            rowPos, 5, convertFloatToString(it->second->getCurrPrice(), 2));
         _gridWatchlist->SetCellValue(
-            rowPos, 6, convertFloatToString(it->get()->getCurrValue(), 2));
+            rowPos, 6, convertFloatToString(it->second->getCurrValue(), 2));
         _gridWatchlist->SetCellValue(
-            rowPos, 7, convertFloatToString(it->get()->getDiff(), 2));
+            rowPos, 7, convertFloatToString(it->second->getDiff(), 2));
         _gridWatchlist->SetCellValue(
-            rowPos, 8, convertFloatToString(it->get()->getDiffInPercent(), 2));
+            rowPos, 8, convertFloatToString(it->second->getDiffInPercent(), 2));
         _gridWatchlist->SetCellValue(
-            rowPos, 9, convertFloatToString(it->get()->getReturn(), 2));
+            rowPos, 9, convertFloatToString(it->second->getReturn(), 2));
         _gridWatchlist->SetCellValue(
             rowPos, 10,
-            convertFloatToString(it->get()->getReturnInPercent(), 2));
+            convertFloatToString(it->second->getReturnInPercent(), 2));
 
         rowPos++;
     }
     _gridWatchlist->AutoSize();
     // trigger the assets update
     _gridWatchlist->Layout();
-    
-    // start the waiting task
-    _ftr_updater = async(&AppGui::watchlistUpdater, this);
+
+    // Starting the updater wxThread. Note, wxWidget GUI doesn't support async.
+    // It is recommended to use wxThread in order to avoid UI issues
+    updater = make_unique<UpdaterThread>(this, _appControl);
+
+    if (updater->Create() != wxTHREAD_NO_ERROR)
+    {
+        wxMessageBox(_("Couldn't create thread!"));
+        return;
+    }
+
+    if (updater->Run() != wxTHREAD_NO_ERROR)
+    {
+        wxMessageBox(_("Couldn't run thread!"));
+        return;
+    }
 
     // _sbSizer->Detach(0);
     _sbSizer->Add(_gridWatchlist, 1, wxALL | wxEXPAND, 5);
@@ -102,25 +120,6 @@ void AppGui::OnCloseFrame(wxCloseEvent& event)
         _gridWatchlist->Show(false);
 
         _appControl->stopUpdateTasks();
-        try
-        {
-            if (_ftr_updater.wait_for(std::chrono::milliseconds(500)) ==
-                future_status::ready)
-            {
-                std::cout << "## AppGui::Task is stopped before 0.5 sec"
-                          << std::endl;
-            }
-            else
-            {
-                std::cout
-                    << "## AppGui::Task is stopped with timeout after 0.5 sec"
-                    << std::endl;
-            }
-        }
-        catch (const std::exception& e)
-        {
-            std::cout << e.what() << endl << flush;
-        }
     }
     cout << "AppGui::destroy" << endl << flush;
     Destroy();
@@ -141,9 +140,10 @@ void AppGui::onBtnActivitiesClick(wxCommandEvent& event)
             {
                 _gridWatchlist->Show(false);
                 cout << "AppGui::Watchlist deactivate" << endl << flush;
-                // Stop the asset updater send tasks but not the waiting receive task
+                // Stop the asset updater send tasks but not the waiting receive
+                // task
                 _appControl->stopUpdateTasks();
-                
+
                 _bSizerHorizon->Layout();
             }
         }
@@ -157,7 +157,6 @@ void AppGui::onBtnWatchlistClick(wxCommandEvent& event)
         _gridActivities->Show(false);
         initWatchlistGrid();
         _appControl->launchAssetUpdater();
-        
     }
     else
     {
@@ -184,8 +183,8 @@ void AppGui::onBtnChartsClick(wxCommandEvent& event)
 
 void AppGui::OnToolNewClicked(wxCommandEvent& event)
 {
-    _appControl.reset(new AppControl);
-    if(_gridActivities)
+    _appControl.reset(new AppControl(UPDATE_PERIODE));
+    if (_gridActivities)
     {
         delete _gridActivities;
         _gridActivities = nullptr;
@@ -215,7 +214,8 @@ void AppGui::OnToolOpenClicked(wxCommandEvent& event)
 
         try
         {
-            isValid = _appControl->readLocalRapidJson(CurrentDocPath.c_str(), _def_activity_column);
+            isValid = _appControl->readLocalRapidJson(CurrentDocPath.c_str(),
+                                                      _def_activity_column);
         }
         catch (const std::exception& e)
         {
@@ -292,7 +292,7 @@ void AppGui::OnToolOpenClicked(wxCommandEvent& event)
 void AppGui::createGridActivities(uint row, uint col)
 {
     _gridActivities = new wxGrid(_sbSizer->GetStaticBox(), wxID_ANY,
-                                         wxDefaultPosition, wxDefaultSize, 0);
+                                 wxDefaultPosition, wxDefaultSize, 0);
     _gridActivities->CreateGrid(row, col);
     _gridActivities->SetDefaultCellAlignment(wxALIGN_LEFT, wxALIGN_TOP);
     _gridActivities->EnableEditing(true);
@@ -391,100 +391,119 @@ string AppGui::convertFloatToString(float number, int precision)
     return stream.str();
 }
 
-// Thread function for updating the watchlist cells
-void AppGui::watchlistUpdater()
+void AppGui::updateWatchlist(wxThreadEvent& event)
 {
-    cout<<"GUIUpdater: Start a thread: "<<this_thread::get_id()<<endl<<flush;
-    while (_gridWatchlist->IsShown())
-    {
-        cout << "AppGui::watchlistUpdater is waiting for update" << endl
-             << flush;
-        // blocking wait call
-        cout << "AppGui::sleep finish " << endl << flush;
-        unique_ptr<UpdateData> upd_Data = _appControl->waitForUpdate();
-        
-        if (upd_Data->_id == "disconnect")
+    // send the update data to the main GUI thread. SetPaylod doesn't support
+    // unique_ptr
+    UpdateData upd_data = event.GetPayload<UpdateData>();
+
+    cout << "AppGui::watchlistUpdater get data, id: " << upd_data._id << endl
+         << flush;
+    int found_row = -1;
+
+    for (int i = 0; i < _gridWatchlist->GetRows(); i++)
+    { // check if the id exists on the table
+        if (_gridWatchlist->GetCellValue(i, 0).ToStdString() == upd_data._id)
         {
-            cout << "AppGui::disconnect! " << endl << flush;
-            return;
+            found_row = i;
+            break;
         }
-
-        cout << "AppGui::watchlistUpdater get data, id: " << upd_Data->_id
-             << endl
-             << flush;
-        int found_row = -1;
-
-        for (int i = 0; i < _appControl->getAssets().size(); i++)
-        {
-            if (_gridWatchlist->GetCellValue(i, 0).ToStdString() ==
-                upd_Data->_id)
-            {
-                found_row = i;
-                break;
-            }
-        }
-
-        if (found_row > -1)
-        {   // Update the Grid cells
-            
-            _gridWatchlist->SetCellValue(
-                found_row, 5, convertFloatToString(upd_Data->_curr_price, 2));
-            _gridWatchlist->SetCellValue(
-                found_row, 6, convertFloatToString(upd_Data->_curr_value, 2));
-
-            _gridWatchlist->SetCellValue(
-                found_row, 7, convertFloatToString(upd_Data->_diff, 2));
-            int threshold = 10;
-            if(upd_Data->_diff > threshold)
-            {
-                _gridWatchlist->SetCellTextColour(found_row, 7, *wxGREEN);
-            }
-            else if(upd_Data->_diff < (-1*threshold))
-            {
-                _gridWatchlist->SetCellTextColour(found_row, 7, *wxRED);
-            }
-            
-            _gridWatchlist->SetCellValue(
-                found_row, 8,
-                convertFloatToString(upd_Data->_diff_in_percent, 2) + "%");
-            if(upd_Data->_diff_in_percent > 1)
-            {
-                _gridWatchlist->SetCellTextColour(found_row, 8, *wxGREEN);
-            }
-            else if (upd_Data->_diff_in_percent < -1)
-            {
-                _gridWatchlist->SetCellTextColour(found_row, 8, *wxRED);
-            }
-            
-            _gridWatchlist->SetCellValue(
-                found_row, 9, convertFloatToString(upd_Data->_return, 2));
-            if (upd_Data->_return > threshold)
-            {
-                _gridWatchlist->SetCellTextColour(found_row, 9, *wxGREEN);
-            }
-            else if (upd_Data->_return < -threshold)
-            {
-                _gridWatchlist->SetCellTextColour(found_row, 9, *wxRED);
-            }
-
-            _gridWatchlist->SetCellValue(
-                found_row, 10,
-                convertFloatToString(upd_Data->_return_in_percent, 2) + "%");
-            if (upd_Data->_return_in_percent > 1)
-            {
-                _gridWatchlist->SetCellTextColour(found_row, 10, *wxGREEN);
-            }
-            else if (upd_Data->_return_in_percent < -1)
-            {
-                _gridWatchlist->SetCellTextColour(found_row, 10, *wxRED);
-            }
-        }
-        else
-        {
-            cout << "AppGui::Warning, ID not found on the watchlist!" << endl
-                 << flush;
-        }
-        _gridWatchlist->AutoSize();
     }
-    cout << "AppGui::watchlistUpdater ends" << endl << flush;
+    if (found_row > -1)
+    { // Update the Grid cells
+
+        _gridWatchlist->SetCellValue(
+            found_row, 5, convertFloatToString(upd_data._curr_price, 2));
+        _gridWatchlist->SetCellValue(
+            found_row, 6, convertFloatToString(upd_data._curr_value, 2));
+
+        _gridWatchlist->SetCellValue(found_row, 7,
+                                     convertFloatToString(upd_data._diff, 2));
+        int threshold = 10;
+        if (upd_data._diff > threshold)
+        {
+            _gridWatchlist->SetCellTextColour(found_row, 7, *wxGREEN);
+        }
+        else if (upd_data._diff < (-1 * threshold))
+        {
+            _gridWatchlist->SetCellTextColour(found_row, 7, *wxRED);
+        }
+
+        _gridWatchlist->SetCellValue(
+            found_row, 8,
+            convertFloatToString(upd_data._diff_in_percent, 2) + "%");
+        if (upd_data._diff_in_percent > 1)
+        {
+            _gridWatchlist->SetCellTextColour(found_row, 8, *wxGREEN);
+        }
+        else if (upd_data._diff_in_percent < -1)
+        {
+            _gridWatchlist->SetCellTextColour(found_row, 8, *wxRED);
+        }
+
+        _gridWatchlist->SetCellValue(found_row, 9,
+                                     convertFloatToString(upd_data._return, 2));
+        if (upd_data._return > threshold)
+        {
+            _gridWatchlist->SetCellTextColour(found_row, 9, *wxGREEN);
+        }
+        else if (upd_data._return < -threshold)
+        {
+            _gridWatchlist->SetCellTextColour(found_row, 9, *wxRED);
+        }
+
+        _gridWatchlist->SetCellValue(
+            found_row, 10,
+            convertFloatToString(upd_data._return_in_percent, 2) + "%");
+        if (upd_data._return_in_percent > 1)
+        {
+            _gridWatchlist->SetCellTextColour(found_row, 10, *wxGREEN);
+        }
+        else if (upd_data._return_in_percent < -1)
+        {
+            _gridWatchlist->SetCellTextColour(found_row, 10, *wxRED);
+        }
+    }
+    else
+    {
+        cout << "AppGui::Warning, ID not found on the watchlist!" << endl
+             << flush;
+    }
+
+    // _gridWatchlist->AutoSize();
+}
+
+wxThread::ExitCode UpdaterThread::Entry()
+{
+    cout << "UpdaterThread: Start a thread: " << this_thread::get_id() << endl
+         << flush;
+
+    cout << "UpdaterThread is waiting for update" << endl << flush;
+    while (true)
+    {
+        // blocking wait call
+        cout << "UpdaterThread::reset finish" << endl << flush;
+        unique_ptr<UpdateData> data = appControl->waitForUpdate();
+        UpdateData _update_data(data->_id, data->_curr_price, data->_curr_value,
+                                data->_diff, data->_diff_in_percent,
+                                data->_return, data->_return_in_percent);
+
+        cout << "UpdaterThread:: incoming data " << _update_data._id << endl
+             << flush;
+        if (_update_data._id == "disconnect")
+        {
+            cout << "UpdaterThread::disconnect! " << endl << flush;
+            return 0;
+        }
+
+        wxThreadEvent event(UPDATER_EVENT);
+        // send the update data to the main GUI thread. SetPaylod doesn't
+        // support unique_ptr
+        event.SetPayload(_update_data);
+
+        m_parent->GetEventHandler()->AddPendingEvent(event);
+        cout << "UpdaterThread:: sent to main GUI " << endl << flush;
+    }
+    cout << "UpdaterThread::watchlistUpdater ends" << endl << flush;
+    return 0;
 }

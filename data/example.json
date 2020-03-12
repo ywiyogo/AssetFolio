@@ -3,11 +3,11 @@
     {
       "Date": "28.12.2012",
       "ID": "ZGUSD",
-      "Name": "Gold (gr)",
+      "Name": "Gold (oz)",
       "AssetType": "Commodity",
       "Type": "Buy",
-      "Transaction": 6100.58,
-      "Amount": 50,
+      "Transaction": 13000,
+      "Amount": 10,
       "Broker": "YBroker"
     },
     {

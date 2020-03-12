@@ -15,11 +15,22 @@ REST-API Provider:
 
 ## Getting Started
 
+The application depends on these libraries:
+
+* wxWidgets for the GUI
+* RapidJSON
+* C++ Request
+
 Installing the dependency libraries:
 
-sudo dnf install libcurl-devel wxGTK3-devel
+* Ubuntu
 
-### Installing WxWidget
+        sudo apt-get install libgtk-3-dev build-essential checkinstall
+
+* Fedora
+        sudo dnf install libcurl-devel wxGTK3-devel
+
+C++ Request
 
 
 
@@ -55,6 +66,8 @@ Then, I found out that actually I don't need such a complete networking library.
 ### WxWidget GUI
 
 For a beginner, building a GUI application with wxWidget without a builder/creator tool is very challenging. The wxFormBuilder has made my DUI design more convenient than building from stratch without a builder tool.
+
+Creating and starting a asynchronous task from the main GUI task leads to an unpredictable program crash during the runtime. Thus, instead creating a `std::async`, an UpdaterThread class which is derived from `wxThread` is created and called in the `initWatchlistGrid)()`. 
 
 ### Getting the Toolbar Icons
 

@@ -10,12 +10,15 @@
 #include <algorithm>
 #include <fstream>
 #include <iostream>
+#include <cpr/cpr.h>
 
 using namespace std;
 
-AppControl::AppControl()
-    : _jsonDoc(make_shared<rapidjson::Document>()), _isUpdateActive(false),
-      _apikey(""), _update_freq(30) // 30sec
+AppControl::AppControl(uint upd_freq)
+    : _jsonDoc(make_shared<rapidjson::Document>()),
+      _assets(make_shared<map<string, shared_ptr<Asset>>>()), _futures(),
+      _msg_queue(), _isUpdateActive(false), _apikey(""),
+      _update_freq(upd_freq)
 {
 }
 AppControl::~AppControl() {}
@@ -74,6 +77,7 @@ bool AppControl::readLocalRapidJson(const char* filePath, vector<string>& column
         // creating all asset objects
         for (int i = 0; i < json_act.Size(); i++)
         {
+            // Retrieve the data
             string strdate = json_act[i]["Date"].GetString();
             struct tm tm;
             strptime(strdate.c_str(), "%d.%m.%Y", &tm);
@@ -90,18 +94,9 @@ bool AppControl::readLocalRapidJson(const char* filePath, vector<string>& column
             float amount = json_act[i]["Amount"].GetFloat();
             float price = json_act[i]["Transaction"].GetFloat();
 
-            bool isExist = false;
-            for (auto&& it = _assets.begin(); it != _assets.end(); it++)
-            {
-                if (it->get()->getId() == id)
-                {
-                    isExist = true;
-                    it->get()->registerTransaction(transact_type, date, amount,
-                                                   price);
-                    break;
-                }
-            }
-            if (!isExist)
+            // Check if the acquired id has already existed, if not then create
+            // a new asset
+            if(_assets->find(id)== _assets->end())
             { // Differentiate the equity asset with the others
                 if (asset_type == Asset::Type::Stock ||
                     asset_type == Asset::Type::ETF ||
@@ -110,7 +105,7 @@ bool AppControl::readLocalRapidJson(const char* filePath, vector<string>& column
                     unique_ptr<Stock> stock = make_unique<Stock>(id, name);
                     stock->registerTransaction(transact_type, date, amount,
                                                price);
-                    _assets.emplace(move(stock));
+                    _assets->emplace(stock->getId(), move(stock));
                 }
                 else
                 {
@@ -118,7 +113,7 @@ bool AppControl::readLocalRapidJson(const char* filePath, vector<string>& column
                         make_unique<Asset>(id, name, asset_type);
                     asset->registerTransaction(transact_type, date, amount,
                                                price);
-                    _assets.emplace(move(asset));
+                    _assets->emplace(asset->getId(), move(asset));
                 }
             }
         }
@@ -132,7 +127,7 @@ shared_ptr<rapidjson::Document> AppControl::getJsonDoc() const
     return _jsonDoc;
 }
 
-set<unique_ptr<Asset>> const& AppControl::getAssets() const { return _assets; }
+shared_ptr<map<string, shared_ptr<Asset>>> AppControl::getAssets() const { return _assets; }
 
 void AppControl::launchAssetUpdater()
 {
@@ -143,13 +138,11 @@ void AppControl::launchAssetUpdater()
     {
         _msg_queue.clear();
     }
-    for (auto&& it = _assets.begin(); it != _assets.end(); it++)
-    {
-        // request Asset update to the current intersection (using async)
-        _futures.emplace_back(async(&Asset::update, it->get(), ref(_msg_queue),
-                                    ref(_isUpdateActive), _update_freq));
-        std::this_thread::sleep_for(std::chrono::milliseconds(100));
-    }
+
+    // request Asset update 
+    _futures.emplace_back(async(&AppControl::update, this, ref(_msg_queue),
+                                ref(_isUpdateActive), _update_freq));
+
 }
 
 // Stopping all the running update task
@@ -180,5 +173,102 @@ void AppControl::stopUpdateTasks()
 // Wait for update function for the GUI application
 unique_ptr<UpdateData> AppControl::waitForUpdate()
 {
-    return _msg_queue.waitForUpdate();
+    return move(_msg_queue.waitForUpdate());
+}
+
+void AppControl::update(MsgQueue<UpdateData>& msgqueue, bool& isActive,
+                   uint upd_frequency)
+{
+    cout<<"AssetUpdate: Start a thread: "<<this_thread::get_id()<<endl<<flush;
+    // Never use sleep_for more than 100 ms sec to keep the GUI responsive
+    std::chrono::time_point<std::chrono::system_clock> stopWatch;
+    // init stop watch
+    stopWatch = std::chrono::system_clock::now();
+    long diffUpdate = upd_frequency;
+    vector<unique_ptr<UpdateData>> updates{};
+    while (isActive)
+    {
+        // Add 10 ms delay to reduce CPU usage
+        std::this_thread::sleep_for(std::chrono::milliseconds(10));
+        // compute time difference to stop watch
+        if (diffUpdate >= upd_frequency)
+        {
+            updates.clear();
+            if (!requestFmpApi(updates))
+            {
+                //stop the task if symbol not found to save CPU resource
+                return;
+            }
+            while(updates.size()>0)
+            {
+                auto futureTrfLight =
+                    async(&MsgQueue<UpdateData>::send, &msgqueue, move(updates.back()));
+                futureTrfLight.wait();
+                updates.pop_back();
+            }
+
+            std::this_thread::sleep_for(std::chrono::seconds(1));
+            stopWatch = std::chrono::system_clock::now();
+        }
+        diffUpdate = std::chrono::duration_cast<std::chrono::seconds>(
+                         std::chrono::system_clock::now() - stopWatch)
+                         .count();
+    }
+}
+
+bool AppControl::requestFmpApi(vector<unique_ptr<UpdateData>>& updates)
+{
+    string symbols = "";
+    bool is_first = true;
+    for (auto it = _assets->begin(); it != _assets->end(); it++)
+    {
+        if (is_first)
+        {
+            symbols += it->first;
+            is_first = false;
+        }
+        else
+        {
+            symbols += "," + it->first;
+        }
+    }
+    // e.g. https://financialmodelingprep.com/api/v3/quote/ZGUSD,BTCUSD,AAPL
+    string url = "https://financialmodelingprep.com/api/v3/quote/" + symbols;
+    cout<<"URL: "<<url<<endl<<flush;
+    auto r = cpr::Get(cpr::Url{url});
+    bool is_found = false;
+    cout << "Result code: " << r.status_code
+         << "\nHeaders: " << r.header["content-type"] << "\n"
+         << r.text << endl
+         << flush;
+    if (r.status_code == 200)
+    {
+        if (r.header["content-type"].find("application/json") !=
+            std::string::npos)
+        {
+            rapidjson::Document json_resp;
+            json_resp.Parse(r.text.c_str());
+            if (json_resp.Size() > 0)
+            {
+                is_found = true;
+                for (int i = 0; i < json_resp.Size(); i++)
+                {   // create an update data and add to the vector reference
+                    string id = json_resp[i]["symbol"].GetString();
+                    shared_ptr<Asset> asset = _assets->at(id);
+                    asset->setCurrPrice( json_resp[i]["price"].GetFloat());
+                    
+                    unique_ptr<UpdateData> upd_data(new UpdateData(
+                        id, asset->getCurrPrice(), asset->getCurrValue(), asset->getDiff(), asset->getDiffInPercent(),
+                        asset->getReturn(), asset->getReturnInPercent()));
+                    updates.emplace_back(move(upd_data));
+                }
+            }
+        }
+    }
+    else
+    {
+        cout << "Request error " << r.status_code << ". " << r.text << endl
+             << flush;
+    }
+    return is_found;
 }

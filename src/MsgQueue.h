@@ -20,6 +20,7 @@ class UpdateData
     float _return;
     float _return_in_percent;
 
+    UpdateData(){};
     // Constructor
     UpdateData(string id, float currprice, float currvalue, float diff,
                float diff_in_percent, float ret, float returninpercent)
@@ -45,9 +46,8 @@ class UpdateData
         std::cout << "COPYING content of instance " << source._id << " "
                   << &source << " to instance " << this << std::endl;
     }
-
-    UpdateData&
-    operator=(const UpdateData& source) // 3 : copy assignment operator
+    // 3. copy assignment operator
+    UpdateData& operator=(const UpdateData& source)
     {
         std::cout << "ASSIGNING content of instance " << source._id << " "
                   << &source << " to instance " << this << std::endl;
@@ -77,7 +77,7 @@ class UpdateData
         _return_in_percent = source._return_in_percent;
     }
 
-    // Move constructor
+    // 5. Move constructor
     UpdateData& operator=(UpdateData&& source) noexcept // move assignment
     {
         std::cout << "MOVING UpdateData assign instance " << source._id << " "
@@ -101,9 +101,9 @@ class UpdateData
     };
 
   private:
-    // Hide the default constructor
-    UpdateData() {}
 };
+
+//-----------------------------
 
 template <class T> class MsgQueue
 {
@@ -136,7 +136,7 @@ template <typename T> unique_ptr<T> MsgQueue<T>::waitForUpdate()
     _condition.wait(uLock, [this] { return !_queue.empty(); });
     // Retrieve the element from queue, and remove the first vector element from
     // queue
-    unique_ptr<T> msg = std::move(_queue.back());
+    unique_ptr<T> msg = move(_queue.back());
     _queue.pop_back();
     cout << "MsqQueue: update data poped back" << endl << flush;
     return msg;

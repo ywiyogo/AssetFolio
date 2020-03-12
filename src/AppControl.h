@@ -11,7 +11,7 @@ using namespace std;
 class AppControl
 {
   public:
-    AppControl();
+    AppControl(uint upd_freq);
     ~AppControl();
 
     bool isApiKeyEmpty();
@@ -24,7 +24,7 @@ class AppControl
 
     shared_ptr<rapidjson::Document> getJsonDoc() const;
 
-    set<unique_ptr<Asset>> const& getAssets() const;
+    shared_ptr<map<string, shared_ptr<Asset>>> getAssets() const;
 
     unique_ptr<UpdateData> waitForUpdate();
 
@@ -33,8 +33,12 @@ class AppControl
     void launchAssetUpdater();
 
   private:
+    void update(MsgQueue<UpdateData>& msgqueue, bool& isActive,
+                uint upd_frequency);
+    bool requestFmpApi(vector<unique_ptr<UpdateData>>& updates);
+
     shared_ptr<rapidjson::Document> _jsonDoc;
-    set<unique_ptr<Asset>> _assets;
+    shared_ptr<map<string, shared_ptr<Asset>>> _assets;
     vector<future<void>> _futures;
     MsgQueue<UpdateData> _msg_queue;
 

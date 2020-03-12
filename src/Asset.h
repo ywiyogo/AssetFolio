@@ -58,9 +58,6 @@ class Asset : public std::enable_shared_from_this<Asset>
     bool requestFmpApi(string symbol);
     void runDemo();
 
-    void update(MsgQueue<UpdateData>& msgqueue, bool& isActive,
-                uint upd_frequency);
-
     string getId() const;
     string getName() const;
     float getAmount() const;
@@ -72,6 +69,8 @@ class Asset : public std::enable_shared_from_this<Asset>
     float getDiffInPercent() const;
     float getReturn() const;
     float getReturnInPercent() const;
+
+    void setCurrPrice(float price);
 
   protected:
     std::shared_ptr<Asset> get_shared_this() { return shared_from_this(); }
