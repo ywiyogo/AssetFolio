@@ -1,0 +1,5 @@
+build/                   # exclude CMake build directory
+
+data/*.json              # Exclude all private jsons
+!data/example.json       # Except for example.json
+!data/FMPSymbolList.json # Except the symbols list

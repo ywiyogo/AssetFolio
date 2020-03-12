@@ -1,0 +1,64 @@
+{
+  "Activities": [
+    {
+      "Date": "28.12.2012",
+      "ID": "ZGUSD",
+      "Name": "Gold (gr)",
+      "AssetType": "Commodity",
+      "Type": "Buy",
+      "Transaction": 6100.58,
+      "Amount": 50,
+      "Broker": "YBroker"
+    },
+    {
+      "Date": "18.06.2014",
+      "ID": "EEM",
+      "Name": "iShares MSCI Emerging Markets ETF",
+      "AssetType": "ETF",
+      "Type": "Buy",
+      "Transaction": 1800.80,
+      "Amount": 60,
+      "Broker": "XBroker"
+    },
+    {
+      "Date": "08.03.2020",
+      "ID": "BTCUSD",
+      "Name": "Bitcoin",
+      "AssetType": "Cryptocurency",
+      "Type": "Buy",
+      "Transaction": 8500,
+      "Amount": 1,
+      "Broker": "Kraken"
+    },
+    {
+      "Date": "04.05.2018",
+      "ID": "QCOM",
+      "Name": "Qualcomm",
+      "AssetType": "ETF",
+      "Type": "Buy",
+      "Transaction": 2185.90,
+      "Amount": 50,
+      "Broker": "BankX"
+    },
+    {
+      "Date": "25.06.2018",
+      "ID": "QCOM",
+      "Name": "Qualcomm",
+      "AssetType": "ETF",
+      "Type": "ROI",
+      "Transaction": 22.52,
+      "Amount": 0,
+      "Broker": "BankX"
+    },
+    {
+      "Date": "01.03.2020",
+      "ID": "XWD.TO",
+      "Name": "iShares MSCI World Index ETF",
+      "AssetType": "ETF",
+      "Type": "Buy",
+      "Transaction": 4400,
+      "Amount": 55,
+      "Broker": "BankX"
+    }
+  ]
+}
