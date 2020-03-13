@@ -48,6 +48,8 @@ void AppGui::initWatchlistGrid()
                           "Avg Price", "Curr.Price", "Curr.Value", "Diff",
                           "Diff %",    "Return",     "Return %"};
 
+    wxBoxSizer* bSizerH;
+	bSizerH = new wxBoxSizer( wxHORIZONTAL );
     _gridWatchlist = new wxGrid(_sbSizer->GetStaticBox(), wxID_ANY,
                                 wxDefaultPosition, wxDefaultSize, 0);
 

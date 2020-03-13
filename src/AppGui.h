@@ -36,8 +36,9 @@ class UpdaterThread : public wxThread
     virtual ExitCode Entry();
 };
 
-//------------------------------------------------
+// ------------------------------------------------
 // main frame containing all control elements
+// ----------------------------------------------
 class AppGui : public MainFrame
 {
   public:
@@ -71,12 +72,14 @@ class AppGui : public MainFrame
 
     wxGrid* _gridActivities;
     wxGrid* _gridWatchlist;
+
     wxDECLARE_EVENT_TABLE();
     mutex _mutex_ui;
     shared_ptr<AppControl> _appControl;
     // future<void> _ftr_updater;
     unique_ptr<UpdaterThread> updater;
     vector<string> _def_activity_column;
+
 };
 
 #endif

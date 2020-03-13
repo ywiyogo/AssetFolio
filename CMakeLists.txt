@@ -6,16 +6,19 @@ set(CMAKE_BUILD_TYPE Debug)
 
 project(Assetfolio)
 
-# Avoid program crash if JSON format is not suitable
-# add_compile_definitions(NDEBUG)
+
+# --------------------------------------
+# third party libraries
 
 find_package(wxWidgets REQUIRED COMPONENTS core base adv aui)
 include(${wxWidgets_USE_FILE})
-include_directories(./include ../../../yccpp/cpr/include)
-LINK_DIRECTORIES(../../../yccpp/cpr/build/lib)
-# build the third party library
-# file(GLOB LIBRARY_SRCS src/thirdlibs/*.cpp)
-# add_library(simdjson STATIC ${LIBRARY_SRCS})
+add_subdirectory(submodules/cpr)
+
+include_directories(submodules/rapidjson/include)
+# Avoid program crash if (RAPID)JSON format is not suitable
+# add_compile_definitions(NDEBUG)
+
+# --------------------------------------
 
 file(GLOB project_SRCS src/*.cpp)
 
