@@ -1,0 +1,6 @@
+[submodule "submodules/cpr"]
+	path = submodules/cpr
+	url = https://github.com/whoshuu/cpr.git
+[submodule "submodules/rapidjson"]
+	path = submodules/rapidjson
+	url = https://github.com/Tencent/rapidjson.git
