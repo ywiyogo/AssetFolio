@@ -94,11 +94,7 @@ class UpdateData
         return *this;
     }
 
-    ~UpdateData()
-    {
-        cout << "  Destructor UpdateData " << _id << "  called" << this << endl
-             << flush;
-    };
+    ~UpdateData(){};
 
   private:
 };
@@ -118,7 +114,7 @@ template <class T> class MsgQueue
     // Reseting the queue
     void clear();
 
-    ~MsgQueue() { cout << "MsgQueue destructor called" << endl << flush; };
+    ~MsgQueue(){};
 
   private:
     deque<unique_ptr<T>> _queue;
@@ -130,27 +126,25 @@ template <class T> class MsgQueue
 // undefined reference to `MsgQueue<UpdateData>::waitForUpdate()'
 template <typename T> unique_ptr<T> MsgQueue<T>::waitForUpdate()
 {
-    cout << "MsqQueue: wait for update. Queue size: " << _queue.size() << endl
-         << flush;
+    // cout << "MsqQueue: wait for update. Queue size: " << _queue.size() <<
+    // endl
+    //      << flush;
     unique_lock<std::mutex> uLock(_mutex);
     _condition.wait(uLock, [this] { return !_queue.empty(); });
     // Retrieve the element from queue, and remove the first vector element from
     // queue
     unique_ptr<T> msg = move(_queue.back());
     _queue.pop_back();
-    cout << "MsqQueue: update data poped back" << endl << flush;
     return msg;
 }
 
 template <typename T> void MsgQueue<T>::send(unique_ptr<T> msg)
 {
     lock_guard<std::mutex> uLock(_mutex);
-    cout << "    MsqQueue: update data is sent, id: " << msg->_id << endl
-         << flush;
+    // cout << "    MsqQueue: update data is sent, id: " << msg->_id << endl
+    //      << flush;
     // add vector to queue
     _queue.emplace_back(move(msg));
-    cout << "    MsqQueue: queue added, size: " << _queue.size() << endl
-         << flush;
     _condition
         .notify_one(); // notify client after pushing new msg into the queue
 }

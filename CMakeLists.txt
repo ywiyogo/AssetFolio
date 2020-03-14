@@ -12,15 +12,20 @@ project(Assetfolio)
 
 find_package(wxWidgets REQUIRED COMPONENTS core base adv aui)
 include(${wxWidgets_USE_FILE})
+# C++ Request flags
+set(USE_SYSTEM_CURL ON)
+set(BUILD_CPR_TESTS OFF)
+set(USE_SYSTEM_GTEST ON)
 add_subdirectory(submodules/cpr)
-
+# RapidJSON
 include_directories(submodules/rapidjson/include)
 # Avoid program crash if (RAPID)JSON format is not suitable
 # add_compile_definitions(NDEBUG)
 
+include_directories(include)    # wxFreeChart
 # --------------------------------------
 
-file(GLOB project_SRCS src/*.cpp)
+file(GLOB project_SRCS src/*.cpp src/**/*.cpp src/**/**/*.cpp)
 
 add_executable(Assetfolio ${project_SRCS})
 # link libraries to the exec target

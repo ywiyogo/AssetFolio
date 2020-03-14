@@ -127,8 +127,47 @@ shared_ptr<rapidjson::Document> AppControl::getJsonDoc() const
     return _jsonDoc;
 }
 
-shared_ptr<map<string, shared_ptr<Asset>>> AppControl::getAssets() const { return _assets; }
+shared_ptr<map<string, shared_ptr<Asset>>> AppControl::getAssets() const
+{
+    return _assets;
+}
 
+void AppControl::calcCurrentTotalValues()
+{
+    _total_values = 0.;
+    // creating all asset objects
+    for (auto it = _assets->begin(); it != _assets->end(); it++)
+    {
+        _total_values += it->second->getCurrValue();
+    }
+}
+void AppControl::calcAllocation(vector<string>& categories,
+                                vector<double>& values)
+{
+    categories.clear();
+    values.clear();
+    for (auto it = _assets->begin(); it != _assets->end(); it++)
+    {
+        categories.push_back(it->second->getName());
+        values.push_back(static_cast<double>(it->second->getBalance()));
+    }
+}
+
+void AppControl::calcCurrentAllocation(vector<string>& categories,
+                                vector<double>& values)
+{
+    categories.clear();
+    values.clear();
+    calcCurrentTotalValues();
+    for (auto it = _assets->begin(); it != _assets->end(); it++)
+    {
+        categories.push_back(it->second->getName());
+        values.push_back(static_cast<double>(it->second->getCurrValue()/_total_values));
+    }
+}
+
+// --------------------------------------------------
+// Threads or tasks functions
 void AppControl::launchAssetUpdater()
 {
     // Start the update tasks in each asset object. This function is called by

@@ -2,8 +2,10 @@
 #define APPGUI_H_
 
 #include "AppControl.h"
+#include "ChartGui.h"
 #include "MainFrame.h"
 #include "MsgQueue.h"
+#include "wx/chartpanel.h"
 #include "wx/grid.h"
 #include "wx/wx.h"
 #include <memory>
@@ -23,15 +25,18 @@ const int WATCHLIST_UPD_ID = 10000;
 //-----------------------------------------------
 class UpdaterThread : public wxThread
 {
-    wxFrame* m_parent;
-    shared_ptr<AppControl> appControl;
+    wxFrame* _parent;
+    shared_ptr<AppControl> _app_control;
+    bool _is_start;
 
   public:
     UpdaterThread(wxFrame* parent, shared_ptr<AppControl> appCtrl)
     {
-        m_parent = parent;
-        appControl = appCtrl;
+        _parent = parent;
+        _app_control = appCtrl;
+        _is_start = true;
     }
+    void restart() { _is_start = true; }
     // implement the pure virtual function from wxThread
     virtual ExitCode Entry();
 };
@@ -66,20 +71,22 @@ class AppGui : public MainFrame
     void createGridActivities(uint row, uint col);
     void watchlistUpdater();
     void updateWatchlist(wxThreadEvent& event);
+
     // The Path to the file we have open
     wxString CurrentDocPath;
     wxTextCtrl* MainEditBox;
-
     wxGrid* _gridActivities;
     wxGrid* _gridWatchlist;
-
+    wxPanel* _panelLeftWatchlist;
     wxDECLARE_EVENT_TABLE();
     mutex _mutex_ui;
     shared_ptr<AppControl> _appControl;
     // future<void> _ftr_updater;
-    unique_ptr<UpdaterThread> updater;
+    unique_ptr<UpdaterThread> _updater;
     vector<string> _def_activity_column;
 
+    wxChartPanel* _chartPanel;
+    PieChart* _pie_chart;
 };
 
 #endif

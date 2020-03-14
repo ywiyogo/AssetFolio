@@ -28,11 +28,14 @@ class AppControl
 
     unique_ptr<UpdateData> waitForUpdate();
 
+    void calcAllocation(vector<string>& categories, vector<double>& values);
+    void calcCurrentAllocation(vector<string>& categories, vector<double>& values);
     void stopUpdateTasks();
 
     void launchAssetUpdater();
 
   private:
+    void calcCurrentTotalValues();
     void update(MsgQueue<UpdateData>& msgqueue, bool& isActive,
                 uint upd_frequency);
     bool requestFmpApi(vector<unique_ptr<UpdateData>>& updates);
@@ -41,7 +44,7 @@ class AppControl
     shared_ptr<map<string, shared_ptr<Asset>>> _assets;
     vector<future<void>> _futures;
     MsgQueue<UpdateData> _msg_queue;
-
+    float _total_values;
     bool _isUpdateActive;
     string _apikey;
     uint _update_freq;

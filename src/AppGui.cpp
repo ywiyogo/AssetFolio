@@ -30,11 +30,12 @@ wxBEGIN_EVENT_TABLE(AppGui, wxFrame) wxEND_EVENT_TABLE();
 
 AppGui::AppGui()
     : MainFrame(nullptr), _gridActivities(nullptr), _gridWatchlist(nullptr),
-      _appControl(make_shared<AppControl>(UPDATE_PERIODE)), updater{}
+      _appControl(make_shared<AppControl>(UPDATE_PERIODE)), _updater{},
+      _chartPanel(nullptr), _pie_chart(nullptr)
 {
     _def_activity_column = {"Date", "ID",          "Name",   "AssetType",
                             "Type", "Transaction", "Amount", "Broker"};
-    _sbSizer->Show(true);
+
     _bSizerHorizon->Layout();
     Bind(UPDATER_EVENT, &AppGui::updateWatchlist, this);
 }
@@ -48,14 +49,20 @@ void AppGui::initWatchlistGrid()
                           "Avg Price", "Curr.Price", "Curr.Value", "Diff",
                           "Diff %",    "Return",     "Return %"};
 
-    wxBoxSizer* bSizerH;
-	bSizerH = new wxBoxSizer( wxHORIZONTAL );
-    _gridWatchlist = new wxGrid(_sbSizer->GetStaticBox(), wxID_ANY,
+    _panelLeftWatchlist = new wxPanel(this, wxID_ANY, wxDefaultPosition,
+                                      wxDefaultSize, wxTAB_TRAVERSAL);
+    _gridWatchlist = new wxGrid(_panelLeftWatchlist, wxID_ANY,
                                 wxDefaultPosition, wxDefaultSize, 0);
+    _bSizerPanelLeft->Detach(0);
+    _bSizerPanelLeft->Prepend(_panelLeftWatchlist, 1, wxEXPAND | wxALL, 5);
+    _bSizerPanelLeft->Fit(_panelLeftWatchlist);
+    _bSizerPanelRight->Fit(_chartPanel);
+    _panelLeftWatchlist->Show();
 
     _gridWatchlist->CreateGrid(assets->size(), labels.size());
     _gridWatchlist->SetDefaultCellAlignment(wxALIGN_LEFT, wxALIGN_TOP);
     _gridWatchlist->SetRowLabelSize(30);
+
     // Fill the column labels
     for (int i = 0; i < labels.size(); i++)
     {
@@ -96,22 +103,19 @@ void AppGui::initWatchlistGrid()
 
     // Starting the updater wxThread. Note, wxWidget GUI doesn't support async.
     // It is recommended to use wxThread in order to avoid UI issues
-    updater = make_unique<UpdaterThread>(this, _appControl);
+    _updater = make_unique<UpdaterThread>(this, _appControl);
 
-    if (updater->Create() != wxTHREAD_NO_ERROR)
+    if (_updater->Create() != wxTHREAD_NO_ERROR)
     {
         wxMessageBox(_("Couldn't create thread!"));
         return;
     }
 
-    if (updater->Run() != wxTHREAD_NO_ERROR)
+    if (_updater->Run() != wxTHREAD_NO_ERROR)
     {
         wxMessageBox(_("Couldn't run thread!"));
         return;
     }
-
-    // _sbSizer->Detach(0);
-    _sbSizer->Add(_gridWatchlist, 1, wxALL | wxEXPAND, 5);
 }
 void AppGui::OnCloseFrame(wxCloseEvent& event)
 {
@@ -131,21 +135,25 @@ void AppGui::onBtnActivitiesClick(wxCommandEvent& event)
 {
     if (_gridActivities)
     {
-        if (_gridActivities->IsShown())
+        if (_panelLeftActivity->IsShown())
         {
             // do nothing
         }
         else
         {
-            _gridActivities->Show(true);
+            // _gridActivities->Show(true);
             if (_gridWatchlist)
             {
-                _gridWatchlist->Show(false);
-                cout << "AppGui::Watchlist deactivate" << endl << flush;
+                _panelLeftWatchlist->Hide();
+                _bSizerPanelLeft->Detach(0);
+                _bSizerPanelLeft->Prepend(_panelLeftActivity, 2,
+                                          wxEXPAND | wxALL, 5);
+                _panelLeftActivity->Show();
                 // Stop the asset updater send tasks but not the waiting receive
                 // task
                 _appControl->stopUpdateTasks();
-
+                _bSizerPanelLeft->Layout();
+                _bSizerPanelRight->Layout();
                 _bSizerHorizon->Layout();
             }
         }
@@ -153,23 +161,30 @@ void AppGui::onBtnActivitiesClick(wxCommandEvent& event)
 }
 void AppGui::onBtnWatchlistClick(wxCommandEvent& event)
 {
-
     if (_gridActivities && !_gridWatchlist)
     {
-        _gridActivities->Show(false);
+        _panelLeftActivity->Hide();
+
         initWatchlistGrid();
+
         _appControl->launchAssetUpdater();
     }
     else
     {
-        if (_gridActivities && !_gridWatchlist->IsShown())
+        
+        if (_gridActivities && !_panelLeftWatchlist->IsShown())
         {
-            _gridActivities->Show(false);
-            _gridWatchlist->Show(true);
+            _panelLeftActivity->Hide();
+            _bSizerPanelLeft->Detach(0);
+            _bSizerPanelLeft->Prepend(_panelLeftWatchlist, 2, wxEXPAND | wxALL,
+                                      5);
+            _panelLeftWatchlist->Show();
+            cout<<"debug 2"<<endl<<flush;
+            _updater->restart();
             _appControl->launchAssetUpdater();
         }
     }
-
+    _bSizerRight->Layout();
     _bSizerHorizon->Layout();
 }
 
@@ -183,20 +198,12 @@ void AppGui::onBtnChartsClick(wxCommandEvent& event)
     _bSizerHorizon->Layout();
 }
 
+//-----------------------------
+// Toolbar Events
 void AppGui::OnToolNewClicked(wxCommandEvent& event)
 {
     _appControl.reset(new AppControl(UPDATE_PERIODE));
-    if (_gridActivities)
-    {
-        delete _gridActivities;
-        _gridActivities = nullptr;
-    }
     createGridActivities(10, 8);
-    for (int i = 0; i < _def_activity_column.size(); i++)
-    {
-        _gridActivities->SetColLabelValue(i, wxString(_def_activity_column[i]));
-    }
-    _gridActivities->AutoSize();
 }
 
 void AppGui::OnToolOpenClicked(wxCommandEvent& event)
@@ -276,14 +283,30 @@ void AppGui::OnToolOpenClicked(wxCommandEvent& event)
 
             // Fill the watchlist viewer
             vector<string> colWatchlist = {
-                "Name",         "Amount",        "Total transaktion",
-                "Buying price", "Current price", "Current Asset",
-                "Allocation",   "Changed in %",  "Change",
-                "Yield in %",   "TotalYield"};
+                "Name",         "Amount",      "Total transaktion",
+                "Buying price", "Curr. Price", "Curr. Asset",
+                "Allocation",   "Changed %",   "Change",
+                "Yield %",      "TotalYield"};
+
+            // Pie chart asset allocation
+            _chartPanel = new wxChartPanel(this);
+            _pie_chart = new PieChart("Asset Allocation");
+            vector<double> data;
+            vector<string> categories;
+            // vector<double> data = {2., 4., 2.};
+            // vector<string> categories = {"bla", "bli", "blu"};
+            _appControl->calcAllocation(categories, data);
+
+            _chartPanel->SetChart(_pie_chart->Create(data, categories));
+            // _chartPanel->SetSizerAndFit(_bSizerPanelRight);
+            _bSizerPanelRight->Add(_chartPanel, 1, wxEXPAND | wxALL, 5);
+            _bSizerPanelRight->Fit(_chartPanel);
+            _bSizerRight->Layout();
+            _bSizerHorizon->Layout();
         }
         else
         {
-            wxLogError("JSON data is not  valid");
+            wxLogError("JSON data is not valid");
         }
     }
 
@@ -291,18 +314,6 @@ void AppGui::OnToolOpenClicked(wxCommandEvent& event)
     OpenDialog->Destroy();
 }
 
-void AppGui::createGridActivities(uint row, uint col)
-{
-    _gridActivities = new wxGrid(_sbSizer->GetStaticBox(), wxID_ANY,
-                                 wxDefaultPosition, wxDefaultSize, 0);
-    _gridActivities->CreateGrid(row, col);
-    _gridActivities->SetDefaultCellAlignment(wxALIGN_LEFT, wxALIGN_TOP);
-    _gridActivities->EnableEditing(true);
-    _gridActivities->EnableGridLines(true);
-    _gridActivities->EnableDragGridSize(false);
-    _gridActivities->SetMargins(5, 5);
-    _gridActivities->SetRowLabelSize(30);
-}
 void AppGui::OnToolKeyClicked(wxCommandEvent& event)
 {
     wxTextEntryDialog* entry_dialog = new wxTextEntryDialog(this, wxString(""));
@@ -385,6 +396,30 @@ void AppGui::OnToolInfoClicked(wxCommandEvent& event)
 }
 
 // ---------------------------------------------------
+// Helper functions
+void AppGui::createGridActivities(uint row, uint col)
+{
+    if (_gridActivities)
+    {
+        delete _gridActivities;
+        _gridActivities = nullptr;
+    }
+    _gridActivities = new wxGrid(_panelLeftActivity, wxID_ANY,
+                                 wxDefaultPosition, wxDefaultSize, 0);
+
+    _gridActivities->CreateGrid(row, col);
+    _gridActivities->SetDefaultCellAlignment(wxALIGN_LEFT, wxALIGN_TOP);
+    _gridActivities->EnableEditing(true);
+    _gridActivities->EnableGridLines(true);
+    _gridActivities->EnableDragGridSize(false);
+    _gridActivities->SetMargins(5, 5);
+    _gridActivities->SetRowLabelSize(30);
+    for (int i = 0; i < _def_activity_column.size(); i++)
+    {
+        _gridActivities->SetColLabelValue(i, wxString(_def_activity_column[i]));
+    }
+    _gridActivities->AutoSize();
+}
 
 string AppGui::convertFloatToString(float number, int precision)
 {
@@ -393,6 +428,8 @@ string AppGui::convertFloatToString(float number, int precision)
     return stream.str();
 }
 
+//-----------------------------
+// WxThread functions
 void AppGui::updateWatchlist(wxThreadEvent& event)
 {
     // send the update data to the main GUI thread. SetPaylod doesn't support
@@ -471,8 +508,14 @@ void AppGui::updateWatchlist(wxThreadEvent& event)
         cout << "AppGui::Warning, ID not found on the watchlist!" << endl
              << flush;
     }
-
-    // _gridWatchlist->AutoSize();
+    vector<double> data;
+    vector<string> categories;
+    _appControl->calcCurrentAllocation(categories, data);
+    _gridWatchlist->AutoSize();
+    
+    _bSizerPanelLeft->Fit(_panelLeftWatchlist);
+    _bSizerPanelRight->Fit(_chartPanel);
+    _bSizerHorizon->Layout();
 }
 
 wxThread::ExitCode UpdaterThread::Entry()
@@ -480,12 +523,13 @@ wxThread::ExitCode UpdaterThread::Entry()
     cout << "UpdaterThread: Start a thread: " << this_thread::get_id() << endl
          << flush;
 
-    cout << "UpdaterThread is waiting for update" << endl << flush;
     while (true)
     {
         // blocking wait call
-        cout << "UpdaterThread::reset finish" << endl << flush;
-        unique_ptr<UpdateData> data = appControl->waitForUpdate();
+        
+        if(_is_start)
+        {
+        unique_ptr<UpdateData> data = _app_control->waitForUpdate();
         UpdateData _update_data(data->_id, data->_curr_price, data->_curr_value,
                                 data->_diff, data->_diff_in_percent,
                                 data->_return, data->_return_in_percent);
@@ -495,7 +539,7 @@ wxThread::ExitCode UpdaterThread::Entry()
         if (_update_data._id == "disconnect")
         {
             cout << "UpdaterThread::disconnect! " << endl << flush;
-            return 0;
+            _is_start= false;
         }
 
         wxThreadEvent event(UPDATER_EVENT);
@@ -503,8 +547,12 @@ wxThread::ExitCode UpdaterThread::Entry()
         // support unique_ptr
         event.SetPayload(_update_data);
 
-        m_parent->GetEventHandler()->AddPendingEvent(event);
+        _parent->GetEventHandler()->AddPendingEvent(event);
         cout << "UpdaterThread:: sent to main GUI " << endl << flush;
+        }
+        else{
+            std::this_thread::sleep_for(std::chrono::milliseconds(200));
+        }
     }
     cout << "UpdaterThread::watchlistUpdater ends" << endl << flush;
     return 0;

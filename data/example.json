@@ -13,7 +13,7 @@
     {
       "Date": "18.06.2014",
       "ID": "EEM",
-      "Name": "iShares MSCI Emerging Markets ETF",
+      "Name": "iShares MSCI Emerging Markets",
       "AssetType": "ETF",
       "Type": "Buy",
       "Transaction": 1800.80,
@@ -53,7 +53,7 @@
     {
       "Date": "01.03.2020",
       "ID": "XWD.TO",
-      "Name": "iShares MSCI World Index ETF",
+      "Name": "iShares MSCI World",
       "AssetType": "ETF",
       "Type": "Buy",
       "Transaction": 4400,
