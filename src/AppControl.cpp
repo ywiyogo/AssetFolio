@@ -10,7 +10,6 @@
 #include "rapidjson/rapidjson.h"
 #include "rapidjson/stringbuffer.h"
 #include "rapidjson/writer.h"
-#include "wx/log.h"
 #include <algorithm>
 #include <fstream>
 #include <iostream>

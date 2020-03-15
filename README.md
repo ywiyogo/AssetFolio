@@ -88,7 +88,7 @@ The application doesn't need such a complete networking library. Instead, it nee
 
 ### WxWidget GUI
 
-For a beginner, building a GUI application with wxWidget without a builder/creator tool is very challenging. The wxFormBuilder has made my DUI design more convenient than building from scratch without a builder tool.
+For a beginner, building a GUI application with wxWidget without a builder/creator tool is very challenging. The [wxFormBuilder](https://github.com/wxFormBuilder/wxFormBuilder) has made my GUI design more convenient than building from scratch without a builder tool.
 
 Creating and starting an asynchronous task from the main GUI task leads to an unpredictable program crash during the runtime. Thus, instead of creating a `std::async`, an UpdaterThread class which is derived from `wxThread` is created and called in the `initWatchlistGrid)()`.
 
