@@ -8,7 +8,7 @@
 #include "rapidjson/document.h"
 #include <future>
 #include <memory>
-#include <set>
+
 using namespace std;
 
 class AppControl
