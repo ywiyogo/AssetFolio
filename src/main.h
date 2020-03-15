@@ -1,3 +1,6 @@
+// Author: YWiyogo
+// Descr.: Start main application
+
 #ifndef MAIN_H_
 #define MAIN_H_
 

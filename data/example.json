@@ -24,7 +24,7 @@
       "Date": "08.03.2020",
       "ID": "BTCUSD",
       "Name": "Bitcoin",
-      "AssetType": "Cryptocurency",
+      "AssetType": "Crypto",
       "Type": "Buy",
       "Transaction": 8500,
       "Amount": 1,

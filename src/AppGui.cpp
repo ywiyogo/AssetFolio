@@ -1,8 +1,10 @@
+// Author: YWiyogo
+// Descr.: The application GUI
+
 #include "AppGui.h"
 #include "AppControl.h"
 #include "rapidjson/document.h"
-#include "rapidjson/filereadstream.h"
-#include "rapidjson/filewritestream.h"
+
 #include "rapidjson/stringbuffer.h"
 #include "rapidjson/writer.h"
 #include "wx/grid.h"
@@ -22,6 +24,7 @@ int AppGui::wxIdCounter = 1;
 
 // The periode of the REST API updater in sec
 const uint UPDATE_PERIODE = 20;
+
 // event mapping
 wxDEFINE_EVENT(UPDATER_EVENT, wxThreadEvent);
 wxBEGIN_EVENT_TABLE(AppGui, wxFrame) wxEND_EVENT_TABLE();
@@ -75,25 +78,24 @@ void AppGui::initWatchlistGrid()
     {
         _gridWatchlist->SetCellValue(rowPos, 0, it->first);
         _gridWatchlist->SetCellValue(rowPos, 1, it->second->getName());
+        _gridWatchlist->SetCellValue(rowPos, 2,
+                                     floatToString(it->second->getAmount(), 2));
         _gridWatchlist->SetCellValue(
-            rowPos, 2, convertFloatToString(it->second->getAmount(), 2));
+            rowPos, 3, floatToString(it->second->getBalance(), 2));
         _gridWatchlist->SetCellValue(
-            rowPos, 3, convertFloatToString(it->second->getBalance(), 2));
+            rowPos, 4, floatToString(it->second->getAvgPrice(), 2));
         _gridWatchlist->SetCellValue(
-            rowPos, 4, convertFloatToString(it->second->getAvgPrice(), 2));
+            rowPos, 5, floatToString(it->second->getCurrPrice(), 2));
         _gridWatchlist->SetCellValue(
-            rowPos, 5, convertFloatToString(it->second->getCurrPrice(), 2));
+            rowPos, 6, floatToString(it->second->getCurrValue(), 2));
+        _gridWatchlist->SetCellValue(rowPos, 7,
+                                     floatToString(it->second->getDiff(), 2));
         _gridWatchlist->SetCellValue(
-            rowPos, 6, convertFloatToString(it->second->getCurrValue(), 2));
+            rowPos, 8, floatToString(it->second->getDiffInPercent(), 2));
+        _gridWatchlist->SetCellValue(rowPos, 9,
+                                     floatToString(it->second->getReturn(), 2));
         _gridWatchlist->SetCellValue(
-            rowPos, 7, convertFloatToString(it->second->getDiff(), 2));
-        _gridWatchlist->SetCellValue(
-            rowPos, 8, convertFloatToString(it->second->getDiffInPercent(), 2));
-        _gridWatchlist->SetCellValue(
-            rowPos, 9, convertFloatToString(it->second->getReturn(), 2));
-        _gridWatchlist->SetCellValue(
-            rowPos, 10,
-            convertFloatToString(it->second->getReturnInPercent(), 2));
+            rowPos, 10, floatToString(it->second->getReturnInPercent(), 2));
 
         rowPos++;
     }
@@ -171,7 +173,7 @@ void AppGui::onBtnWatchlistClick(wxCommandEvent& event)
     }
     else
     {
-        
+
         if (_gridActivities && !_panelLeftWatchlist->IsShown())
         {
             _panelLeftActivity->Hide();
@@ -179,7 +181,7 @@ void AppGui::onBtnWatchlistClick(wxCommandEvent& event)
             _bSizerPanelLeft->Prepend(_panelLeftWatchlist, 2, wxEXPAND | wxALL,
                                       5);
             _panelLeftWatchlist->Show();
-            cout<<"debug 2"<<endl<<flush;
+            cout << "debug 2" << endl << flush;
             _updater->restart();
             _appControl->launchAssetUpdater();
         }
@@ -226,7 +228,7 @@ void AppGui::OnToolOpenClicked(wxCommandEvent& event)
             isValid = _appControl->readLocalRapidJson(CurrentDocPath.c_str(),
                                                       _def_activity_column);
         }
-        catch (const std::exception& e)
+        catch (const exception& e)
         {
             wxLogError(e.what());
         }
@@ -265,8 +267,7 @@ void AppGui::OnToolOpenClicked(wxCommandEvent& event)
                     {
                         _gridActivities->SetCellValue(
                             rowPos, colPos,
-                            wxString(convertFloatToString(
-                                itr2->value.GetFloat(), 2)));
+                            wxString(floatToString(itr2->value.GetFloat(), 2)));
                     }
                     else
                     {
@@ -288,20 +289,7 @@ void AppGui::OnToolOpenClicked(wxCommandEvent& event)
                 "Allocation",   "Changed %",   "Change",
                 "Yield %",      "TotalYield"};
 
-            // Pie chart asset allocation
-            _chartPanel = new wxChartPanel(this);
-            _pie_chart = new PieChart("Asset Allocation");
-            vector<double> data;
-            vector<string> categories;
-            // vector<double> data = {2., 4., 2.};
-            // vector<string> categories = {"bla", "bli", "blu"};
-            _appControl->calcAllocation(categories, data);
-
-            _chartPanel->SetChart(_pie_chart->Create(data, categories));
-            // _chartPanel->SetSizerAndFit(_bSizerPanelRight);
-            _bSizerPanelRight->Add(_chartPanel, 1, wxEXPAND | wxALL, 5);
-            _bSizerPanelRight->Fit(_chartPanel);
-            _bSizerRight->Layout();
+            createPieChart();
             _bSizerHorizon->Layout();
         }
         else
@@ -315,7 +303,7 @@ void AppGui::OnToolOpenClicked(wxCommandEvent& event)
 }
 
 void AppGui::OnToolKeyClicked(wxCommandEvent& event)
-{
+{ // currently not working
     wxTextEntryDialog* entry_dialog = new wxTextEntryDialog(this, wxString(""));
     entry_dialog->SetLabel("Add a new Alpha Vantage API Key ");
     if (_appControl->isApiKeyEmpty())
@@ -357,30 +345,78 @@ void AppGui::OnToolSaveClicked(wxCommandEvent& event)
         // save under
         if (_appControl && _gridActivities)
         {
-            shared_ptr<rapidjson::Document> jsonDoc = _appControl->getJsonDoc();
-
-            // check if the current row size > jsondoc
-            if (_gridActivities->GetRows() > jsonDoc->Size())
+            uint column_size = _gridActivities->GetNumberCols();
+            vector<string> col_names;
+            shared_ptr<rapidjson::Document> json_save =
+                _appControl->getJsonDoc();
+            string savepath = SaveDialog->GetPath().ToStdString();
+            string backuppath = savepath + ".bak";
+            // save a backup
+            _appControl->saveJson(backuppath);
+            json_save->RemoveAllMembers();
+            json_save->SetObject();
+            rapidjson::Document::AllocatorType& allocator =
+                json_save->GetAllocator();
+            for (uint col = 0; col < column_size; col++)
             {
-                for (int i = jsonDoc->Size(); i < _gridActivities->GetRows();
-                     i++)
-                {
-                }
+                col_names.push_back(
+                    _gridActivities->GetCellValue(0, col).ToStdString());
             }
-            // non-Windows use "w"
-            FILE* fp = fopen(SaveDialog->GetPath().ToStdString().c_str(), "wb");
-            char writeBuffer[65536];
-            rapidjson::FileWriteStream os(fp, writeBuffer, sizeof(writeBuffer));
 
-            rapidjson::Writer<rapidjson::FileWriteStream> writer(os);
-            jsonDoc->Accept(writer);
-            fclose(fp);
+            rapidjson::Value entry_array(rapidjson::kArrayType);
+
+            for (uint row = 0; row < _gridActivities->GetNumberRows(); row++)
+            {
+                rapidjson::Value entry_obj(rapidjson::kObjectType);
+
+                if (_gridActivities->GetCellValue(row, 0).ToStdString().empty())
+                { // first empty row
+                    break;
+                }
+
+                for (uint col = 0; col < column_size; col++)
+                {
+
+                    string column_name =
+                        _gridActivities->GetColLabelValue(col).ToStdString();
+                    rapidjson::Value name(column_name.c_str(), allocator);
+                    rapidjson::Value value;
+
+                    if ((column_name.compare("Transaction") == 0) ||
+                        (column_name.compare("Amount") == 0))
+                    {
+                        value.SetFloat(stringToFloat(
+                            _gridActivities->GetCellValue(row, col)
+                                .ToStdString(),
+                            2));
+                    }
+                    else
+                    {
+                        value.SetString(_gridActivities->GetCellValue(row, col)
+                                            .ToStdString()
+                                            .c_str(),
+                                        allocator);
+                    }
+
+                    entry_obj.AddMember(name, value, allocator);
+                }
+                entry_array.PushBack(entry_obj, allocator);
+            }
+
+            json_save->AddMember("Activities", entry_array, allocator);
+            remove(backuppath.c_str());
+            if (!_appControl->saveJson(savepath))
+            {
+                wxLogError("Saving JSON file has failed.");
+            }
+
+            // update the piechart
+            vector<double> data;
+            vector<string> categories;
+            _appControl->calcAllocation(categories, data);
+            _pie_chart->Create(categories, data);
+            _bSizerRight->Layout();
         }
-
-        // MainEditBox->SaveFile(CurrentDocPath); // Save the file to the
-        // selected path
-        // // Set the Title to reflect the file open
-        // SetTitle(wxString("Edit - ") << SaveDialog->GetFilename());
     }
 
     // Clean up after ourselves
@@ -391,12 +427,15 @@ void AppGui::OnToolExitClicked(wxCommandEvent& event) { Close(); }
 void AppGui::OnToolInfoClicked(wxCommandEvent& event)
 {
     wxMessageBox(
-        "Asset Allocation Tracker\nDeveloped by Yongkie Wiyogo \n 2020",
-        "About", wxOK | wxICON_INFORMATION);
+        "An Asset Portfolio Tracker Application that keeps your asset data "
+        "private. We don't need to signup and give up our data to the cloud "
+        "server.\nCheck and read the README in "
+        "https://github.com/ywiyogo/Assetfolio\n\nDeveloped by Yongkie Wiyogo, 2020",
+        "About Assetfolio", wxOK | wxICON_INFORMATION);
 }
 
 // ---------------------------------------------------
-// Helper functions
+// Helper functions section
 void AppGui::createGridActivities(uint row, uint col)
 {
     if (_gridActivities)
@@ -421,15 +460,42 @@ void AppGui::createGridActivities(uint row, uint col)
     _gridActivities->AutoSize();
 }
 
-string AppGui::convertFloatToString(float number, int precision)
+void AppGui::createPieChart()
+{
+    if (_chartPanel)
+    {
+        delete _pie_chart;
+        delete _chartPanel;
+    }
+    // Pie chart asset allocation
+    _chartPanel = new wxChartPanel(this);
+    _pie_chart = new PieChart("Asset Allocation");
+    vector<double> data;
+    vector<string> categories;
+    _appControl->calcAllocation(categories, data);
+
+    _chartPanel->SetChart(_pie_chart->Create(categories, data));
+    // _chartPanel->SetSizerAndFit(_bSizerPanelRight);
+    _bSizerPanelRight->Add(_chartPanel, 1, wxEXPAND | wxALL, 5);
+    _bSizerPanelRight->Fit(_chartPanel);
+    _bSizerRight->Layout();
+}
+string AppGui::floatToString(float number, int precision)
 {
     stringstream stream;
     stream << fixed << setprecision(precision) << number;
     return stream.str();
 }
+float AppGui::stringToFloat(string numstr, int precision)
+{
+    stringstream stream;
+    stream << fixed << setprecision(precision) << stof(numstr);
+    return stof(stream.str());
+    ;
+}
 
 //-----------------------------
-// WxThread functions
+// WxThread functions section
 void AppGui::updateWatchlist(wxThreadEvent& event)
 {
     // send the update data to the main GUI thread. SetPaylod doesn't support
@@ -451,13 +517,13 @@ void AppGui::updateWatchlist(wxThreadEvent& event)
     if (found_row > -1)
     { // Update the Grid cells
 
-        _gridWatchlist->SetCellValue(
-            found_row, 5, convertFloatToString(upd_data._curr_price, 2));
-        _gridWatchlist->SetCellValue(
-            found_row, 6, convertFloatToString(upd_data._curr_value, 2));
+        _gridWatchlist->SetCellValue(found_row, 5,
+                                     floatToString(upd_data._curr_price, 2));
+        _gridWatchlist->SetCellValue(found_row, 6,
+                                     floatToString(upd_data._curr_value, 2));
 
         _gridWatchlist->SetCellValue(found_row, 7,
-                                     convertFloatToString(upd_data._diff, 2));
+                                     floatToString(upd_data._diff, 2));
         int threshold = 10;
         if (upd_data._diff > threshold)
         {
@@ -469,8 +535,7 @@ void AppGui::updateWatchlist(wxThreadEvent& event)
         }
 
         _gridWatchlist->SetCellValue(
-            found_row, 8,
-            convertFloatToString(upd_data._diff_in_percent, 2) + "%");
+            found_row, 8, floatToString(upd_data._diff_in_percent, 2) + "%");
         if (upd_data._diff_in_percent > 1)
         {
             _gridWatchlist->SetCellTextColour(found_row, 8, *wxGREEN);
@@ -481,7 +546,7 @@ void AppGui::updateWatchlist(wxThreadEvent& event)
         }
 
         _gridWatchlist->SetCellValue(found_row, 9,
-                                     convertFloatToString(upd_data._return, 2));
+                                     floatToString(upd_data._return, 2));
         if (upd_data._return > threshold)
         {
             _gridWatchlist->SetCellTextColour(found_row, 9, *wxGREEN);
@@ -492,8 +557,7 @@ void AppGui::updateWatchlist(wxThreadEvent& event)
         }
 
         _gridWatchlist->SetCellValue(
-            found_row, 10,
-            convertFloatToString(upd_data._return_in_percent, 2) + "%");
+            found_row, 10, floatToString(upd_data._return_in_percent, 2) + "%");
         if (upd_data._return_in_percent > 1)
         {
             _gridWatchlist->SetCellTextColour(found_row, 10, *wxGREEN);
@@ -512,7 +576,7 @@ void AppGui::updateWatchlist(wxThreadEvent& event)
     vector<string> categories;
     _appControl->calcCurrentAllocation(categories, data);
     _gridWatchlist->AutoSize();
-    
+
     _bSizerPanelLeft->Fit(_panelLeftWatchlist);
     _bSizerPanelRight->Fit(_chartPanel);
     _bSizerHorizon->Layout();
@@ -526,31 +590,33 @@ wxThread::ExitCode UpdaterThread::Entry()
     while (true)
     {
         // blocking wait call
-        
-        if(_is_start)
+
+        if (_is_start)
         {
-        unique_ptr<UpdateData> data = _app_control->waitForUpdate();
-        UpdateData _update_data(data->_id, data->_curr_price, data->_curr_value,
-                                data->_diff, data->_diff_in_percent,
-                                data->_return, data->_return_in_percent);
+            unique_ptr<UpdateData> data = _app_control->waitForUpdate();
+            UpdateData _update_data(data->_id, data->_curr_price,
+                                    data->_curr_value, data->_diff,
+                                    data->_diff_in_percent, data->_return,
+                                    data->_return_in_percent);
 
-        cout << "UpdaterThread:: incoming data " << _update_data._id << endl
-             << flush;
-        if (_update_data._id == "disconnect")
+            cout << "UpdaterThread:: incoming data " << _update_data._id << endl
+                 << flush;
+            if (_update_data._id == "disconnect")
+            {
+                cout << "UpdaterThread::disconnect! " << endl << flush;
+                _is_start = false;
+            }
+
+            wxThreadEvent event(UPDATER_EVENT);
+            // send the update data to the main GUI thread. SetPaylod doesn't
+            // support unique_ptr
+            event.SetPayload(_update_data);
+
+            _parent->GetEventHandler()->AddPendingEvent(event);
+            cout << "UpdaterThread:: sent to main GUI " << endl << flush;
+        }
+        else
         {
-            cout << "UpdaterThread::disconnect! " << endl << flush;
-            _is_start= false;
-        }
-
-        wxThreadEvent event(UPDATER_EVENT);
-        // send the update data to the main GUI thread. SetPaylod doesn't
-        // support unique_ptr
-        event.SetPayload(_update_data);
-
-        _parent->GetEventHandler()->AddPendingEvent(event);
-        cout << "UpdaterThread:: sent to main GUI " << endl << flush;
-        }
-        else{
             std::this_thread::sleep_for(std::chrono::milliseconds(200));
         }
     }

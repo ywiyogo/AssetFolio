@@ -1,3 +1,6 @@
+// Author: YWiyogo
+// Descr.: The asset description
+
 #include "Asset.h"
 #include "rapidjson/document.h"
 #include "rapidjson/rapidjson.h"
@@ -11,7 +14,7 @@ const map<string, Asset::Type> Asset::_typeMap = {
     {"Stock", Type::Stock},
     {"Bond", Type::Bond},
     {"Real Estate", Type::Real_Estate},
-    {"Cryptocurency", Type::Cryptocurrency},
+    {"Crypto", Type::Crypto},
     {"Commodity", Type::Commodity},
     {"Certificate", Type::Certificate}};
 

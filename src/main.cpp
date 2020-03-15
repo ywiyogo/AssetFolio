@@ -1,3 +1,6 @@
+// Author: YWiyogo
+// Descr.: Start main application
+
 #include "main.h"
 #include "AppGui.h"
 

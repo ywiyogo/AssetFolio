@@ -1,3 +1,6 @@
+// Author: YWiyogo
+// Descr.: The application logic
+
 #ifndef APPCONTROL_H_
 #define APPCONTROL_H_
 #include "Asset.h"
@@ -22,6 +25,9 @@ class AppControl
 
     bool readLocalRapidJson(const char* filePath, vector<string>& column_names);
 
+    void writeDataToJson(vector<string>& column_names);
+
+    bool saveJson(string savepath);
     shared_ptr<rapidjson::Document> getJsonDoc() const;
 
     shared_ptr<map<string, shared_ptr<Asset>>> getAssets() const;
@@ -29,7 +35,8 @@ class AppControl
     unique_ptr<UpdateData> waitForUpdate();
 
     void calcAllocation(vector<string>& categories, vector<double>& values);
-    void calcCurrentAllocation(vector<string>& categories, vector<double>& values);
+    void calcCurrentAllocation(vector<string>& categories,
+                               vector<double>& values);
     void stopUpdateTasks();
 
     void launchAssetUpdater();

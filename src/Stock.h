@@ -1,3 +1,7 @@
+// Author: YWiyogo
+// Descr.: The Stock description which is derived from the Asset class to
+// specify the stock features
+
 #ifndef STOCK_H_
 #define STOCK_H_
 

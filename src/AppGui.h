@@ -1,3 +1,6 @@
+// Author: YWiyogo
+// Descr.: The application GUI
+
 #ifndef APPGUI_H_
 #define APPGUI_H_
 
@@ -67,8 +70,10 @@ class AppGui : public MainFrame
   private:
     static int wxIdCounter;
     void initWatchlistGrid();
-    string convertFloatToString(float number, int precision);
+    string floatToString(float number, int precision);
+    float stringToFloat(string numstr, int precision);
     void createGridActivities(uint row, uint col);
+    void createPieChart();
     void watchlistUpdater();
     void updateWatchlist(wxThreadEvent& event);
 

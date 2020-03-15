@@ -1,3 +1,6 @@
+// Author: YWiyogo
+// Descr.: Implementation of all chart types (pie chart or xy-plotting)
+
 #include "ChartGui.h"
 
 const int MAX_CATEGORIES = 16;
@@ -40,7 +43,7 @@ PieChart::~PieChart()
 }
 const wxString& PieChart::GetName() const { return _name; }
 
-Chart* PieChart::Create(vector<double>& data, vector<string>& categories)
+Chart* PieChart::Create(vector<string>& categories, vector<double>& data)
 {
     // first step: create plot
     if (!_plot)
@@ -62,14 +65,14 @@ Chart* PieChart::Create(vector<double>& data, vector<string>& categories)
                      " is reached! Please contact the developer";
         wxLogWarning(msg.c_str());
     }
-    Update(pie_data, pie_categories, data.size());
+    Update(pie_categories, pie_data, data.size());
     // set legend to plot
     _plot->SetLegend(new Legend(wxBOTTOM, wxCENTER));
     // and finally create chart
     return new Chart(_plot, GetName());
 }
 
-void PieChart::Update(double* data, wxString* categories, uint size)
+void PieChart::Update(wxString* categories, double* data, uint size)
 {
     if (!_dataset)
         _dataset = new CategorySimpleDataset(categories, size);

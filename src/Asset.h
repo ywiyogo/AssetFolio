@@ -1,3 +1,6 @@
+// Author: YWiyogo
+// Descr.: The asset description
+
 #ifndef Asset_H
 #define Asset_H
 
@@ -31,7 +34,7 @@ class Asset : public std::enable_shared_from_this<Asset>
         ETF,
         Bond,
         Real_Estate,
-        Cryptocurrency,
+        Crypto,
         Commodity,
         Certificate
     };

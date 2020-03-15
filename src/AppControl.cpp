@@ -1,8 +1,12 @@
+// Author: YWiyogo
+// Descr.: The application logic
+
 #include "AppControl.h"
 
 #include "Stock.h"
 #include "rapidjson/document.h"
 #include "rapidjson/filereadstream.h"
+#include "rapidjson/filewritestream.h"
 #include "rapidjson/rapidjson.h"
 #include "rapidjson/stringbuffer.h"
 #include "rapidjson/writer.h"
@@ -13,12 +17,12 @@
 #include <cpr/cpr.h>
 
 using namespace std;
+const uint MAX_WRITE_BUFFER = 65536;
 
 AppControl::AppControl(uint upd_freq)
     : _jsonDoc(make_shared<rapidjson::Document>()),
       _assets(make_shared<map<string, shared_ptr<Asset>>>()), _futures(),
-      _msg_queue(), _isUpdateActive(false), _apikey(""),
-      _update_freq(upd_freq)
+      _msg_queue(), _isUpdateActive(false), _apikey(""), _update_freq(upd_freq)
 {
 }
 AppControl::~AppControl() {}
@@ -48,7 +52,8 @@ void AppControl::readApiKey()
     else
         cout << "Unable to open file";
 }
-bool AppControl::readLocalRapidJson(const char* filePath, vector<string>& column_names)
+bool AppControl::readLocalRapidJson(const char* filePath,
+                                    vector<string>& column_names)
 {
     FILE* fp = fopen(filePath, "rb"); // non-Windows use "r"
     char readBuffer[65536];
@@ -96,7 +101,7 @@ bool AppControl::readLocalRapidJson(const char* filePath, vector<string>& column
 
             // Check if the acquired id has already existed, if not then create
             // a new asset
-            if(_assets->find(id)== _assets->end())
+            if (_assets->find(id) == _assets->end())
             { // Differentiate the equity asset with the others
                 if (asset_type == Asset::Type::Stock ||
                     asset_type == Asset::Type::ETF ||
@@ -122,6 +127,24 @@ bool AppControl::readLocalRapidJson(const char* filePath, vector<string>& column
     return isValid;
 }
 
+bool AppControl::saveJson(string savepath)
+{
+    try
+    {
+        FILE* fp = fopen(savepath.c_str(), "wb");
+        char writeBuffer[MAX_WRITE_BUFFER];
+        rapidjson::FileWriteStream os(fp, writeBuffer, sizeof(writeBuffer));
+        rapidjson::Writer<rapidjson::FileWriteStream> writer(os);
+        _jsonDoc->Accept(writer);
+        fclose(fp);
+    }
+    catch (const exception& e)
+    {
+        cout << e.what();
+        return false;
+    }
+    return true;
+}
 shared_ptr<rapidjson::Document> AppControl::getJsonDoc() const
 {
     return _jsonDoc;
@@ -154,7 +177,7 @@ void AppControl::calcAllocation(vector<string>& categories,
 }
 
 void AppControl::calcCurrentAllocation(vector<string>& categories,
-                                vector<double>& values)
+                                       vector<double>& values)
 {
     categories.clear();
     values.clear();
@@ -162,7 +185,8 @@ void AppControl::calcCurrentAllocation(vector<string>& categories,
     for (auto it = _assets->begin(); it != _assets->end(); it++)
     {
         categories.push_back(it->second->getName());
-        values.push_back(static_cast<double>(it->second->getCurrValue()/_total_values));
+        values.push_back(
+            static_cast<double>(it->second->getCurrValue() / _total_values));
     }
 }
 
@@ -178,10 +202,9 @@ void AppControl::launchAssetUpdater()
         _msg_queue.clear();
     }
 
-    // request Asset update 
+    // request Asset update
     _futures.emplace_back(async(&AppControl::update, this, ref(_msg_queue),
                                 ref(_isUpdateActive), _update_freq));
-
 }
 
 // Stopping all the running update task
@@ -216,9 +239,10 @@ unique_ptr<UpdateData> AppControl::waitForUpdate()
 }
 
 void AppControl::update(MsgQueue<UpdateData>& msgqueue, bool& isActive,
-                   uint upd_frequency)
+                        uint upd_frequency)
 {
-    cout<<"AssetUpdate: Start a thread: "<<this_thread::get_id()<<endl<<flush;
+    cout << "AssetUpdate: Start a thread: " << this_thread::get_id() << endl
+         << flush;
     // Never use sleep_for more than 100 ms sec to keep the GUI responsive
     std::chrono::time_point<std::chrono::system_clock> stopWatch;
     // init stop watch
@@ -235,13 +259,13 @@ void AppControl::update(MsgQueue<UpdateData>& msgqueue, bool& isActive,
             updates.clear();
             if (!requestFmpApi(updates))
             {
-                //stop the task if symbol not found to save CPU resource
+                // stop the task if symbol not found to save CPU resource
                 return;
             }
-            while(updates.size()>0)
+            while (updates.size() > 0)
             {
-                auto futureTrfLight =
-                    async(&MsgQueue<UpdateData>::send, &msgqueue, move(updates.back()));
+                auto futureTrfLight = async(&MsgQueue<UpdateData>::send,
+                                            &msgqueue, move(updates.back()));
                 futureTrfLight.wait();
                 updates.pop_back();
             }
@@ -273,7 +297,7 @@ bool AppControl::requestFmpApi(vector<unique_ptr<UpdateData>>& updates)
     }
     // e.g. https://financialmodelingprep.com/api/v3/quote/ZGUSD,BTCUSD,AAPL
     string url = "https://financialmodelingprep.com/api/v3/quote/" + symbols;
-    cout<<"URL: "<<url<<endl<<flush;
+    cout << "URL: " << url << endl << flush;
     auto r = cpr::Get(cpr::Url{url});
     bool is_found = false;
     cout << "Result code: " << r.status_code
@@ -291,13 +315,14 @@ bool AppControl::requestFmpApi(vector<unique_ptr<UpdateData>>& updates)
             {
                 is_found = true;
                 for (int i = 0; i < json_resp.Size(); i++)
-                {   // create an update data and add to the vector reference
+                { // create an update data and add to the vector reference
                     string id = json_resp[i]["symbol"].GetString();
                     shared_ptr<Asset> asset = _assets->at(id);
-                    asset->setCurrPrice( json_resp[i]["price"].GetFloat());
-                    
+                    asset->setCurrPrice(json_resp[i]["price"].GetFloat());
+
                     unique_ptr<UpdateData> upd_data(new UpdateData(
-                        id, asset->getCurrPrice(), asset->getCurrValue(), asset->getDiff(), asset->getDiffInPercent(),
+                        id, asset->getCurrPrice(), asset->getCurrValue(),
+                        asset->getDiff(), asset->getDiffInPercent(),
                         asset->getReturn(), asset->getReturnInPercent()));
                     updates.emplace_back(move(upd_data));
                 }

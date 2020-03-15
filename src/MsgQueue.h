@@ -1,3 +1,7 @@
+// Author: YWiyogo
+// Descr.: MessageQueue implementation for the communication between the
+// wxThread and the API updater async task.
+
 #ifndef MSGQUEUE_H_
 #define MSGQUEUE_H_
 

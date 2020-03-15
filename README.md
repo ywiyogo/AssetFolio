@@ -11,30 +11,32 @@ Software Dependencies:
 
 REST-API Provider:
 * Without API key: [financialmodelingprep](https://financialmodelingprep.com/developer/docs/)
-* With API key: [AlphaVantage](https://www.alphavantage.co/documentation/)
+* With API key: will be done after a feature request
 
 ## Getting Started
 
+### Dependencies
 The application depends on these libraries:
 
 * wxWidgets for the GUI
-* RapidJSON
-* C++ Request
+* RapidJSON (submodule)
+* C++ Request (submodule)
 
 Installing the dependency libraries:
 
 * Ubuntu
 
-        sudo apt-get install libgtk-3-dev build-essential checkinstall
+        sudo apt-get install libgtk-3-dev build-essential checkinstall libcurl4-openssl-dev libgtest-dev
 
 * Fedora
-        sudo dnf install libcurl-devel wxGTK3-devel
-
-C++ Request
+        sudo dnf install libcurl-devel wxGTK3-devel gtest-devel
 
 
+The C++ Request submodules include GTest to test its code. If we don't want to install GTest in our system, we can disable it in CMakeLists.txt `set(USE_SYSTEM_GTEST OFF)`.
 
-### Build the Project
+
+
+### Build and Start the Project
 
 ```
 mkdir build && cd build
@@ -42,6 +44,26 @@ cmake ..
 make
 ./Assetfolio
 ```
+
+### Data Format
+The application use the JSON format for saving the transaction activity data. All the user data shall be located in the data folder. The user can see the example.json as the template.
+
+The `ID` has to be found in https://financialmodelingprep.com/api/v3/company/stock/list or in[FMPSymbolList.json](data/FMPSymbolList.json).
+
+The supported `AssetType` values are
+
+```
+Stock,
+ETF,
+Bond,
+Real_Estate,
+Crypto,
+Commodity,
+Certificate
+```
+
+For `Type`, the possible values are `Buy, Sell, ROI`. The `Transaction` and `Amount` values have to be a number (float).
+
 
 ## Lesson Learned
 
@@ -53,7 +75,7 @@ The message queue is implemented with the template design, and thus the implemen
 This application send a disconnect message to end the infinite loop in the async updater task on the GUI side.
 
 ### REST API Communication
-Implementing the REST API communication in C++ is very challenging. The reason is because the modern C++ STL doesn't contain a standard library for the REST API communication. After my research I found these following C++ library, with its current drawbacks:
+Implementing the REST API communication in C++ is very challenging. The reason is because the modern C++ STL doesn't contain a standard library for the REST API communication. After some researchs, these following C++ libraries are taken to consideration, with its current drawbacks:
 
 1. POCO: too big for my case, and it needs several minutes to build.
 2. C++ REST SDK: needs boost
@@ -61,13 +83,15 @@ Implementing the REST API communication in C++ is very challenging. The reason i
 4. Pistache: actually I like this lib and currently my favorite. However, currently it doesn't support Windows yet.
 5. Served: needs boost
 
-Then, I found out that actually I don't need such a complete networking library. Instead, I only need sending a HTTP(S) request and retrieve the response from a web server. I found the C++ Requests library which is very suitable for this application.
+Actually, the application doesn't need such a complete networking library. Instead, it needs to send a HTTP(S) request and retrieve the response from a web server. Thus, C++ Requests library is very suitable for this application.
 
 ### WxWidget GUI
 
 For a beginner, building a GUI application with wxWidget without a builder/creator tool is very challenging. The wxFormBuilder has made my DUI design more convenient than building from stratch without a builder tool.
 
-Creating and starting a asynchronous task from the main GUI task leads to an unpredictable program crash during the runtime. Thus, instead creating a `std::async`, an UpdaterThread class which is derived from `wxThread` is created and called in the `initWatchlistGrid)()`. 
+Creating and starting a asynchronous task from the main GUI task leads to an unpredictable program crash during the runtime. Thus, instead creating a `std::async`, an UpdaterThread class which is derived from `wxThread` is created and called in the `initWatchlistGrid)()`.
+
+For the chart visualization, the application includes the [wxFreeChart](https://iwbnwif.github.io/freechart_docs/html/index.html) components. The source code can be find in [this repository](https://github.com/iwbnwif/wxFreeChart).
 
 ### Getting the Toolbar Icons
 
