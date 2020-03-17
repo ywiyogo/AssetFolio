@@ -13,6 +13,13 @@ REST-API Provider:
 * Without API key: [financialmodelingprep](https://financialmodelingprep.com/developer/docs/)
 * With API key: will be done after a feature request
 
+Preview for the activity list:
+
+![Activity list][activity]
+
+Preview for the watchlist and asset tracker:
+
+![Watchlist][watchlist]
 ## Getting Started
 
 Installing the dependency libraries:
@@ -102,3 +109,8 @@ The material design icons are downloaded from https://materialdesignicons.com/.
 ## License
 
 Licensed under the [MIT License](LICENSE)
+
+
+
+[activity]: imgs/activity.png "Screenshot of the activity list"
+[watchlist]: imgs/watchlist.png "Screenshot of the watchlist and the tracker"

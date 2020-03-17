@@ -251,12 +251,22 @@ bool AppControl::getPriceFromTradegate(vector<unique_ptr<UpdateData>>& updates)
     string baseurl = "https://www.tradegate.de/orderbuch.php?lang=en&isin=";
     float curr_price = 0.;
     string currency;
+    string fmp_symbols="";
+    bool is_first = true;
     for (auto it = _assets->begin(); it != _assets->end(); it++)
     {
         if (it->second->getType() == Asset::Type::Commodity ||
             it->second->getType() == Asset::Type::Crypto)
-        {
-            requestFmpApi(updates, it->second->getId());
+        { // collect the symbol first
+            if (is_first)
+            {
+                fmp_symbols += it->first;
+                is_first = false;
+            }
+            else
+            {
+                fmp_symbols += "," + it->first;
+            }
             continue;
         }
         string url = baseurl + it->second->getId();
@@ -352,6 +362,8 @@ bool AppControl::getPriceFromTradegate(vector<unique_ptr<UpdateData>>& updates)
 
         updates.emplace_back(move(upd_data));
     }
+    if(fmp_symbols.size()>2)
+        requestFmpApi(updates, fmp_symbols);
     return true;
 }
 void AppControl::update(MsgQueue<UpdateData>& msgqueue, bool& isActive,
@@ -548,4 +560,8 @@ void AppControl::checkJson()
     }
 }
 
-void AppControl::clearJsonData() { _jsonDoc->RemoveAllMembers(); }
+void AppControl::clearJsonData() { 
+    
+    if(_jsonDoc->IsObject())
+        _jsonDoc->RemoveAllMembers(); 
+        }

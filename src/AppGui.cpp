@@ -203,7 +203,9 @@ void AppGui::onBtnChartsClick(wxCommandEvent& event)
 void AppGui::OnToolNewClicked(wxCommandEvent& event)
 {
     _appControl.reset(new AppControl(UPDATE_PERIODE));
+    _appControl->clearJsonData();
     createGridActivities(10, 8);
+    createPieChart();
 }
 
 void AppGui::OnToolOpenClicked(wxCommandEvent& event)
@@ -220,7 +222,7 @@ void AppGui::OnToolOpenClicked(wxCommandEvent& event)
         CurrentDocPath = OpenDialog->GetPath();
         // Showing the JSON file in the spreadsheet
         bool isValid = false;
-
+        _appControl->clearJsonData();
         try
         {
             isValid = _appControl->readLocalRapidJson(CurrentDocPath.c_str(),
@@ -426,7 +428,6 @@ void AppGui::createGridActivities(uint row, uint col)
     {
         delete _gridActivities;
         _gridActivities = nullptr;
-        _appControl->clearJsonData();
     }
     _gridActivities = new wxGrid(_panelLeftActivity, wxID_ANY,
                                  wxDefaultPosition, wxDefaultSize, 0);
