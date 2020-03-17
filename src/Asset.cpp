@@ -30,7 +30,7 @@ Asset::Asset(string id, string name, Type type)
 {
 }
 
-Asset::~Asset() { cout << _name << " destructor called" << endl << flush; }
+Asset::~Asset() {}
 
 void Asset::registerTransaction(Asset::Transaction transaction, time_t reg_date,
                                 float amount, float value_incl_fees)
@@ -154,7 +154,7 @@ float Asset::getDiff() const { return _diff; }
 float Asset::getDiffInPercent() const { return _diff_in_percent; }
 float Asset::getReturn() const { return _return; }
 float Asset::getReturnInPercent() const { return _return_in_percent; }
-
+Asset::Type Asset::getType() const { return _type; }
 void Asset::setCurrPrice(float price)
 {
     _curr_price = price;

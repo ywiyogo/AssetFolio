@@ -2,7 +2,8 @@
 // Descr.: Implementation of all chart types (pie chart or xy-plotting)
 
 #include "ChartGui.h"
-
+#include <iomanip>
+#include <sstream>
 const int MAX_CATEGORIES = 16;
 wxColour PieChart::_colours[] = {
     wxColour("#B29DD9"), // Light Pastel Purple
@@ -24,22 +25,42 @@ wxColour PieChart::_colours[] = {
 };
 PieChart::PieChart(string name)
     : _name(wxString(name)), _dataset(nullptr), _plot(nullptr),
-      _colorScheme(new ColorScheme(_colours, WXSIZEOF(_colours)))
+      _colorScheme(new ColorScheme(_colours, WXSIZEOF(_colours))),
+      _chart(nullptr), _cat_renderer(nullptr)
 {
 }
 
 PieChart::~PieChart()
 {
+    cout<<"delete dataset"<<endl;
     if (_dataset)
     {
         delete _dataset;
         _dataset = nullptr;
     }
+    cout<<"delete _plot"<<endl;
     if (_plot)
     {
         delete _plot;
         _plot = nullptr;
     }
+    cout<<"deleted plot"<<endl;
+    if (_colorScheme)
+    {
+        delete _colorScheme;
+        _colorScheme = nullptr;
+    }
+    if (_chart)
+    {
+        delete _chart;
+        _chart = nullptr;
+    }
+    if (_cat_renderer)
+    {
+        delete _cat_renderer;
+        _cat_renderer = nullptr;
+    }
+    cout<<"deleted chart"<<endl;
 }
 const wxString& PieChart::GetName() const { return _name; }
 
@@ -51,10 +72,17 @@ Chart* PieChart::Create(vector<string>& categories, vector<double>& data)
 
     // create dataset
     wxString pie_categories[categories.size()];
-
+    double max = 0;
+    for (int i = 0; i < data.size(); i++)
+    {
+        max += data[i];
+    }
     for (int i = 0; i < categories.size(); i++)
     {
-        pie_categories[i] = wxString(categories[i]);
+        stringstream stream;
+        stream << fixed << setprecision(1) << data[i] / max * 100.;
+        string percent = " (" + stream.str() + "%)";
+        pie_categories[i] = wxString(categories[i] + percent);
     }
     double pie_data[data.size()];
     copy(data.begin(), data.end(), pie_data);
@@ -66,10 +94,16 @@ Chart* PieChart::Create(vector<string>& categories, vector<double>& data)
         wxLogWarning(msg.c_str());
     }
     Update(pie_categories, pie_data, data.size());
-    // set legend to plot
-    _plot->SetLegend(new Legend(wxBOTTOM, wxCENTER));
+    
     // and finally create chart
-    return new Chart(_plot, GetName());
+    if (!_chart)
+    {
+        // set legend to plot
+        _plot->SetLegend(new Legend(wxBOTTOM, wxCENTER));
+        _chart = new Chart(_plot, GetName());
+    }
+
+    return _chart;
 }
 
 void PieChart::Update(wxString* categories, double* data, uint size)
@@ -81,10 +115,17 @@ void PieChart::Update(wxString* categories, double* data, uint size)
     _dataset->AddSerie(_("Serie 1"), data, size);
 
     // create category renderer for legend drawing
-    _dataset->SetRenderer(new CategoryRenderer(*_colorScheme));
+    if(!_cat_renderer)
+        _cat_renderer = new CategoryRenderer(*_colorScheme);
+    _dataset->SetRenderer(_cat_renderer);
 
     // set color scheme
     _plot->SetColorScheme(_colorScheme);
 
     _plot->SetDataset(_dataset);
+}
+
+void PieChart::Clear()
+{
+    delete _plot;
 }

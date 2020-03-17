@@ -17,6 +17,13 @@ class AppControl
     AppControl(uint upd_freq);
     ~AppControl();
 
+    enum class QueryType
+    {
+        ISIN,
+        SYMBOL
+    };
+    static const map<string, QueryType> _idtype_map;
+
     bool isApiKeyEmpty();
 
     void setApiKey(string key);
@@ -41,12 +48,26 @@ class AppControl
 
     void launchAssetUpdater();
 
+    bool getPriceFromTradegate(vector<unique_ptr<UpdateData>>& updates);
+    
+    void clearJsonData();
+
+    struct AppException : public exception
+    {
+        string str;
+        AppException(string ss) : str(ss) {}
+        ~AppException() throw() {} // Updated
+        const char* what() const throw() { return str.c_str(); }
+    };
+
   private:
     void calcCurrentTotalValues();
     void update(MsgQueue<UpdateData>& msgqueue, bool& isActive,
                 uint upd_frequency);
-    bool requestFmpApi(vector<unique_ptr<UpdateData>>& updates);
-
+    bool requestFmpApi(vector<unique_ptr<UpdateData>>& updates,  string symbols);
+    float getExchangeRate(string from, string to);
+    void checkJson();
+    
     shared_ptr<rapidjson::Document> _jsonDoc;
     shared_ptr<map<string, shared_ptr<Asset>>> _assets;
     vector<future<void>> _futures;
@@ -55,6 +76,9 @@ class AppControl
     bool _isUpdateActive;
     string _apikey;
     uint _update_freq;
+    QueryType _query_type;
+    string _currency_ref;
+    
 };
 
 #endif

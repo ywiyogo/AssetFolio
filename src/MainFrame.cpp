@@ -27,10 +27,6 @@ MainFrame::MainFrame( wxWindow* parent, wxWindowID id, const wxString& title, co
 
 	m_toolBar1->AddSeparator();
 
-	_toolbKey = m_toolBar1->AddTool( wxID_ANY, wxT("tool"), wxBitmap( wxT("../icons/papirus_key32.png"), wxBITMAP_TYPE_ANY ), wxNullBitmap, wxITEM_NORMAL, wxT("Add API key -> not working"), wxEmptyString, NULL );
-
-	m_toolBar1->AddSeparator();
-
 	_toolbRefresh = m_toolBar1->AddTool( wxID_ANY, wxT("tool"), wxBitmap( wxT("../icons/papirus_refresh32.png"), wxBITMAP_TYPE_ANY ), wxNullBitmap, wxITEM_NORMAL, wxT("Refresh/Resize View"), wxEmptyString, NULL );
 
 	m_toolBar1->AddSeparator();
@@ -78,7 +74,7 @@ MainFrame::MainFrame( wxWindow* parent, wxWindowID id, const wxString& title, co
 	_bSizerPanelLeft->Add( _panelLeftActivity, 1, wxEXPAND | wxALL, 5 );
 
 
-	_bSizerRight->Add( _bSizerPanelLeft, 1, wxEXPAND, 5 );
+	_bSizerRight->Add( _bSizerPanelLeft, 2, wxEXPAND, 5 );
 
 	_bSizerPanelRight = new wxBoxSizer( wxVERTICAL );
 
@@ -99,7 +95,6 @@ MainFrame::MainFrame( wxWindow* parent, wxWindowID id, const wxString& title, co
 	this->Connect( _toolbNew->GetId(), wxEVT_COMMAND_TOOL_CLICKED, wxCommandEventHandler( MainFrame::OnToolNewClicked ) );
 	this->Connect( _toolbOpen->GetId(), wxEVT_COMMAND_TOOL_CLICKED, wxCommandEventHandler( MainFrame::OnToolOpenClicked ) );
 	this->Connect( _toobSave->GetId(), wxEVT_COMMAND_TOOL_CLICKED, wxCommandEventHandler( MainFrame::OnToolSaveClicked ) );
-	this->Connect( _toolbKey->GetId(), wxEVT_COMMAND_TOOL_CLICKED, wxCommandEventHandler( MainFrame::OnToolKeyClicked ) );
 	this->Connect( _toolbRefresh->GetId(), wxEVT_COMMAND_TOOL_CLICKED, wxCommandEventHandler( MainFrame::OnToolRefreshClicked ) );
 	this->Connect( _toolbInfo->GetId(), wxEVT_COMMAND_TOOL_CLICKED, wxCommandEventHandler( MainFrame::OnToolInfoClicked ) );
 	this->Connect( _toolbExit->GetId(), wxEVT_COMMAND_TOOL_CLICKED, wxCommandEventHandler( MainFrame::OnToolExitClicked ) );
@@ -114,7 +109,6 @@ MainFrame::~MainFrame()
 	this->Disconnect( _toolbNew->GetId(), wxEVT_COMMAND_TOOL_CLICKED, wxCommandEventHandler( MainFrame::OnToolNewClicked ) );
 	this->Disconnect( _toolbOpen->GetId(), wxEVT_COMMAND_TOOL_CLICKED, wxCommandEventHandler( MainFrame::OnToolOpenClicked ) );
 	this->Disconnect( _toobSave->GetId(), wxEVT_COMMAND_TOOL_CLICKED, wxCommandEventHandler( MainFrame::OnToolSaveClicked ) );
-	this->Disconnect( _toolbKey->GetId(), wxEVT_COMMAND_TOOL_CLICKED, wxCommandEventHandler( MainFrame::OnToolKeyClicked ) );
 	this->Disconnect( _toolbRefresh->GetId(), wxEVT_COMMAND_TOOL_CLICKED, wxCommandEventHandler( MainFrame::OnToolRefreshClicked ) );
 	this->Disconnect( _toolbInfo->GetId(), wxEVT_COMMAND_TOOL_CLICKED, wxCommandEventHandler( MainFrame::OnToolInfoClicked ) );
 	this->Disconnect( _toolbExit->GetId(), wxEVT_COMMAND_TOOL_CLICKED, wxCommandEventHandler( MainFrame::OnToolExitClicked ) );

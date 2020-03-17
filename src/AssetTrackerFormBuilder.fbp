@@ -47,7 +47,7 @@
             <property name="minimum_size"></property>
             <property name="name">MainFrame</property>
             <property name="pos"></property>
-            <property name="size">1200,900</property>
+            <property name="size">1400,900</property>
             <property name="style">wxDEFAULT_FRAME_STYLE</property>
             <property name="subclass"></property>
             <property name="title">Assetfolio - Your Portfolio Tracker That Keeps Assets Private</property>
@@ -177,21 +177,6 @@
                     <property name="statusbar"></property>
                     <property name="tooltip">Save Entries</property>
                     <event name="OnToolClicked">OnToolSaveClicked</event>
-                </object>
-                <object class="toolSeparator" expanded="0">
-                    <property name="permission">protected</property>
-                </object>
-                <object class="tool" expanded="0">
-                    <property name="bitmap">Load From File; ../icons/papirus_key32.png</property>
-                    <property name="context_menu">0</property>
-                    <property name="id">wxID_ANY</property>
-                    <property name="kind">wxITEM_NORMAL</property>
-                    <property name="label">tool</property>
-                    <property name="name">_toolbKey</property>
-                    <property name="permission">protected</property>
-                    <property name="statusbar"></property>
-                    <property name="tooltip">Add API key -&gt; not working</property>
-                    <event name="OnToolClicked">OnToolKeyClicked</event>
                 </object>
                 <object class="toolSeparator" expanded="0">
                     <property name="permission">protected</property>
@@ -488,7 +473,7 @@
                         <object class="sizeritem" expanded="1">
                             <property name="border">5</property>
                             <property name="flag">wxEXPAND</property>
-                            <property name="proportion">1</property>
+                            <property name="proportion">2</property>
                             <object class="wxBoxSizer" expanded="1">
                                 <property name="minimum_size"></property>
                                 <property name="name">_bSizerPanelLeft</property>

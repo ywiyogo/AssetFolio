@@ -6,7 +6,6 @@ set(CMAKE_BUILD_TYPE Debug)
 
 project(Assetfolio)
 
-
 # --------------------------------------
 # third party libraries
 
@@ -22,12 +21,14 @@ include_directories(submodules/rapidjson/include)
 # Avoid program crash if (RAPID)JSON format is not suitable
 # add_compile_definitions(NDEBUG)
 
-include_directories(include)    # wxFreeChart
-# --------------------------------------
+find_package(LibXml2 REQUIRED)
 
-file(GLOB project_SRCS src/*.cpp src/**/*.cpp src/**/**/*.cpp)
+include_directories(include )    # wxFreeChart
+# --------------------------------------
+file(GLOB project_SRCS src/*.cpp src/**/*.cpp src/**/**/*.cpp )
 
 add_executable(Assetfolio ${project_SRCS})
+target_include_directories(Assetfolio PRIVATE ${wxWidgets_INCLUDE_DIRS} ${LIBXML2_INCLUDE_DIRS})
 # link libraries to the exec target
-target_link_libraries(Assetfolio ${wxWidgets_LIBRARIES} curl cpr)
-target_include_directories(Assetfolio PRIVATE ${wxWidgets_INCLUDE_DIRS})
+target_link_libraries(Assetfolio ${wxWidgets_LIBRARIES} curl cpr ${LIBXML2_LIBRARIES})
+

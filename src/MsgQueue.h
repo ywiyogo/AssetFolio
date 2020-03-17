@@ -36,7 +36,6 @@ class UpdateData
         _diff_in_percent = diff_in_percent;
         _return = ret;
         _return_in_percent = returninpercent;
-        cout << "Constructor " << _id << " instance " << this << endl << flush;
     };
     UpdateData(const UpdateData& source) // 2 : copy constructor
     {
@@ -47,8 +46,8 @@ class UpdateData
         _diff_in_percent = source._diff_in_percent;
         _return = source._return;
         _return_in_percent = source._return_in_percent;
-        std::cout << "COPYING content of instance " << source._id << " "
-                  << &source << " to instance " << this << std::endl;
+        // std::cout << "COPYING content of instance " << source._id << " "
+        //           << &source << " to instance " << this << std::endl;
     }
     // 3. copy assignment operator
     UpdateData& operator=(const UpdateData& source)
@@ -70,8 +69,8 @@ class UpdateData
 
     UpdateData(UpdateData&& source) // 4 : move constructor
     {
-        std::cout << "MOVING (c’tor) instance " << source._id << " " << &source
-                  << " to instance " << this << std::endl;
+        // std::cout << "MOVING (c’tor) instance " << source._id << " " << &source
+        //           << " to instance " << this << std::endl;
         _id = source._id;
         _curr_price = source._curr_price;
         _curr_value = source._curr_value;
@@ -84,8 +83,8 @@ class UpdateData
     // 5. Move constructor
     UpdateData& operator=(UpdateData&& source) noexcept // move assignment
     {
-        std::cout << "MOVING UpdateData assign instance " << source._id << " "
-                  << &source << " to instance " << this << std::endl;
+        // std::cout << "MOVING UpdateData assign instance " << source._id << " "
+        //           << &source << " to instance " << this << std::endl;
         if (this == &source)
             return *this;
         _id = source._id;

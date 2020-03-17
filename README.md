@@ -7,6 +7,7 @@ Software Dependencies:
 * [wxWidgets](https://www.wxwidgets.org/) for the GUI
 * [RapidJSON](https://github.com/Tencent/rapidjson) (submodule)
 * [C++ Request](https://github.com/whoshuu/cpr) (submodule) which depends on `libcurl`
+* libxml2
 
 REST-API Provider:
 * Without API key: [financialmodelingprep](https://financialmodelingprep.com/developer/docs/)
@@ -18,11 +19,11 @@ Installing the dependency libraries:
 
 * Ubuntu
 
-        sudo apt-get install libgtk-3-dev build-essential checkinstall libcurl4-openssl-dev libgtest-dev
+        sudo apt-get install libgtk-3-dev build-essential checkinstall libcurl4-openssl-dev libxml2-dev libgtest-dev
 
 * Fedora
 
-        sudo dnf install libcurl-devel wxGTK3-devel gtest-devel
+        sudo dnf install libcurl-devel wxGTK3-devel libxml2-devel gtest-devel
 
 ### Download the Source
 
@@ -45,9 +46,9 @@ An example dataset in _data/example.json_ can be opened with the "arrow up" tool
 The C++ Request submodules include GTest to test its code. If we don't want to install GTest in our system, we can disable it in CMakeLists.txt `set(USE_SYSTEM_GTEST OFF)`.
 
 ### Dataset Format
-The application uses the JSON format for saving the transaction activity data. All the user data shall be located in the data folder. The user can see the example.json as the template.
+The application uses the JSON format for saving the transaction activity data. All the user data shall be located in the data folder. The user can see the example.json as the template. Three obligatory member names are `QueryType`, `Currency`, and `Activities`.
 
-The `ID` has to be found in https://financialmodelingprep.com/api/v3/company/stock/list or [FMPSymbolList.json](data/FMPSymbolList.json).
+An `ID` can be an ISIN or a symbol ticker. The symbol has to be found in https://financialmodelingprep.com/api/v3/company/stock/list or [FMPSymbolList.json](data/FMPSymbolList.json). The `QueryType` can be a `SYMBOL` or `ISIN` which describes how the asset can be updated. Since commodities and cryptocurrency do not have ISIN, the ID of each commodity or cryptocurrency shall be a symbol ticker.
 
 The supported `AssetType` values are
 

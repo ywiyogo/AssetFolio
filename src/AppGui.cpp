@@ -180,7 +180,6 @@ void AppGui::onBtnWatchlistClick(wxCommandEvent& event)
             _bSizerPanelLeft->Prepend(_panelLeftWatchlist, 2, wxEXPAND | wxALL,
                                       5);
             _panelLeftWatchlist->Show();
-            cout << "debug 2" << endl << flush;
             _updater->restart();
             _appControl->launchAssetUpdater();
         }
@@ -235,7 +234,9 @@ void AppGui::OnToolOpenClicked(wxCommandEvent& event)
         if (isValid)
         {
             shared_ptr<rapidjson::Document> jsonDoc = _appControl->getJsonDoc();
+
             auto json_entries = jsonDoc->GetObject()["Activities"].GetArray();
+
             int rowPos = 0;
             int colPos = 0;
             int offset = 10;
@@ -247,6 +248,7 @@ void AppGui::OnToolOpenClicked(wxCommandEvent& event)
                      json_entries.Begin();
                  itr != json_entries.End(); ++itr)
             {
+
                 // creating the asset object
                 rapidjson::Value::ConstMemberIterator itr2;
                 for (itr2 = itr->MemberBegin(); itr2 != itr->MemberEnd();
@@ -301,24 +303,6 @@ void AppGui::OnToolOpenClicked(wxCommandEvent& event)
     OpenDialog->Destroy();
 }
 
-void AppGui::OnToolKeyClicked(wxCommandEvent& event)
-{ // currently not working
-    wxTextEntryDialog* entry_dialog = new wxTextEntryDialog(this, wxString(""));
-    entry_dialog->SetLabel("Add a new Alpha Vantage API Key ");
-    if (_appControl->isApiKeyEmpty())
-    {
-        wxLogWarning("No Data exist. Please open a JSON data first");
-    }
-    else
-    {
-        if (entry_dialog->ShowModal() == wxID_OK)
-        {
-            _appControl->setApiKey(entry_dialog->GetValue().ToStdString());
-        }
-    }
-
-    entry_dialog->Destroy();
-}
 void AppGui::OnToolRefreshClicked(wxCommandEvent& event)
 {
     if (_gridActivities && _gridActivities->IsShown())
@@ -429,7 +413,8 @@ void AppGui::OnToolInfoClicked(wxCommandEvent& event)
         "An Asset Portfolio Tracker Application that keeps your asset data "
         "private. We don't need to signup and give up our data to the cloud "
         "server.\nCheck and read the README in "
-        "https://github.com/ywiyogo/Assetfolio\n\nDeveloped by Yongkie Wiyogo, 2020",
+        "https://github.com/ywiyogo/Assetfolio\n\nDeveloped by Yongkie Wiyogo, "
+        "2020",
         "About Assetfolio", wxOK | wxICON_INFORMATION);
 }
 
@@ -441,6 +426,7 @@ void AppGui::createGridActivities(uint row, uint col)
     {
         delete _gridActivities;
         _gridActivities = nullptr;
+        _appControl->clearJsonData();
     }
     _gridActivities = new wxGrid(_panelLeftActivity, wxID_ANY,
                                  wxDefaultPosition, wxDefaultSize, 0);
@@ -461,21 +447,24 @@ void AppGui::createGridActivities(uint row, uint col)
 
 void AppGui::createPieChart()
 {
-    if (_chartPanel)
-    {
-        delete _pie_chart;
-        delete _chartPanel;
-    }
-    // Pie chart asset allocation
-    _chartPanel = new wxChartPanel(this);
-    _pie_chart = new PieChart("Asset Allocation");
     vector<double> data;
     vector<string> categories;
     _appControl->calcAllocation(categories, data);
+    bool is_exist = false;
+    if (_chartPanel)
+    {
+        is_exist = true;
+        _bSizerPanelRight->Detach(0);
+        wxDELETE(_chartPanel);
+    }
+
+    _pie_chart = new PieChart("Asset Allocation");
+    _chartPanel = new wxChartPanel(this);
 
     _chartPanel->SetChart(_pie_chart->Create(categories, data));
-    // _chartPanel->SetSizerAndFit(_bSizerPanelRight);
+
     _bSizerPanelRight->Add(_chartPanel, 1, wxEXPAND | wxALL, 5);
+
     _bSizerPanelRight->Fit(_chartPanel);
     _bSizerRight->Layout();
 }
@@ -568,7 +557,8 @@ void AppGui::updateWatchlist(wxThreadEvent& event)
     }
     else
     {
-        cout << "AppGui::Warning, ID not found on the watchlist!" << endl
+        cout << "AppGui::Warning, ID " << upd_data._id
+             << " not found on the watchlist!" << endl
              << flush;
     }
     vector<double> data;

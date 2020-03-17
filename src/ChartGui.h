@@ -4,10 +4,10 @@
 #ifndef CHARTGUI_H_
 #define CHARTGUI_H_
 
-#include <wx/pie/pieplot.h>
-#include <wx/category/categorysimpledataset.h>
 #include "wx/chart.h"
 #include <string>
+#include <wx/category/categorysimpledataset.h>
+#include <wx/pie/pieplot.h>
 
 using namespace std;
 
@@ -20,13 +20,17 @@ class PieChart
     Chart* Create(vector<string>& categories, vector<double>& data);
     void Update(wxString* categories, double* data, uint size);
     static wxColour _colours[];
+    void Clear();
 
   private:
     wxString _name;
-    // Note: the unique_ptr cannot be used because wxFreeChart doesn't support it yet.
+    // Note: the unique_ptr cannot be used because wxFreeChart doesn't support
+    // it yet.
     CategorySimpleDataset* _dataset;
     PiePlot* _plot;
     ColorScheme* _colorScheme;
+    Chart* _chart;
+    CategoryRenderer* _cat_renderer;
 };
 
 #endif

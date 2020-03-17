@@ -61,7 +61,6 @@ class AppGui : public MainFrame
     void onBtnChartsClick(wxCommandEvent& event);
     void OnToolNewClicked(wxCommandEvent& event);
     void OnToolOpenClicked(wxCommandEvent& event);
-    void OnToolKeyClicked(wxCommandEvent& event);
     void OnToolRefreshClicked(wxCommandEvent& event);
     void OnToolSaveClicked(wxCommandEvent& event);
     void OnToolExitClicked(wxCommandEvent& event);

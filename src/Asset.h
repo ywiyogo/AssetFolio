@@ -28,6 +28,7 @@ struct YearlyReturn
 class Asset : public std::enable_shared_from_this<Asset>
 {
   public:
+
     enum class Type
     {
         Stock,
@@ -72,7 +73,7 @@ class Asset : public std::enable_shared_from_this<Asset>
     float getDiffInPercent() const;
     float getReturn() const;
     float getReturnInPercent() const;
-
+    Type getType() const;
     void setCurrPrice(float price);
 
   protected:

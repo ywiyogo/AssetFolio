@@ -65,6 +65,8 @@
         "codecvt": "cpp",
         "complex": "cpp",
         "typeindex": "cpp",
-        "variant": "cpp"
+        "variant": "cpp",
+        "hash_set": "cpp",
+        "*.ipp": "cpp"
     }
 }

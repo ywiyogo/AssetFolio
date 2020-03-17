@@ -40,7 +40,6 @@ class MainFrame : public wxFrame
 		wxToolBarToolBase* _toolbNew;
 		wxToolBarToolBase* _toolbOpen;
 		wxToolBarToolBase* _toobSave;
-		wxToolBarToolBase* _toolbKey;
 		wxToolBarToolBase* _toolbRefresh;
 		wxToolBarToolBase* _toolbInfo;
 		wxToolBarToolBase* _toolbExit;
@@ -59,7 +58,6 @@ class MainFrame : public wxFrame
 		virtual void OnToolNewClicked( wxCommandEvent& event ) = 0;
 		virtual void OnToolOpenClicked( wxCommandEvent& event ) = 0;
 		virtual void OnToolSaveClicked( wxCommandEvent& event ) = 0;
-		virtual void OnToolKeyClicked( wxCommandEvent& event ) = 0;
 		virtual void OnToolRefreshClicked( wxCommandEvent& event ) = 0;
 		virtual void OnToolInfoClicked( wxCommandEvent& event ) = 0;
 		virtual void OnToolExitClicked( wxCommandEvent& event ) = 0;
@@ -69,7 +67,7 @@ class MainFrame : public wxFrame
 
 	public:
 
-		MainFrame( wxWindow* parent, wxWindowID id = wxID_ANY, const wxString& title = wxT("Assetfolio - Your Portfolio Tracker That Keeps Assets Private"), const wxPoint& pos = wxDefaultPosition, const wxSize& size = wxSize( 1200,900 ), long style = wxDEFAULT_FRAME_STYLE|wxTAB_TRAVERSAL );
+		MainFrame( wxWindow* parent, wxWindowID id = wxID_ANY, const wxString& title = wxT("Assetfolio - Your Portfolio Tracker That Keeps Assets Private"), const wxPoint& pos = wxDefaultPosition, const wxSize& size = wxSize( 1400,900 ), long style = wxDEFAULT_FRAME_STYLE|wxTAB_TRAVERSAL );
 
 		~MainFrame();
 

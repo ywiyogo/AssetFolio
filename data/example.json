@@ -1,4 +1,6 @@
 {
+  "QueryType": "SYMBOL",
+  "Currency": "USD",
   "Activities": [
     {
       "Date": "28.12.2012",
