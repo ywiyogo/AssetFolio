@@ -3,4 +3,5 @@ build/
 
 data/*.json
 !data/example.json
+!data/example_isin.json
 !data/FMPSymbolList.json

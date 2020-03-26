@@ -1,0 +1,186 @@
+{
+    "QueryType": "ISIN",
+    "Currency": "EUR",
+    "Activities": [
+        {
+            "Date": "28.12.2012",
+            "ID": "ZGUSD",
+            "Name": "Gold (oz)",
+            "AssetType": "Commodity",
+            "Type": "Buy",
+            "Transaction": 13000,
+            "Amount": 10,
+            "Broker": "YBroker"
+        },
+        {
+            "Date": "13.01.2015",
+            "ID": "IE00B5LJZQ16",
+            "Name": "HSBC MSCI RUSSIA",
+            "AssetType": "ETF",
+            "Type": "Buy",
+            "Transaction": 1155.8,
+            "Amount": 55,
+            "Broker": "Comdirect"
+        },
+        {
+            "Date": "28.01.2015",
+            "ID": "LU0488317024",
+            "Name": "ComStage FR DAX EUR",
+            "AssetType": "ETF",
+            "Type": "Buy",
+            "Transaction": 2868.01,
+            "Amount": 53,
+            "Broker": "IB"
+        },
+        {
+            "Date": "19.08.2016",
+            "ID": "LU0488317024",
+            "Name": "ComStage FR DAX EUR",
+            "AssetType": "ETF",
+            "Type": "ROI",
+            "Transaction": 57.96,
+            "Amount": 0,
+            "Broker": "DKB"
+        },
+        {
+            "Date": "03.11.2016",
+            "ID": "IE00B5L01S80",
+            "Name": "HSBC FTSE EPRA REIT",
+            "AssetType": "ETF",
+            "Type": "Buy",
+            "Transaction": 3779.52,
+            "Amount": 186,
+            "Broker": ""
+        },
+        {
+            "Date": "09.11.2016",
+            "ID": "DE000ETFL326",
+            "Name": "Deka MSCI China",
+            "AssetType": "ETF",
+            "Type": "Buy",
+            "Transaction": 3640,
+            "Amount": 500,
+            "Broker": ""
+        },
+        {
+            "Date": "13.11.2016",
+            "ID": "LU0488317024",
+            "Name": "ComStage FR DAX EUR",
+            "AssetType": "ETF",
+            "Type": "Buy",
+            "Transaction": 2472.7,
+            "Amount": 50,
+            "Broker": ""
+        },
+        {
+            "Date": "15.11.2016",
+            "ID": "IE00B5L01S80",
+            "Name": "HSBC FTSE EPRA REIT",
+            "AssetType": "ETF",
+            "Type": "ROI",
+            "Transaction": 11.89,
+            "Amount": 0,
+            "Broker": ""
+        },
+        {
+            "Date": "17.11.2016",
+            "ID": "IE00B0M63177",
+            "Name": "iShares MSCI Emerging Market",
+            "AssetType": "ETF",
+            "Type": "Buy",
+            "Transaction": 2149.7,
+            "Amount": 70,
+            "Broker": ""
+        },
+        {
+            "Date": "17.11.2016",
+            "ID": "IE00B5LJZQ16",
+            "Name": "HSBC MSCI RUSSIA",
+            "AssetType": "ETF",
+            "Type": "Buy",
+            "Transaction": 2904.88,
+            "Amount": 440,
+            "Broker": ""
+        },
+        {
+            "Date": "30.11.2016",
+            "ID": "DE000ETFL326",
+            "Name": "Deka MSCI China",
+            "AssetType": "ETF",
+            "Type": "Buy",
+            "Transaction": 1126.5,
+            "Amount": 150,
+            "Broker": "Consor"
+        },
+        {
+            "Date": "21.11.2016",
+            "ID": "DE0005190037",
+            "Name": "BMW (Vz)",
+            "AssetType": "Stock",
+            "Type": "Buy",
+            "Transaction": 5191.98,
+            "Amount": 77,
+            "Broker": ""
+        },
+        {
+            "Date": "12.12.2016",
+            "ID": "DE000ETFL326",
+            "Name": "Deka MSCI China",
+            "AssetType": "ETF",
+            "Type": "ROI",
+            "Transaction": 5.61,
+            "Amount": 0,
+            "Broker": ""
+        },
+        {
+            "Date": "20.12.2016",
+            "ID": "DE000ETFL326",
+            "Name": "Deka MSCI China",
+            "AssetType": "ETF",
+            "Type": "Buy",
+            "Transaction": 2513.7,
+            "Amount": 350,
+            "Broker": "ING"
+        },
+        {
+            "Date": "22.12.2016",
+            "ID": "DE0007664039",
+            "Name": "Volkswagen (Vz)",
+            "AssetType": "Stock",
+            "Type": "Buy",
+            "Transaction": 1384.99,
+            "Amount": 10,
+            "Broker": ""
+        },
+        {
+            "Date": "23.12.2016",
+            "ID": "LU1686830909",
+            "Name": "Lyxor iBOXX Emerging Market",
+            "AssetType": "ETF",
+            "Type": "Buy",
+            "Transaction": 1429.88,
+            "Amount": 15,
+            "Broker": "ING"
+        },
+        {
+            "Date": "23.12.2017",
+            "ID": "US037833AK68",
+            "Name": "Apple DL notes",
+            "AssetType": "ETF",
+            "Type": "Buy",
+            "Transaction": 2000,
+            "Amount": 20,
+            "Broker": "ING"
+        },
+        {
+            "Date": "08.03.2020",
+            "ID": "BTCUSD",
+            "Name": "Bitcoin",
+            "AssetType": "Crypto",
+            "Type": "Buy",
+            "Transaction": 8500,
+            "Amount": 1,
+            "Broker": "Brok"
+          }
+    ]
+}
