@@ -2,7 +2,7 @@
 // Descr.: Start main application
 
 #include "main.h"
-#include "AppGui.h"
+#include "wx/AppGui.h"
 
 // wxWidgets APP
 IMPLEMENT_APP(Assetfolio);

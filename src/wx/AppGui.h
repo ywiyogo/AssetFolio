@@ -4,10 +4,10 @@
 #ifndef APPGUI_H_
 #define APPGUI_H_
 
-#include "AppControl.h"
+#include "../AppControl.h"
+#include "../MsgQueue.h"
 #include "ChartGui.h"
 #include "MainFrame.h"
-#include "MsgQueue.h"
 #include "wx/chartpanel.h"
 #include "wx/grid.h"
 #include "wx/wx.h"

@@ -2,7 +2,6 @@
 // Descr.: The application GUI
 
 #include "AppGui.h"
-#include "AppControl.h"
 #include "rapidjson/document.h"
 #include "rapidjson/stringbuffer.h"
 #include "rapidjson/writer.h"

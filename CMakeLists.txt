@@ -13,8 +13,18 @@ project(Assetfolio VERSION 1.0)
 # --------------------------------------
 # third party libraries
 
-find_package(wxWidgets REQUIRED COMPONENTS core base adv aui)
-include(${wxWidgets_USE_FILE})
+if("${GUI}" STREQUAL "Qt")
+    set(CMAKE_AUTOUIC ON)
+    set(CMAKE_AUTOMOC ON)
+    set(CMAKE_AUTORCC ON)
+    find_package(Qt5 COMPONENTS Widgets REQUIRED)
+    file(GLOB GUI_SRCS src/qt/*.cpp src/qt/*.ui )
+else()
+    find_package(wxWidgets REQUIRED COMPONENTS core base adv aui)
+    include(${wxWidgets_USE_FILE})
+    file(GLOB GUI_SRCS src/wx/*.cpp )
+endif()
+
 # C++ Request flags
 set(USE_SYSTEM_CURL ON)
 set(BUILD_CPR_TESTS OFF)
@@ -32,8 +42,13 @@ include_directories(include )    # wxFreeChart
 # --------------------------------------
 file(GLOB project_SRCS src/*.cpp src/wxFreeChart/*.cpp src/wxFreeChart/**/*.cpp )
 
-add_executable(Assetfolio ${project_SRCS})
+add_executable(Assetfolio ${project_SRCS} ${GUI_SRCS})
 target_include_directories(Assetfolio PRIVATE ${wxWidgets_INCLUDE_DIRS} ${LIBXML2_INCLUDE_DIRS})
 # link libraries to the exec target
-target_link_libraries(Assetfolio ${wxWidgets_LIBRARIES} curl cpr ${LIBXML2_LIBRARIES})
+
+if("${GUI}" STREQUAL "Qt")
+    target_link_libraries(Assetfolio PRIVATE Qt5::Widgets)
+else()
+    target_link_libraries(Assetfolio ${wxWidgets_LIBRARIES} curl cpr ${LIBXML2_LIBRARIES})
+endif()
 
