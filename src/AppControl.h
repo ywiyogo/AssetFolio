@@ -8,7 +8,7 @@
 #include "rapidjson/document.h"
 #include <future>
 #include <memory>
-
+#include <libxml/HTMLparser.h>
 using namespace std;
 
 class AppControl
@@ -60,6 +60,17 @@ class AppControl
         const char* what() const throw() { return str.c_str(); }
     };
 
+    struct Provider{
+      string _name;
+      string _url;
+      unique_ptr<xmlChar> _xpath;
+      Provider();
+      Provider(string name, string url, unique_ptr<xmlChar> xpath){
+        _name = name;
+        _url = url;
+        _xpath = move(xpath);
+      }
+    };
   private:
     void calcCurrentTotalValues();
     void update(MsgQueue<UpdateData>& msgqueue, bool& isActive,
@@ -78,7 +89,7 @@ class AppControl
     uint _update_freq;
     QueryType _query_type;
     string _currency_ref;
-    
+    map<string, shared_ptr<Provider>> _providers;
 };
 
 #endif

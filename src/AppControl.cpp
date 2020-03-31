@@ -15,7 +15,6 @@
 #include <fstream>
 #include <iostream>
 
-#include <libxml/HTMLparser.h>
 #include <libxml/tree.h>
 #include <libxml/xpath.h>
 
@@ -31,7 +30,24 @@ AppControl::AppControl(uint upd_freq)
       _msg_queue(), _isUpdateActive(false), _apikey(""), _update_freq(upd_freq),
       _currency_ref("USD")
 {
+    // Add the HTML data provider
+    unique_ptr<xmlChar> tradegate_pattern(
+        move((xmlChar*)"//table[@class='full grid noHeadBorder']/tr[2]/td[4]"));
+    unique_ptr<xmlChar> justetf_pattern(
+        move((xmlChar*)"//div[@class='infobox']/div[1]/div[1]/div[1]/span[2]"));
+
+    shared_ptr<Provider> tradegate(new Provider(
+        "Tradegate", "https://www.tradegate.de/orderbuch.php?lang=en&isin=",
+        move(tradegate_pattern)));
+    shared_ptr<Provider> justEtf(new Provider(
+        "JustETF", "https://www.justetf.com/de/etf-profile.html?isin=",
+        move(justetf_pattern)));
+    // insert function of a map doesn't accept a shared_ptr or unique_ptr, use
+    // emplace instead
+    _providers.emplace(tradegate->_name.c_str(), tradegate);
+    _providers.emplace(justEtf->_name.c_str(), justEtf);
 }
+
 AppControl::~AppControl() {}
 
 bool AppControl::isApiKeyEmpty()
@@ -166,6 +182,7 @@ void AppControl::calcCurrentTotalValues()
         _total_values += it->second->getCurrValue();
     }
 }
+
 void AppControl::calcAllocation(vector<string>& categories,
                                 vector<double>& values)
 {
@@ -240,18 +257,12 @@ unique_ptr<UpdateData> AppControl::waitForUpdate()
 {
     return move(_msg_queue.waitForUpdate());
 }
-// Onvista URL and XPATH example
-// string url =
-// "https://www.onvista.de/etf/HSBC-S-P-500-ETF-USD-DIS-ETF-DE000A1C22M3";
-// std::string xpath =
-// "//table[@id='quote-table']/tr[1]/td[2]/span/@data-price";
 
 bool AppControl::getPriceFromTradegate(vector<unique_ptr<UpdateData>>& updates)
 {
-    string baseurl = "https://www.tradegate.de/orderbuch.php?lang=en&isin=";
     float curr_price = 0.;
     string currency;
-    string fmp_symbols="";
+    string fmp_symbols = "";
     bool is_first = true;
     for (auto it = _assets->begin(); it != _assets->end(); it++)
     {
@@ -269,11 +280,9 @@ bool AppControl::getPriceFromTradegate(vector<unique_ptr<UpdateData>>& updates)
             }
             continue;
         }
-        string url = baseurl + it->second->getId();
+        string url = _providers.at("Tradegate")->_url + it->second->getId();
         xmlChar* xpathchar = (xmlChar*)"//*[@id='bid']";
-        // /html/body/div/div/div/div/div[4]/div[1]/div/table/tbody/tr[2]/td[4]
-        xmlChar* xpath_currency =
-            (xmlChar*)"//table[@class='full grid noHeadBorder']/tr[2]/td[4]";
+
         auto r = cpr::Get(cpr::Url{url});
         // cout << "Result code: " << r.status_code
         //      << "\nHeaders: " << r.header["content-type"] << "\n"
@@ -292,8 +301,9 @@ bool AppControl::getPriceFromTradegate(vector<unique_ptr<UpdateData>>& updates)
         {
             throw AppException("Error in xmlXPathNewContext\n");
         }
-        xmlXPathObjectPtr cur_result =
-            xmlXPathEvalExpression(xpath_currency, xpath_context);
+
+        xmlXPathObjectPtr cur_result = xmlXPathEvalExpression(
+            _providers.at("Tradegate")->_xpath.get(), xpath_context);
         xmlXPathObjectPtr result =
             xmlXPathEvalExpression(xpathchar, xpath_context);
         xmlXPathFreeContext(xpath_context);
@@ -309,7 +319,8 @@ bool AppControl::getPriceFromTradegate(vector<unique_ptr<UpdateData>>& updates)
         {
             xmlXPathFreeObject(cur_result);
             printf("No result\n");
-            return NULL;
+            continue;
+            // return NULL;
         }
         xmlNodeSetPtr currency_nodeset = cur_result->nodesetval;
         if (currency_nodeset->nodeNr > 0)
@@ -362,7 +373,8 @@ bool AppControl::getPriceFromTradegate(vector<unique_ptr<UpdateData>>& updates)
 
         updates.emplace_back(move(upd_data));
     }
-    if(fmp_symbols.size()>2)
+    // if FMP symbols exist
+    if (fmp_symbols.size() > 2)
         requestFmpApi(updates, fmp_symbols);
     return true;
 }
@@ -560,8 +572,8 @@ void AppControl::checkJson()
     }
 }
 
-void AppControl::clearJsonData() { 
-    
-    if(_jsonDoc->IsObject())
-        _jsonDoc->RemoveAllMembers(); 
-        }
+void AppControl::clearJsonData()
+{
+    if (_jsonDoc->IsObject())
+        _jsonDoc->RemoveAllMembers();
+}
