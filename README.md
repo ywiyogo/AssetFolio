@@ -4,7 +4,7 @@ Assetfolio is a multi-asset portfolio tracker that keeps our assets private. In 
 
 Software Dependencies:
 
-* [wxWidgets](https://www.wxwidgets.org/) for the GUI
+*  [Qt5](https://doc.qt.io/qt-5/gettingstarted.html) or [wxWidgets](https://www.wxwidgets.org/)for the GUI
 * [RapidJSON](https://github.com/Tencent/rapidjson) (submodule)
 * [C++ Request](https://github.com/whoshuu/cpr) (submodule) which depends on `libcurl`
 * libxml2
@@ -26,11 +26,11 @@ Installing the dependency libraries:
 
 * Ubuntu
 
-        sudo apt-get install libgtk-3-dev build-essential checkinstall libcurl4-openssl-dev libxml2-dev libgtest-dev
+        sudo apt-get install build-essential checkinstall libcurl4-openssl-dev libxml2-dev libgtest-dev <libgtk-3-dev|qt5-default qtcreator>
 
 * Fedora
 
-        sudo dnf install libcurl-devel wxGTK3-devel libxml2-devel gtest-devel
+        sudo dnf install libcurl-devel libxml2-devel gtest-devel <wxGTK3-devel| qt5-qtbase qt5-qtbase-devel qt-creator>
 
 ### Download the Source
 
@@ -48,6 +48,8 @@ make
 ./Assetfolio
 ```
 
+Note, change `set(GUI "Qt")` to `set(GUI "Wx")` to build the GUI with WxWidget.
+
 An example dataset in _data/example.json_ can be opened with the "arrow up" toolbar icon.
 
 The C++ Request submodules include GTest to test its code. If we don't want to install GTest in our system, we can disable it in CMakeLists.txt `set(USE_SYSTEM_GTEST OFF)`.
@@ -56,6 +58,26 @@ The C++ Request submodules include GTest to test its code. If we don't want to i
 The application uses the JSON format for saving the transaction activity data. All the user data shall be located in the data folder. The user can see the example.json as the template. Three obligatory member names are `QueryType`, `Currency`, and `Activities`.
 
 An `ID` can be an ISIN or a symbol ticker. The symbol has to be found in https://financialmodelingprep.com/api/v3/company/stock/list or [FMPSymbolList.json](data/FMPSymbolList.json). The `QueryType` can be a `SYMBOL` or `ISIN` which describes how the asset can be updated. Since commodities and cryptocurrency do not have ISIN, the ID of each commodity or cryptocurrency shall be a symbol ticker.
+
+For instance:
+```
+{
+    "QueryType": "ISIN",
+    "Currency": "EUR",
+    "Transactions": [
+        {
+            "Date": "17.11.2016",
+            "ID": "IE00B0M63177",
+            "Name": "iShares MSCI Emerging Market",
+            "AssetType": "ETF",
+            "Type": "Buy",
+            "Transaction": 2149.7,
+            "Amount": 70,
+            "Broker": ""
+        }
+    ]
+}
+```
 
 The supported `AssetType` values are
 
@@ -101,6 +123,7 @@ For a beginner, building a GUI application with wxWidget without a builder/creat
 Creating and starting an asynchronous task from the main GUI task leads to an unpredictable program crash during the runtime. Thus, instead of creating a `std::async`, an UpdaterThread class which is derived from `wxThread` is created and called in the `initWatchlistGrid)()`.
 
 For the chart visualization, the application includes the [wxFreeChart](https://iwbnwif.github.io/freechart_docs/html/index.html) components. The source code can be found in [this repository](https://github.com/iwbnwif/wxFreeChart).
+
 
 ### Getting the Toolbar Icons
 

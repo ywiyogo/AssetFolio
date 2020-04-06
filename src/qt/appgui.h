@@ -4,12 +4,12 @@
 #include "../AppControl.h"
 #include "../MsgQueue.h"
 #include <QFileDialog>
+#include <QLayout>
 #include <QMainWindow>
 #include <QMessageBox>
 #include <QMutex>
 #include <QStandardItemModel>
 #include <QThread>
-#include <QLayout>
 #include <QWaitCondition>
 #include <QtCharts/QChartView>
 #include <QtCharts/QPieSeries>
@@ -87,7 +87,7 @@ class AppGui : public QMainWindow
 
     void on_tbtnWatchlist_clicked();
 
-private:
+  private:
     Ui::AppGui* ui;
     QtCharts::QChart* _qchart;
     QtCharts::QPieSeries* _pieseries;
