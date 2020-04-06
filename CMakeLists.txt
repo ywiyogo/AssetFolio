@@ -7,7 +7,7 @@ endif()
 set(CMAKE_CXX_STANDARD 17)
 add_definitions(-pthread)
 set(CMAKE_BUILD_TYPE Debug)
-
+set(GUI "Qt")
 project(Assetfolio VERSION 1.0)
 
 # --------------------------------------
@@ -17,12 +17,32 @@ if("${GUI}" STREQUAL "Qt")
     set(CMAKE_AUTOUIC ON)
     set(CMAKE_AUTOMOC ON)
     set(CMAKE_AUTORCC ON)
-    find_package(Qt5 COMPONENTS Widgets REQUIRED)
-    file(GLOB GUI_SRCS src/qt/*.cpp src/qt/*.ui )
+    find_package(Qt5 COMPONENTS Core Widgets Charts REQUIRED)
+    find_package(Qt5Charts)
+    file(GLOB GUI_SRCS src/qt/*.cpp src/qt/*.ui)
+
+    qt5_add_resources(RESOURCE_FILES resource/resources.qrc)
+
+    # Windows application icon
+    if (WIN32)
+      set(WINDOWS_RES_FILE ${CMAKE_CURRENT_BINARY_DIR}/resources.obj)
+      if (MSVC)
+        add_custom_command(OUTPUT ${WINDOWS_RES_FILE}
+          COMMAND rc.exe /fo ${WINDOWS_RES_FILE} resources.rc
+          WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}/win
+        )
+      else()
+        add_custom_command(OUTPUT ${WINDOWS_RES_FILE}
+          COMMAND windres.exe resources.rc ${WINDOWS_RES_FILE}
+          WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}/win
+        )
+      endif()
+    endif()
 else()
     find_package(wxWidgets REQUIRED COMPONENTS core base adv aui)
     include(${wxWidgets_USE_FILE})
-    file(GLOB GUI_SRCS src/wx/*.cpp )
+    include_directories(include)    # wxFreeChart
+    file(GLOB GUI_SRCS src/wx/*.cpp src/wxFreeChart/*.cpp src/wxFreeChart/**/*.cpp)
 endif()
 
 # C++ Request flags
@@ -35,20 +55,19 @@ include_directories(submodules/rapidjson/include)
 # Avoid program crash if (RAPID)JSON format is not suitable
 # add_compile_definitions(NDEBUG)
 
-
 find_package(LibXml2 REQUIRED)
 
-include_directories(include )    # wxFreeChart
-# --------------------------------------
-file(GLOB project_SRCS src/*.cpp src/wxFreeChart/*.cpp src/wxFreeChart/**/*.cpp )
 
-add_executable(Assetfolio ${project_SRCS} ${GUI_SRCS})
-target_include_directories(Assetfolio PRIVATE ${wxWidgets_INCLUDE_DIRS} ${LIBXML2_INCLUDE_DIRS})
+# --------------------------------------
+file(GLOB SRCS src/*.cpp )
+
 # link libraries to the exec target
 
 if("${GUI}" STREQUAL "Qt")
-    target_link_libraries(Assetfolio PRIVATE Qt5::Widgets)
+    add_executable(Assetfolio ${SRCS} ${GUI_SRCS} ${RESOURCE_FILES})
+    target_link_libraries(Assetfolio PRIVATE Qt5::Widgets ${Qt5Charts_LIBRARIES} curl cpr pthread ${LIBXML2_LIBRARIES})
 else()
+    add_executable(Assetfolio ${SRCS} ${GUI_SRCS})
     target_link_libraries(Assetfolio ${wxWidgets_LIBRARIES} curl cpr ${LIBXML2_LIBRARIES})
 endif()
-
+target_include_directories(Assetfolio PRIVATE ${wxWidgets_INCLUDE_DIRS} ${LIBXML2_INCLUDE_DIRS})

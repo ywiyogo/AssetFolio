@@ -32,19 +32,18 @@ PieChart::PieChart(string name)
 
 PieChart::~PieChart()
 {
-    cout<<"delete dataset"<<endl;
     if (_dataset)
     {
         delete _dataset;
         _dataset = nullptr;
     }
-    cout<<"delete _plot"<<endl;
+
     if (_plot)
     {
         delete _plot;
         _plot = nullptr;
     }
-    cout<<"deleted plot"<<endl;
+
     if (_colorScheme)
     {
         delete _colorScheme;

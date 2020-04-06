@@ -1,7 +1,7 @@
 {
     "QueryType": "ISIN",
     "Currency": "EUR",
-    "Activities": [
+    "Transactions": [
         {
             "Date": "28.12.2012",
             "ID": "ZGUSD",
@@ -181,6 +181,6 @@
             "Transaction": 8500,
             "Amount": 1,
             "Broker": "Brok"
-          }
+        }
     ]
 }

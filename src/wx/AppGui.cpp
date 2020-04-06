@@ -2,26 +2,17 @@
 // Descr.: The application GUI
 
 #include "AppGui.h"
+#include "../Config.h"
 #include "rapidjson/document.h"
 #include "rapidjson/stringbuffer.h"
 #include "rapidjson/writer.h"
 #include "wx/grid.h"
 #include "wx/log.h"
 #include <cstdio>
-#include <iomanip> // std::setprecision
-#include <sstream> // stringstream
 #include <string>
 #include <vector>
 using namespace std;
 
-// size of chatbot window
-const int WIN_WIDTH = 1000;
-const int WIN_HEIGHT = 800;
-
-int AppGui::wxIdCounter = 1;
-
-// The periode of the REST API updater in sec
-const uint UPDATE_PERIODE = 20;
 
 // event mapping
 wxDEFINE_EVENT(UPDATER_EVENT, wxThreadEvent);
@@ -31,12 +22,9 @@ wxBEGIN_EVENT_TABLE(AppGui, wxFrame) wxEND_EVENT_TABLE();
 
 AppGui::AppGui()
     : MainFrame(nullptr), _gridActivities(nullptr), _gridWatchlist(nullptr),
-      _appControl(make_shared<AppControl>(UPDATE_PERIODE)), _updater{},
+      _appControl(make_shared<AppControl>(Config::UPDATE_PERIODE)), _updater{},
       _chartPanel(nullptr), _pie_chart(nullptr)
 {
-    _def_activity_column = {"Date", "ID",          "Name",   "AssetType",
-                            "Type", "Transaction", "Amount", "Broker"};
-
     _bSizerHorizon->Layout();
     Bind(UPDATER_EVENT, &AppGui::updateWatchlist, this);
 }
@@ -76,24 +64,28 @@ void AppGui::initWatchlistGrid()
     {
         _gridWatchlist->SetCellValue(rowPos, 0, it->first);
         _gridWatchlist->SetCellValue(rowPos, 1, it->second->getName());
-        _gridWatchlist->SetCellValue(rowPos, 2,
-                                     floatToString(it->second->getAmount(), 2));
         _gridWatchlist->SetCellValue(
-            rowPos, 3, floatToString(it->second->getBalance(), 2));
+            rowPos, 2, AppControl::floatToString(it->second->getAmount(), 2));
         _gridWatchlist->SetCellValue(
-            rowPos, 4, floatToString(it->second->getAvgPrice(), 2));
+            rowPos, 3, AppControl::floatToString(it->second->getBalance(), 2));
         _gridWatchlist->SetCellValue(
-            rowPos, 5, floatToString(it->second->getCurrPrice(), 2));
+            rowPos, 4, AppControl::floatToString(it->second->getAvgPrice(), 2));
         _gridWatchlist->SetCellValue(
-            rowPos, 6, floatToString(it->second->getCurrValue(), 2));
-        _gridWatchlist->SetCellValue(rowPos, 7,
-                                     floatToString(it->second->getDiff(), 2));
+            rowPos, 5,
+            AppControl::floatToString(it->second->getCurrPrice(), 2));
         _gridWatchlist->SetCellValue(
-            rowPos, 8, floatToString(it->second->getDiffInPercent(), 2));
-        _gridWatchlist->SetCellValue(rowPos, 9,
-                                     floatToString(it->second->getReturn(), 2));
+            rowPos, 6,
+            AppControl::floatToString(it->second->getCurrValue(), 2));
         _gridWatchlist->SetCellValue(
-            rowPos, 10, floatToString(it->second->getReturnInPercent(), 2));
+            rowPos, 7, AppControl::floatToString(it->second->getDiff(), 2));
+        _gridWatchlist->SetCellValue(
+            rowPos, 8,
+            AppControl::floatToString(it->second->getDiffInPercent(), 2));
+        _gridWatchlist->SetCellValue(
+            rowPos, 9, AppControl::floatToString(it->second->getReturn(), 2));
+        _gridWatchlist->SetCellValue(
+            rowPos, 10,
+            AppControl::floatToString(it->second->getReturnInPercent(), 2));
 
         rowPos++;
     }
@@ -201,7 +193,7 @@ void AppGui::onBtnChartsClick(wxCommandEvent& event)
 // Toolbar Events
 void AppGui::OnToolNewClicked(wxCommandEvent& event)
 {
-    _appControl.reset(new AppControl(UPDATE_PERIODE));
+    _appControl.reset(new AppControl(Config::UPDATE_PERIODE));
     _appControl->clearJsonData();
     createGridActivities(10, 8);
     createPieChart();
@@ -225,7 +217,7 @@ void AppGui::OnToolOpenClicked(wxCommandEvent& event)
         try
         {
             isValid = _appControl->readLocalRapidJson(CurrentDocPath.c_str(),
-                                                      _def_activity_column);
+                                                      Config::TRANSACTION_COL_NAMES);
         }
         catch (const exception& e)
         {
@@ -236,7 +228,7 @@ void AppGui::OnToolOpenClicked(wxCommandEvent& event)
         {
             shared_ptr<rapidjson::Document> jsonDoc = _appControl->getJsonDoc();
 
-            auto json_entries = jsonDoc->GetObject()["Activities"].GetArray();
+            auto json_entries = jsonDoc->GetObject()["Transactions"].GetArray();
 
             int rowPos = 0;
             int colPos = 0;
@@ -269,7 +261,7 @@ void AppGui::OnToolOpenClicked(wxCommandEvent& event)
                     {
                         _gridActivities->SetCellValue(
                             rowPos, colPos,
-                            wxString(floatToString(itr2->value.GetFloat(), 2)));
+                            wxString(AppControl::floatToString(itr2->value.GetFloat(), 2)));
                     }
                     else
                     {
@@ -330,7 +322,6 @@ void AppGui::OnToolSaveClicked(wxCommandEvent& event)
         if (_appControl && _gridActivities)
         {
             uint column_size = _gridActivities->GetNumberCols();
-            vector<string> col_names;
             shared_ptr<rapidjson::Document> json_save =
                 _appControl->getJsonDoc();
             string savepath = SaveDialog->GetPath().ToStdString();
@@ -341,11 +332,7 @@ void AppGui::OnToolSaveClicked(wxCommandEvent& event)
             json_save->SetObject();
             rapidjson::Document::AllocatorType& allocator =
                 json_save->GetAllocator();
-            for (uint col = 0; col < column_size; col++)
-            {
-                col_names.push_back(
-                    _gridActivities->GetCellValue(0, col).ToStdString());
-            }
+
 
             rapidjson::Value entry_array(rapidjson::kArrayType);
 
@@ -369,7 +356,7 @@ void AppGui::OnToolSaveClicked(wxCommandEvent& event)
                     if ((column_name.compare("Transaction") == 0) ||
                         (column_name.compare("Amount") == 0))
                     {
-                        value.SetFloat(stringToFloat(
+                        value.SetFloat(AppControl::stringToFloat(
                             _gridActivities->GetCellValue(row, col)
                                 .ToStdString(),
                             2));
@@ -386,9 +373,10 @@ void AppGui::OnToolSaveClicked(wxCommandEvent& event)
                 }
                 entry_array.PushBack(entry_obj, allocator);
             }
-
-            json_save->AddMember("Activities", entry_array, allocator);
-            remove(backuppath.c_str());
+            json_save->AddMember("QueryType", _appControl->getQueryType(), allocator);
+            json_save->AddMember("Currency", _appControl->getCurrency(), allocator);
+            json_save->AddMember("Transactions", entry_array, allocator);
+            std::remove(backuppath.c_str());
             if (!_appControl->saveJson(savepath))
             {
                 wxLogError("Saving JSON file has failed.");
@@ -438,9 +426,9 @@ void AppGui::createGridActivities(uint row, uint col)
     _gridActivities->EnableDragGridSize(false);
     _gridActivities->SetMargins(5, 5);
     _gridActivities->SetRowLabelSize(30);
-    for (int i = 0; i < _def_activity_column.size(); i++)
+    for (int i = 0; i < Config::TRANSACTION_COL_NAMES.size(); i++)
     {
-        _gridActivities->SetColLabelValue(i, wxString(_def_activity_column[i]));
+        _gridActivities->SetColLabelValue(i, wxString(Config::TRANSACTION_COL_NAMES[i]));
     }
     _gridActivities->AutoSize();
 }
@@ -468,19 +456,6 @@ void AppGui::createPieChart()
     _bSizerPanelRight->Fit(_chartPanel);
     _bSizerRight->Layout();
 }
-string AppGui::floatToString(float number, int precision)
-{
-    stringstream stream;
-    stream << fixed << setprecision(precision) << number;
-    return stream.str();
-}
-float AppGui::stringToFloat(string numstr, int precision)
-{
-    stringstream stream;
-    stream << fixed << setprecision(precision) << stof(numstr);
-    return stof(stream.str());
-    ;
-}
 
 //-----------------------------
 // WxThread functions section
@@ -506,12 +481,12 @@ void AppGui::updateWatchlist(wxThreadEvent& event)
     { // Update the Grid cells
 
         _gridWatchlist->SetCellValue(found_row, 5,
-                                     floatToString(upd_data._curr_price, 2));
+                                     AppControl::floatToString(upd_data._curr_price, 2));
         _gridWatchlist->SetCellValue(found_row, 6,
-                                     floatToString(upd_data._curr_value, 2));
+                                     AppControl::floatToString(upd_data._curr_value, 2));
 
         _gridWatchlist->SetCellValue(found_row, 7,
-                                     floatToString(upd_data._diff, 2));
+                                     AppControl::floatToString(upd_data._diff, 2));
         int threshold = 10;
         if (upd_data._diff > threshold)
         {
@@ -523,7 +498,7 @@ void AppGui::updateWatchlist(wxThreadEvent& event)
         }
 
         _gridWatchlist->SetCellValue(
-            found_row, 8, floatToString(upd_data._diff_in_percent, 2) + "%");
+            found_row, 8, AppControl::floatToString(upd_data._diff_in_percent, 2) + "%");
         if (upd_data._diff_in_percent > 1)
         {
             _gridWatchlist->SetCellTextColour(found_row, 8, *wxGREEN);
@@ -534,7 +509,7 @@ void AppGui::updateWatchlist(wxThreadEvent& event)
         }
 
         _gridWatchlist->SetCellValue(found_row, 9,
-                                     floatToString(upd_data._return, 2));
+                                     AppControl::floatToString(upd_data._return, 2));
         if (upd_data._return > threshold)
         {
             _gridWatchlist->SetCellTextColour(found_row, 9, *wxGREEN);
@@ -545,7 +520,7 @@ void AppGui::updateWatchlist(wxThreadEvent& event)
         }
 
         _gridWatchlist->SetCellValue(
-            found_row, 10, floatToString(upd_data._return_in_percent, 2) + "%");
+            found_row, 10, AppControl::floatToString(upd_data._return_in_percent, 2) + "%");
         if (upd_data._return_in_percent > 1)
         {
             _gridWatchlist->SetCellTextColour(found_row, 10, *wxGREEN);

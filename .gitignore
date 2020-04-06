@@ -1,5 +1,7 @@
 # CMake build
 build/
+# CMake local QtCreator setting
+CMakeLists.txt.user
 
 data/*.json
 !data/example.json

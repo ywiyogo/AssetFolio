@@ -69,8 +69,7 @@ class AppGui : public MainFrame
   private:
     static int wxIdCounter;
     void initWatchlistGrid();
-    string floatToString(float number, int precision);
-    float stringToFloat(string numstr, int precision);
+
     void createGridActivities(uint row, uint col);
     void createPieChart();
     void watchlistUpdater();
@@ -85,9 +84,7 @@ class AppGui : public MainFrame
     wxDECLARE_EVENT_TABLE();
     mutex _mutex_ui;
     shared_ptr<AppControl> _appControl;
-    // future<void> _ftr_updater;
     unique_ptr<UpdaterThread> _updater;
-    vector<string> _def_activity_column;
 
     wxChartPanel* _chartPanel;
     PieChart* _pie_chart;

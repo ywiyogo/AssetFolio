@@ -13,16 +13,28 @@
 #include <algorithm>
 #include <cpr/cpr.h>
 #include <fstream>
+#include <iomanip> // std::setprecision
 #include <iostream>
-
 #include <libxml/tree.h>
 #include <libxml/xpath.h>
+#include <sstream> // stringstream
 
 using namespace std;
 const uint MAX_WRITE_BUFFER = 65536;
 
-const map<string, AppControl::QueryType> AppControl::_idtype_map = {
+const map<string, AppControl::QueryType> AppControl::_querytype_map = {
     {"ISIN", QueryType::ISIN}, {"SYMBOL", QueryType::SYMBOL}};
+
+const map<AppControl::QueryType, string> AppControl::_reverse_querytype_map = {
+    {QueryType::ISIN, "ISIN"}, {QueryType::SYMBOL, "SYMBOL"}};
+
+Provider::Provider(){};
+Provider::Provider(string name, string url, string xpath)
+{
+    _name = name;
+    _url = url;
+    _xpath = xpath;
+}
 
 AppControl::AppControl(uint upd_freq)
     : _jsonDoc(make_shared<rapidjson::Document>()),
@@ -31,17 +43,12 @@ AppControl::AppControl(uint upd_freq)
       _currency_ref("USD")
 {
     // Add the HTML data provider
-    unique_ptr<xmlChar> tradegate_pattern(
-        move((xmlChar*)"//table[@class='full grid noHeadBorder']/tr[2]/td[4]"));
-    unique_ptr<xmlChar> justetf_pattern(
-        move((xmlChar*)"//div[@class='infobox']/div[1]/div[1]/div[1]/span[2]"));
-
-    shared_ptr<Provider> tradegate(new Provider(
+    shared_ptr<Provider> tradegate(make_shared<Provider>(
         "Tradegate", "https://www.tradegate.de/orderbuch.php?lang=en&isin=",
-        move(tradegate_pattern)));
-    shared_ptr<Provider> justEtf(new Provider(
+        "//table[@class='full grid noHeadBorder']/tr[2]/td[4]"));
+    shared_ptr<Provider> justEtf(make_shared<Provider>(
         "JustETF", "https://www.justetf.com/de/etf-profile.html?isin=",
-        move(justetf_pattern)));
+        "//div[@class='infobox']/div[1]/div[1]/div[1]/span[2]"));
     // insert function of a map doesn't accept a shared_ptr or unique_ptr, use
     // emplace instead
     _providers.emplace(tradegate->_name.c_str(), tradegate);
@@ -88,10 +95,10 @@ bool AppControl::readLocalRapidJson(const char* filePath,
 
     checkJson();
     _query_type =
-        _idtype_map.at(_jsonDoc->GetObject()["QueryType"].GetString());
+        _querytype_map.at(_jsonDoc->GetObject()["QueryType"].GetString());
     _currency_ref = _jsonDoc->GetObject()["Currency"].GetString();
 
-    auto json_act = _jsonDoc->GetObject()["Activities"].GetArray();
+    auto json_act = _jsonDoc->GetObject()["Transactions"].GetArray();
 
     // creating all asset objects
     for (int i = 0; i < json_act.Size(); i++)
@@ -281,7 +288,9 @@ bool AppControl::getPriceFromTradegate(vector<unique_ptr<UpdateData>>& updates)
             continue;
         }
         string url = _providers.at("Tradegate")->_url + it->second->getId();
-        xmlChar* xpathchar = (xmlChar*)"//*[@id='bid']";
+        xmlChar* xpathchar1 =
+            (xmlChar*)_providers.at("Tradegate")->_xpath.c_str();
+        xmlChar* xpathchar2 = (xmlChar*)"//*[@id='bid']";
 
         auto r = cpr::Get(cpr::Url{url});
         // cout << "Result code: " << r.status_code
@@ -302,10 +311,10 @@ bool AppControl::getPriceFromTradegate(vector<unique_ptr<UpdateData>>& updates)
             throw AppException("Error in xmlXPathNewContext\n");
         }
 
-        xmlXPathObjectPtr cur_result = xmlXPathEvalExpression(
-            _providers.at("Tradegate")->_xpath.get(), xpath_context);
+        xmlXPathObjectPtr cur_result =
+            xmlXPathEvalExpression(xpathchar1, xpath_context);
         xmlXPathObjectPtr result =
-            xmlXPathEvalExpression(xpathchar, xpath_context);
+            xmlXPathEvalExpression(xpathchar2, xpath_context);
         xmlXPathFreeContext(xpath_context);
         if (cur_result == NULL)
         {
@@ -556,19 +565,19 @@ void AppControl::checkJson()
         throw AppException("JSON format has to have e member 'QueryType'");
     }
 
-    if (!_jsonDoc->GetObject().HasMember("Activities"))
+    if (!_jsonDoc->GetObject().HasMember("Transactions"))
     {
-        throw AppException("JSON format has to have e member 'Activities'");
+        throw AppException("JSON format has to have e member 'Transactions'");
     }
     if (!_jsonDoc->GetObject().HasMember("Currency"))
     {
         throw AppException("JSON format has to have e member 'Currency'");
     }
 
-    if (!_jsonDoc->GetObject()["Activities"].IsArray())
+    if (!_jsonDoc->GetObject()["Transactions"].IsArray())
     {
         throw AppException(
-            "JSON format member 'Activities' has to be an array.");
+            "JSON format member 'Transactions' has to be an array.");
     }
 }
 
@@ -576,4 +585,33 @@ void AppControl::clearJsonData()
 {
     if (_jsonDoc->IsObject())
         _jsonDoc->RemoveAllMembers();
+    _assets->clear();
+}
+
+string AppControl::floatToString(float number, int precision)
+{
+    stringstream stream;
+    stream << fixed << setprecision(precision) << number;
+    return stream.str();
+}
+float AppControl::stringToFloat(string numstr, int precision)
+{
+    stringstream stream;
+    stream << fixed << setprecision(precision) << stof(numstr);
+    return stof(stream.str());
+    ;
+}
+
+rapidjson::Value AppControl::getQueryType()
+{
+    rapidjson::Value query(rapidjson::kStringType);
+    query.SetString(_reverse_querytype_map.at(_query_type).c_str(),
+                    _reverse_querytype_map.at(_query_type).size());
+    return query;
+}
+rapidjson::Value AppControl::getCurrency()
+{
+    rapidjson::Value curency(rapidjson::kStringType);
+    curency.SetString(_currency_ref.c_str(), _currency_ref.size());
+    return curency;
 }

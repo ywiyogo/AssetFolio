@@ -1,7 +1,7 @@
 {
   "QueryType": "SYMBOL",
   "Currency": "USD",
-  "Activities": [
+  "Transactions": [
     {
       "Date": "28.12.2012",
       "ID": "ZGUSD",

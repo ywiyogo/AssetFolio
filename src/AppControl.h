@@ -7,9 +7,19 @@
 #include "MsgQueue.h"
 #include "rapidjson/document.h"
 #include <future>
-#include <memory>
 #include <libxml/HTMLparser.h>
+#include <memory>
 using namespace std;
+
+class Provider
+{
+  public:
+    string _name;
+    string _url;
+    string _xpath;
+    Provider();
+    Provider(string name, string url, string xpath);
+};
 
 class AppControl
 {
@@ -22,8 +32,8 @@ class AppControl
         ISIN,
         SYMBOL
     };
-    static const map<string, QueryType> _idtype_map;
-
+    static const map<string, QueryType> _querytype_map;
+    static const map<QueryType, string> _reverse_querytype_map;
     bool isApiKeyEmpty();
 
     void setApiKey(string key);
@@ -49,8 +59,13 @@ class AppControl
     void launchAssetUpdater();
 
     bool getPriceFromTradegate(vector<unique_ptr<UpdateData>>& updates);
-    
+
     void clearJsonData();
+
+    static string floatToString(float number, int precision);
+    static float stringToFloat(string numstr, int precision);
+    rapidjson::Value getQueryType();
+    rapidjson::Value getCurrency();
 
     struct AppException : public exception
     {
@@ -60,25 +75,14 @@ class AppControl
         const char* what() const throw() { return str.c_str(); }
     };
 
-    struct Provider{
-      string _name;
-      string _url;
-      unique_ptr<xmlChar> _xpath;
-      Provider();
-      Provider(string name, string url, unique_ptr<xmlChar> xpath){
-        _name = name;
-        _url = url;
-        _xpath = move(xpath);
-      }
-    };
   private:
     void calcCurrentTotalValues();
     void update(MsgQueue<UpdateData>& msgqueue, bool& isActive,
                 uint upd_frequency);
-    bool requestFmpApi(vector<unique_ptr<UpdateData>>& updates,  string symbols);
+    bool requestFmpApi(vector<unique_ptr<UpdateData>>& updates, string symbols);
     float getExchangeRate(string from, string to);
     void checkJson();
-    
+
     shared_ptr<rapidjson::Document> _jsonDoc;
     shared_ptr<map<string, shared_ptr<Asset>>> _assets;
     vector<future<void>> _futures;

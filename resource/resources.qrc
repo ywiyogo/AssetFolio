@@ -1,0 +1,13 @@
+<RCC>
+    <qresource prefix="/">
+        <file>papirus_exit32.png</file>
+        <file>papirus_info32.png</file>
+        <file>papirus_key32.png</file>
+        <file>papirus_new32.png</file>
+        <file>papirus_open32.png</file>
+        <file>papirus_save32.png</file>
+        <file>papirus_refresh32.png</file>
+        <file>papirus_tracker64.png</file>
+        <file>papirus_transaction64.png</file>
+    </qresource>
+</RCC>
