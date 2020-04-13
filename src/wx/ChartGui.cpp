@@ -72,11 +72,11 @@ Chart* PieChart::Create(vector<string>& categories, vector<double>& data)
     // create dataset
     wxString pie_categories[categories.size()];
     double max = 0;
-    for (int i = 0; i < data.size(); i++)
+    for (unsigned int i = 0; i < data.size(); i++)
     {
         max += data[i];
     }
-    for (int i = 0; i < categories.size(); i++)
+    for (unsigned int i = 0; i < categories.size(); i++)
     {
         stringstream stream;
         stream << fixed << setprecision(1) << data[i] / max * 100.;

@@ -310,8 +310,8 @@
   <action name="actionInfo">
    <property name="icon">
     <iconset>
-     <normaloff>icons/papirus_info32.png</normaloff>
-     <normalon>:/papirus_info32.png</normalon>icons/papirus_info32.png</iconset>
+     <normalon>:/papirus_info32.png</normalon>
+    </iconset>
    </property>
    <property name="text">
     <string>Info</string>
@@ -323,8 +323,8 @@
   <action name="actionExit">
    <property name="icon">
     <iconset>
-     <normaloff>icons/papirus_exit32.png</normaloff>
-     <normalon>:/papirus_exit32.png</normalon>icons/papirus_exit32.png</iconset>
+     <normalon>:/papirus_exit32.png</normalon>
+    </iconset>
    </property>
    <property name="text">
     <string>Exit</string>

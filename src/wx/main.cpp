@@ -5,7 +5,7 @@
 #include "AppGui.h"
 
 // wxWidgets APP
-IMPLEMENT_APP(Assetfolio);
+IMPLEMENT_APP(Assetfolio)
 
 std::string dataPath = "../";
 std::string imgBasePath = dataPath + "images/";

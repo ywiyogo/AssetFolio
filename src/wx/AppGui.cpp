@@ -437,10 +437,8 @@ void AppGui::createPieChart()
     vector<double> data;
     vector<string> categories;
     _appControl->calcAllocation(categories, data);
-    bool is_exist = false;
     if (_chartPanel)
     {
-        is_exist = true;
         _bSizerPanelRight->Detach(0);
         wxDELETE(_chartPanel);
     }

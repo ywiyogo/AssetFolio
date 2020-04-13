@@ -42,12 +42,11 @@ class MainFrame : public wxFrame
 		wxToolBarToolBase* _toobSave;
 		wxToolBarToolBase* _toolbRefresh;
 		wxToolBarToolBase* _toolbInfo;
-		wxToolBarToolBase* _toolbExit;
+		wxToolBarToolBase* toolbExit;
 		wxBoxSizer* _bSizerHorizon;
 		wxBoxSizer* _bSizerLeft;
 		wxButton* _btActivities;
 		wxButton* _btWatchlist;
-		wxButton* _btCharts;
 		wxBoxSizer* _bSizerRight;
 		wxBoxSizer* _bSizerPanelLeft;
 		wxPanel* _panelLeftActivity;

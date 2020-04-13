@@ -15,27 +15,27 @@ MainFrame::MainFrame( wxWindow* parent, wxWindowID id, const wxString& title, co
 
 	_statusBar = this->CreateStatusBar( 1, wxSTB_SIZEGRIP, wxID_ANY );
 	m_toolBar1 = this->CreateToolBar( wxTB_HORIZONTAL, wxID_ANY );
-	_toolbNew = m_toolBar1->AddTool( wxID_ANY, wxT("tool"), wxBitmap( wxT("../icons/papirus_new32.png"), wxBITMAP_TYPE_ANY ), wxNullBitmap, wxITEM_NORMAL, wxT("New"), wxEmptyString, NULL );
+	_toolbNew = m_toolBar1->AddTool( wxID_ANY, wxT("tool"), wxBitmap( wxT("../resource/papirus_new32.png"), wxBITMAP_TYPE_ANY ), wxNullBitmap, wxITEM_NORMAL, wxT("New"), wxEmptyString, NULL );
 
 	m_toolBar1->AddSeparator();
 
-	_toolbOpen = m_toolBar1->AddTool( wxID_ANY, wxT("open"), wxBitmap( wxT("../icons/papirus_open32.png"), wxBITMAP_TYPE_ANY ), wxNullBitmap, wxITEM_NORMAL, wxT("Open Data"), wxEmptyString, NULL );
+	_toolbOpen = m_toolBar1->AddTool( wxID_ANY, wxT("open"), wxBitmap( wxT("../resource/papirus_open32.png"), wxBITMAP_TYPE_ANY ), wxNullBitmap, wxITEM_NORMAL, wxT("Open Data"), wxEmptyString, NULL );
 
 	m_toolBar1->AddSeparator();
 
-	_toobSave = m_toolBar1->AddTool( wxID_ANY, wxT("tool"), wxBitmap( wxT("../icons/papirus_save32.png"), wxBITMAP_TYPE_ANY ), wxNullBitmap, wxITEM_NORMAL, wxT("Save Entries"), wxEmptyString, NULL );
+	_toobSave = m_toolBar1->AddTool( wxID_ANY, wxT("tool"), wxBitmap( wxT("../resource/papirus_save32.png"), wxBITMAP_TYPE_ANY ), wxNullBitmap, wxITEM_NORMAL, wxT("Save Entries"), wxEmptyString, NULL );
 
 	m_toolBar1->AddSeparator();
 
-	_toolbRefresh = m_toolBar1->AddTool( wxID_ANY, wxT("tool"), wxBitmap( wxT("../icons/papirus_refresh32.png"), wxBITMAP_TYPE_ANY ), wxNullBitmap, wxITEM_NORMAL, wxT("Refresh/Resize View"), wxEmptyString, NULL );
+	_toolbRefresh = m_toolBar1->AddTool( wxID_ANY, wxT("tool"), wxBitmap( wxT("../resource/papirus_refresh32.png"), wxBITMAP_TYPE_ANY ), wxNullBitmap, wxITEM_NORMAL, wxT("Refresh/Resize View"), wxEmptyString, NULL );
 
 	m_toolBar1->AddSeparator();
 
-	_toolbInfo = m_toolBar1->AddTool( wxID_ANY, wxT("tool"), wxBitmap( wxT("../icons/papirus_info32.png"), wxBITMAP_TYPE_ANY ), wxNullBitmap, wxITEM_NORMAL, wxT("App Info"), wxEmptyString, NULL );
+	_toolbInfo = m_toolBar1->AddTool( wxID_ANY, wxT("tool"), wxBitmap( wxT("../resource/papirus_info32.png"), wxBITMAP_TYPE_ANY ), wxNullBitmap, wxITEM_NORMAL, wxT("App Info"), wxEmptyString, NULL );
 
 	m_toolBar1->AddSeparator();
 
-	_toolbExit = m_toolBar1->AddTool( wxID_ANY, wxT("tool"), wxBitmap( wxT("../icons/papirus_exit32.png"), wxBITMAP_TYPE_ANY ), wxNullBitmap, wxITEM_NORMAL, wxT("Exit Application"), wxEmptyString, NULL );
+	toolbExit = m_toolBar1->AddTool( wxID_ANY, wxT("tool"), wxBitmap( wxT("../resource/papirus_exit32.png"), wxBITMAP_TYPE_ANY ), wxNullBitmap, wxITEM_NORMAL, wxEmptyString, wxEmptyString, NULL );
 
 	m_toolBar1->Realize();
 
@@ -45,23 +45,17 @@ MainFrame::MainFrame( wxWindow* parent, wxWindowID id, const wxString& title, co
 
 	_btActivities = new wxButton( this, wxID_ANY, wxEmptyString, wxDefaultPosition, wxDefaultSize, 0 );
 
-	_btActivities->SetBitmap( wxBitmap( wxT("../icons/papirus_transaction64.png"), wxBITMAP_TYPE_ANY ) );
+	_btActivities->SetBitmap( wxBitmap( wxT("../resource/papirus_transaction64.png"), wxBITMAP_TYPE_ANY ) );
 	_btActivities->SetToolTip( wxT("Activity List") );
 
 	_bSizerLeft->Add( _btActivities, 0, wxALL|wxEXPAND, 5 );
 
 	_btWatchlist = new wxButton( this, wxID_ANY, wxEmptyString, wxDefaultPosition, wxDefaultSize, 0 );
 
-	_btWatchlist->SetBitmap( wxBitmap( wxT("../icons/papirus_tracker64.png"), wxBITMAP_TYPE_ANY ) );
+	_btWatchlist->SetBitmap( wxBitmap( wxT("../resource/papirus_tracker64.png"), wxBITMAP_TYPE_ANY ) );
 	_btWatchlist->SetToolTip( wxT("Watchlist and Tracker") );
 
 	_bSizerLeft->Add( _btWatchlist, 0, wxALL|wxEXPAND, 5 );
-
-	_btCharts = new wxButton( this, wxID_ANY, wxT("Charts"), wxDefaultPosition, wxDefaultSize, 0 );
-	_btCharts->Enable( false );
-	_btCharts->Hide();
-
-	_bSizerLeft->Add( _btCharts, 0, wxALL|wxEXPAND, 5 );
 
 
 	_bSizerHorizon->Add( _bSizerLeft, 1, wxALL|wxEXPAND, 5 );
@@ -97,7 +91,7 @@ MainFrame::MainFrame( wxWindow* parent, wxWindowID id, const wxString& title, co
 	this->Connect( _toobSave->GetId(), wxEVT_COMMAND_TOOL_CLICKED, wxCommandEventHandler( MainFrame::OnToolSaveClicked ) );
 	this->Connect( _toolbRefresh->GetId(), wxEVT_COMMAND_TOOL_CLICKED, wxCommandEventHandler( MainFrame::OnToolRefreshClicked ) );
 	this->Connect( _toolbInfo->GetId(), wxEVT_COMMAND_TOOL_CLICKED, wxCommandEventHandler( MainFrame::OnToolInfoClicked ) );
-	this->Connect( _toolbExit->GetId(), wxEVT_COMMAND_TOOL_CLICKED, wxCommandEventHandler( MainFrame::OnToolExitClicked ) );
+	this->Connect( toolbExit->GetId(), wxEVT_COMMAND_TOOL_CLICKED, wxCommandEventHandler( MainFrame::OnToolExitClicked ) );
 	_btActivities->Connect( wxEVT_COMMAND_BUTTON_CLICKED, wxCommandEventHandler( MainFrame::onBtnActivitiesClick ), NULL, this );
 	_btWatchlist->Connect( wxEVT_COMMAND_BUTTON_CLICKED, wxCommandEventHandler( MainFrame::onBtnWatchlistClick ), NULL, this );
 }
@@ -111,7 +105,7 @@ MainFrame::~MainFrame()
 	this->Disconnect( _toobSave->GetId(), wxEVT_COMMAND_TOOL_CLICKED, wxCommandEventHandler( MainFrame::OnToolSaveClicked ) );
 	this->Disconnect( _toolbRefresh->GetId(), wxEVT_COMMAND_TOOL_CLICKED, wxCommandEventHandler( MainFrame::OnToolRefreshClicked ) );
 	this->Disconnect( _toolbInfo->GetId(), wxEVT_COMMAND_TOOL_CLICKED, wxCommandEventHandler( MainFrame::OnToolInfoClicked ) );
-	this->Disconnect( _toolbExit->GetId(), wxEVT_COMMAND_TOOL_CLICKED, wxCommandEventHandler( MainFrame::OnToolExitClicked ) );
+	this->Disconnect( toolbExit->GetId(), wxEVT_COMMAND_TOOL_CLICKED, wxCommandEventHandler( MainFrame::OnToolExitClicked ) );
 	_btActivities->Disconnect( wxEVT_COMMAND_BUTTON_CLICKED, wxCommandEventHandler( MainFrame::onBtnActivitiesClick ), NULL, this );
 	_btWatchlist->Disconnect( wxEVT_COMMAND_BUTTON_CLICKED, wxCommandEventHandler( MainFrame::onBtnWatchlistClick ), NULL, this );
 
