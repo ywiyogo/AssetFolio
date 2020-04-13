@@ -178,9 +178,12 @@
           </property>
           <property name="minimumSize">
            <size>
-            <width>500</width>
+            <width>700</width>
             <height>300</height>
            </size>
+          </property>
+          <property name="sizeAdjustPolicy">
+           <enum>QAbstractScrollArea::AdjustToContents</enum>
           </property>
          </widget>
          <widget class="QTabWidget" name="tabWidget">
@@ -203,7 +206,7 @@
            </size>
           </property>
           <property name="currentIndex">
-           <number>1</number>
+           <number>0</number>
           </property>
           <widget class="QWidget" name="tab_alloc">
            <attribute name="title">
@@ -229,7 +232,7 @@
      <x>0</x>
      <y>0</y>
      <width>1500</width>
-     <height>29</height>
+     <height>30</height>
     </rect>
    </property>
   </widget>

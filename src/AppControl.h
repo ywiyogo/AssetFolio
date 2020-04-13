@@ -42,7 +42,7 @@ class AppControl
 
     void readApiKey();
 
-    bool readLocalRapidJson(const char* filePath, vector<string>& column_names);
+    bool readLocalRapidJson(const char* filePath);
 
     void writeDataToJson(vector<string>& column_names);
 

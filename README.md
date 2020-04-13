@@ -24,6 +24,16 @@ Preview for the watchlist and asset tracker:
 
 Installing the dependency libraries:
 
+* Windows
+
+    1. Install Git, MinGW w64, and Qt5
+    2. Clone vcpkg to C:/Libs/: `git clone https://github.com/microsoft/vcpkg.git`
+    2. Build vcpkg by running `.\bootstrap-vcpkg.bat`
+    3. Install the libraries:
+          `.\vcpkg install curl:x64-windows`
+          `.\vcpkg install libxml2:x64-windows`
+          `.\vcpkg install libssh2:x64-windows`
+
 * Ubuntu
 
         sudo apt-get install build-essential checkinstall libcurl4-openssl-dev libxml2-dev libgtest-dev <libgtk-3-dev|qt5-default qtcreator>
@@ -41,11 +51,26 @@ Installing the dependency libraries:
 
 ### Build and Start the Project
 
+**UNIX System**
+
+Got to the project folder and type these commands:
+
 ```
 mkdir build && cd build
 cmake ..
 make
 ./Assetfolio
+```
+
+**Windows System**
+
+Got to the project folder and type these commands:
+
+```
+mkdir build && cd build
+cmake .. -G "MinGW MakeFiles"
+make
+.\bin\Assetfolio.exe
 ```
 
 Note, change `set(GUI "Qt")` to `set(GUI "Wx")` to build the GUI with WxWidget.

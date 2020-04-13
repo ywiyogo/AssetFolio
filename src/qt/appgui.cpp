@@ -3,14 +3,15 @@
 #include "ui_appgui.h"
 #include <QMetaType>
 
-AppGui::AppGui(QWidget* parent)
+AppGui::AppGui(QWidget *parent)
     : QMainWindow(parent), ui(new Ui::AppGui),
+      _qchart(new QtCharts::QChart()),
+      _pieseries(new QtCharts::QPieSeries()),
+      _chartView(new QtCharts::QChartView(_qchart)),
       _appControl(make_shared<AppControl>(Config::UPDATE_PERIODE)),
       _transaction_model(make_shared<QStandardItemModel>(
           0, Config::TRANSACTION_COL_NAMES.size(), this)),
-      _updater(), _qchart(new QtCharts::QChart()),
-      _pieseries(new QtCharts::QPieSeries()),
-      _chartView(new QtCharts::QChartView(_qchart))
+      _updater()
 {
     ui->setupUi(this);
     // init chart
@@ -39,9 +40,9 @@ void AppGui::on_actionOpen_triggered()
     {
         _appControl->clearJsonData();
         isValid = _appControl->readLocalRapidJson(
-            filename.toStdString().c_str(), Config::TRANSACTION_COL_NAMES);
+            filename.toStdString().c_str());
     }
-    catch (const exception& e)
+    catch (const exception &e)
     {
         showMsgWindow(QMessageBox::Warning, "Exception Error", e.what());
     }
@@ -100,14 +101,15 @@ void AppGui::on_actionOpen_triggered()
             rowPos++;
             colPos = 0;
         }
-        ui->tableView->horizontalHeader()->setSectionResizeMode(
-            QHeaderView::Stretch);
+        // ui->tableView->horizontalHeader()->setSectionResizeMode(
+        //     QHeaderView::Stretch);
+        ui->tableView->resizeColumnsToContents();
 
         // Fill the watchlist viewer
         vector<string> colWatchlist = {
-            "Name",        "Amount",      "Total transaktion", "Buying price",
-            "Curr. Price", "Curr. Asset", "Allocation",        "Changed %",
-            "Change",      "Yield %",     "TotalYield"};
+            "Name", "Amount", "Total transaktion", "Buying price",
+            "Curr. Price", "Curr. Asset", "Allocation", "Changed %",
+            "Change", "Yield %", "TotalYield"};
 
         // update the piechart
         vector<double> data;
@@ -161,11 +163,11 @@ void AppGui::on_actionSave_triggered()
     _appControl->saveJson(backuppath);
     json_save->RemoveAllMembers();
     json_save->SetObject();
-    rapidjson::Document::AllocatorType& allocator = json_save->GetAllocator();
+    rapidjson::Document::AllocatorType &allocator = json_save->GetAllocator();
 
     rapidjson::Value entry_array(rapidjson::kArrayType);
 
-    for (uint row = 0; row < _transaction_model->rowCount(); row++)
+    for (int row = 0; row < _transaction_model->rowCount(); row++)
     {
         rapidjson::Value entry_obj(rapidjson::kObjectType);
         QModelIndex index = _transaction_model->index(row, 0, QModelIndex());
@@ -238,22 +240,22 @@ void AppGui::on_tbtnWatchlist_clicked()
         }
 
         ui->tableView->setModel(_watchlist_model.get());
+        ui->tableView->resizeColumnsToContents();
         _appControl->launchAssetUpdater();
     }
 }
 
-void AppGui::closeEvent(QCloseEvent* event) { _appControl->stopUpdateTasks(); }
+void AppGui::closeEvent() { _appControl->stopUpdateTasks(); }
 
 void AppGui::updateWatchlistModel(UpdateData upd_data)
 {
     // std::cout << "AppGui::watchlistUpdater get data, id: " << upd_data._id
     //           << endl
     //           << flush;
-    int found_row = -1;
-    QList<QStandardItem*> found_list = _watchlist_model->findItems(
+    QList<QStandardItem *> found_list = _watchlist_model->findItems(
         QString(upd_data._id.c_str()), Qt::MatchContains);
 
-    foreach (QStandardItem* item, found_list)
+    foreach (QStandardItem *item, found_list)
     { // Update the Grid cells
         QModelIndex index =
             _watchlist_model->index(item->row(), 5, QModelIndex());
@@ -349,7 +351,7 @@ void AppGui::initTvTransactions(unsigned int row, unsigned int col)
     // editable after double click
     ui->tableView->setEditTriggers(QAbstractItemView::SelectedClicked);
 
-    for (int i = 0; i < Config::TRANSACTION_COL_NAMES.size(); i++)
+    for (unsigned int i = 0; i < Config::TRANSACTION_COL_NAMES.size(); i++)
     {
         _transaction_model->setHeaderData(
             i, Qt::Horizontal,
@@ -358,14 +360,14 @@ void AppGui::initTvTransactions(unsigned int row, unsigned int col)
 }
 void AppGui::initWatchlistModel()
 {
-    shared_ptr<map<string, shared_ptr<Asset>>> const& assets =
+    shared_ptr<map<string, shared_ptr<Asset>>> const &assets =
         _appControl->getAssets();
 
     _watchlist_model = make_shared<QStandardItemModel>(
         0, Config::WATCHLIST_COL_NAMES.size(), this);
 
     // Fill the column labels
-    for (int i = 0; i < Config::WATCHLIST_COL_NAMES.size(); i++)
+    for (unsigned int i = 0; i < Config::WATCHLIST_COL_NAMES.size(); i++)
     {
         _watchlist_model->setHeaderData(
             i, Qt::Horizontal,
@@ -376,7 +378,7 @@ void AppGui::initWatchlistModel()
     for (auto it = _appControl->getAssets()->begin();
          it != _appControl->getAssets()->end(); it++)
     {
-        QList<QStandardItem*> item_list;
+        QList<QStandardItem *> item_list;
         // item_list<<new QStandardItem(QString("test1"))<<new
         // QStandardItem(QString("test2"));
         item_list << new QStandardItem(QString(it->first.c_str()));
@@ -419,7 +421,7 @@ void AppGui::initWatchlistModel()
     _updater.start();
 }
 
-void AppGui::showMsgWindow(QMessageBox::Icon&& msgtype, const std::string title,
+void AppGui::showMsgWindow(QMessageBox::Icon &&msgtype, const std::string title,
                            const std::string msg)
 {
     QMessageBox msgWarning;
@@ -430,10 +432,10 @@ void AppGui::showMsgWindow(QMessageBox::Icon&& msgtype, const std::string title,
     msgWarning.exec();
 }
 
-void AppGui::createPieChart(vector<string>& categories, vector<double>& data)
+void AppGui::createPieChart(vector<string> &categories, vector<double> &data)
 {
     _pieseries->clear();
-    for (int i = 0; i < categories.size(); i++)
+    for (unsigned int i = 0; i < categories.size(); i++)
     {
         _pieseries->append(categories[i].c_str(), data[i]);
     }

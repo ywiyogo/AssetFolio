@@ -13,7 +13,6 @@
 #include <vector>
 using namespace std;
 
-
 // event mapping
 wxDEFINE_EVENT(UPDATER_EVENT, wxThreadEvent);
 wxBEGIN_EVENT_TABLE(AppGui, wxFrame) wxEND_EVENT_TABLE();
@@ -32,11 +31,11 @@ AppGui::~AppGui() {}
 
 void AppGui::initWatchlistGrid()
 {
-    shared_ptr<map<string, shared_ptr<Asset>>> const& assets =
+    shared_ptr<map<string, shared_ptr<Asset>>> const &assets =
         _appControl->getAssets();
-    vector<string> labels{"ID",        "Name",       "Amount",     "Balance",
+    vector<string> labels{"ID", "Name", "Amount", "Balance",
                           "Avg Price", "Curr.Price", "Curr.Value", "Diff",
-                          "Diff %",    "Return",     "Return %"};
+                          "Diff %", "Return", "Return %"};
 
     _panelLeftWatchlist = new wxPanel(this, wxID_ANY, wxDefaultPosition,
                                       wxDefaultSize, wxTAB_TRAVERSAL);
@@ -109,21 +108,23 @@ void AppGui::initWatchlistGrid()
         return;
     }
 }
-void AppGui::OnCloseFrame(wxCloseEvent& event)
+void AppGui::OnCloseFrame(wxCloseEvent &event)
 {
     if (_gridWatchlist)
     {
-        cout << "AppGui::deactivate all threads" << endl << flush;
+        cout << "AppGui::deactivate all threads" << endl
+             << flush;
         // terminate the updater task
         _gridWatchlist->Show(false);
 
         _appControl->stopUpdateTasks();
     }
-    cout << "AppGui::destroy" << endl << flush;
+    cout << "AppGui::destroy" << endl
+         << flush;
     Destroy();
 }
 
-void AppGui::onBtnActivitiesClick(wxCommandEvent& event)
+void AppGui::onBtnActivitiesClick(wxCommandEvent &event)
 {
     if (_gridActivities)
     {
@@ -151,7 +152,7 @@ void AppGui::onBtnActivitiesClick(wxCommandEvent& event)
         }
     }
 }
-void AppGui::onBtnWatchlistClick(wxCommandEvent& event)
+void AppGui::onBtnWatchlistClick(wxCommandEvent &event)
 {
     if (_gridActivities && !_gridWatchlist)
     {
@@ -179,7 +180,7 @@ void AppGui::onBtnWatchlistClick(wxCommandEvent& event)
     _bSizerHorizon->Layout();
 }
 
-void AppGui::onBtnChartsClick(wxCommandEvent& event)
+void AppGui::onBtnChartsClick(wxCommandEvent &event)
 {
     if (_gridActivities)
         _gridActivities->Show(false);
@@ -191,7 +192,7 @@ void AppGui::onBtnChartsClick(wxCommandEvent& event)
 
 //-----------------------------
 // Toolbar Events
-void AppGui::OnToolNewClicked(wxCommandEvent& event)
+void AppGui::OnToolNewClicked(wxCommandEvent &event)
 {
     _appControl.reset(new AppControl(Config::UPDATE_PERIODE));
     _appControl->clearJsonData();
@@ -199,10 +200,10 @@ void AppGui::OnToolNewClicked(wxCommandEvent& event)
     createPieChart();
 }
 
-void AppGui::OnToolOpenClicked(wxCommandEvent& event)
+void AppGui::OnToolOpenClicked(wxCommandEvent &event)
 {
     // Open the File dialog
-    wxFileDialog* OpenDialog = new wxFileDialog(
+    wxFileDialog *OpenDialog = new wxFileDialog(
         this, "Choose a file to open", wxEmptyString, wxEmptyString,
         "JSON (*.jsn, *.json)|*.jsn;*.json", wxFD_OPEN);
 
@@ -216,10 +217,9 @@ void AppGui::OnToolOpenClicked(wxCommandEvent& event)
         _appControl->clearJsonData();
         try
         {
-            isValid = _appControl->readLocalRapidJson(CurrentDocPath.c_str(),
-                                                      Config::TRANSACTION_COL_NAMES);
+            isValid = _appControl->readLocalRapidJson(CurrentDocPath.c_str());
         }
-        catch (const exception& e)
+        catch (const exception &e)
         {
             wxLogError(e.what());
         }
@@ -278,10 +278,10 @@ void AppGui::OnToolOpenClicked(wxCommandEvent& event)
 
             // Fill the watchlist viewer
             vector<string> colWatchlist = {
-                "Name",         "Amount",      "Total transaktion",
+                "Name", "Amount", "Total transaktion",
                 "Buying price", "Curr. Price", "Curr. Asset",
-                "Allocation",   "Changed %",   "Change",
-                "Yield %",      "TotalYield"};
+                "Allocation", "Changed %", "Change",
+                "Yield %", "TotalYield"};
 
             createPieChart();
             _bSizerHorizon->Layout();
@@ -296,7 +296,7 @@ void AppGui::OnToolOpenClicked(wxCommandEvent& event)
     OpenDialog->Destroy();
 }
 
-void AppGui::OnToolRefreshClicked(wxCommandEvent& event)
+void AppGui::OnToolRefreshClicked(wxCommandEvent &event)
 {
     if (_gridActivities && _gridActivities->IsShown())
     {
@@ -307,9 +307,9 @@ void AppGui::OnToolRefreshClicked(wxCommandEvent& event)
         _gridWatchlist->AutoSize();
     }
 }
-void AppGui::OnToolSaveClicked(wxCommandEvent& event)
+void AppGui::OnToolSaveClicked(wxCommandEvent &event)
 {
-    wxFileDialog* SaveDialog =
+    wxFileDialog *SaveDialog =
         new wxFileDialog(this, _("Save File As _?"), wxEmptyString,
                          wxEmptyString, _("JSON (*.jsn, *.json)|*.jsn;*.json"),
                          wxFD_SAVE | wxFD_OVERWRITE_PROMPT, wxDefaultPosition);
@@ -330,9 +330,8 @@ void AppGui::OnToolSaveClicked(wxCommandEvent& event)
             _appControl->saveJson(backuppath);
             json_save->RemoveAllMembers();
             json_save->SetObject();
-            rapidjson::Document::AllocatorType& allocator =
+            rapidjson::Document::AllocatorType &allocator =
                 json_save->GetAllocator();
-
 
             rapidjson::Value entry_array(rapidjson::kArrayType);
 
@@ -394,9 +393,9 @@ void AppGui::OnToolSaveClicked(wxCommandEvent& event)
     // Clean up after ourselves
     SaveDialog->Destroy();
 }
-void AppGui::OnToolExitClicked(wxCommandEvent& event) { Close(); }
+void AppGui::OnToolExitClicked(wxCommandEvent &event) { Close(); }
 
-void AppGui::OnToolInfoClicked(wxCommandEvent& event)
+void AppGui::OnToolInfoClicked(wxCommandEvent &event)
 {
     wxMessageBox(
         "An Asset Portfolio Tracker Application that keeps your asset data "
@@ -459,7 +458,7 @@ void AppGui::createPieChart()
 
 //-----------------------------
 // WxThread functions section
-void AppGui::updateWatchlist(wxThreadEvent& event)
+void AppGui::updateWatchlist(wxThreadEvent &event)
 {
     // send the update data to the main GUI thread. SetPaylod doesn't support
     // unique_ptr
@@ -567,7 +566,8 @@ wxThread::ExitCode UpdaterThread::Entry()
                  << flush;
             if (_update_data._id == "disconnect")
             {
-                cout << "UpdaterThread::disconnect! " << endl << flush;
+                cout << "UpdaterThread::disconnect! " << endl
+                     << flush;
                 _is_start = false;
             }
 
@@ -577,13 +577,15 @@ wxThread::ExitCode UpdaterThread::Entry()
             event.SetPayload(_update_data);
 
             _parent->GetEventHandler()->AddPendingEvent(event);
-            cout << "UpdaterThread:: sent to main GUI " << endl << flush;
+            cout << "UpdaterThread:: sent to main GUI " << endl
+                 << flush;
         }
         else
         {
             std::this_thread::sleep_for(std::chrono::milliseconds(200));
         }
     }
-    cout << "UpdaterThread::watchlistUpdater ends" << endl << flush;
+    cout << "UpdaterThread::watchlistUpdater ends" << endl
+         << flush;
     return 0;
 }

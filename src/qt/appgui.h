@@ -106,7 +106,7 @@ class AppGui : public QMainWindow
     void initWatchlistModel();
     void showMsgWindow(QMessageBox::Icon&& msgtype, const std::string title,
                        const std::string msg);
-    void closeEvent(QCloseEvent* event);
+    void closeEvent();
 
     void createPieChart(vector<string>& categories, vector<double>& data);
     void watchlistUpdater();

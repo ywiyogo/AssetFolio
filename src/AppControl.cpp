@@ -28,7 +28,7 @@ const map<string, AppControl::QueryType> AppControl::_querytype_map = {
 const map<AppControl::QueryType, string> AppControl::_reverse_querytype_map = {
     {QueryType::ISIN, "ISIN"}, {QueryType::SYMBOL, "SYMBOL"}};
 
-Provider::Provider(){};
+Provider::Provider() {}
 Provider::Provider(string name, string url, string xpath)
 {
     _name = name;
@@ -82,10 +82,9 @@ void AppControl::readApiKey()
     else
         cout << "Unable to open file";
 }
-bool AppControl::readLocalRapidJson(const char* filePath,
-                                    vector<string>& column_names)
+bool AppControl::readLocalRapidJson(const char *filePath)
 {
-    FILE* fp = fopen(filePath, "rb"); // non-Windows use "r"
+    FILE *fp = fopen(filePath, "rb"); // non-Windows use "r"
     char readBuffer[65536];
     rapidjson::FileReadStream is(fp, readBuffer, sizeof(readBuffer));
 
@@ -101,7 +100,7 @@ bool AppControl::readLocalRapidJson(const char* filePath,
     auto json_act = _jsonDoc->GetObject()["Transactions"].GetArray();
 
     // creating all asset objects
-    for (int i = 0; i < json_act.Size(); i++)
+    for (unsigned int i = 0; i < json_act.Size(); i++)
     {
         // Retrieve the data
         string strdate = json_act[i]["Date"].GetString();
@@ -109,16 +108,15 @@ bool AppControl::readLocalRapidJson(const char* filePath,
         int yy;
         int mm;
         int dd;
-        sscanf (strdate.c_str(), "%d:%d:%f", &yy, &mm, &dd);
-        tm.tm_year = yy - 1900;  // Years from 1900
-        tm.tm_mon = mm - 1; // Months from January
+        sscanf(strdate.c_str(), "%d:%d:%d", &yy, &mm, &dd);
+        tm.tm_year = yy - 1900; // Years from 1900
+        tm.tm_mon = mm - 1;     // Months from January
         tm.tm_mday = dd;
         time_t date = mktime(&tm);
         string name = json_act[i]["Name"].GetString();
         string id = json_act[i]["ID"].GetString();
         Asset::Type asset_type =
             Asset::_typeMap.at(json_act[i]["AssetType"].GetString());
-
         string type = json_act[i]["Type"].GetString();
 
         Asset::Transaction transact_type = Asset::_transactionMap.at(type);
@@ -154,7 +152,6 @@ bool AppControl::readLocalRapidJson(const char* filePath,
             }
         }
     }
-    // readApiKey();
     return true;
 }
 
@@ -162,14 +159,14 @@ bool AppControl::saveJson(string savepath)
 {
     try
     {
-        FILE* fp = fopen(savepath.c_str(), "wb");
+        FILE *fp = fopen(savepath.c_str(), "wb");
         char writeBuffer[MAX_WRITE_BUFFER];
         rapidjson::FileWriteStream os(fp, writeBuffer, sizeof(writeBuffer));
         rapidjson::Writer<rapidjson::FileWriteStream> writer(os);
         _jsonDoc->Accept(writer);
         fclose(fp);
     }
-    catch (const exception& e)
+    catch (const exception &e)
     {
         cout << e.what();
         return false;
@@ -196,8 +193,8 @@ void AppControl::calcCurrentTotalValues()
     }
 }
 
-void AppControl::calcAllocation(vector<string>& categories,
-                                vector<double>& values)
+void AppControl::calcAllocation(vector<string> &categories,
+                                vector<double> &values)
 {
     categories.clear();
     values.clear();
@@ -209,8 +206,8 @@ void AppControl::calcAllocation(vector<string>& categories,
     }
 }
 
-void AppControl::calcCurrentAllocation(vector<string>& categories,
-                                       vector<double>& values)
+void AppControl::calcCurrentAllocation(vector<string> &categories,
+                                       vector<double> &values)
 {
     categories.clear();
     values.clear();
@@ -256,7 +253,7 @@ void AppControl::stopUpdateTasks()
     _msg_queue.clear();
     _msg_queue.send(move(upd));
 
-    std::for_each(_futures.begin(), _futures.end(), [](std::future<void>& ftr) {
+    std::for_each(_futures.begin(), _futures.end(), [](std::future<void> &ftr) {
         auto status = ftr.wait_for(std::chrono::milliseconds(100));
         if (status == std::future_status::timeout ||
             status == std::future_status::deferred)
@@ -271,7 +268,7 @@ unique_ptr<UpdateData> AppControl::waitForUpdate()
     return move(_msg_queue.waitForUpdate());
 }
 
-bool AppControl::getPriceFromTradegate(vector<unique_ptr<UpdateData>>& updates)
+bool AppControl::getPriceFromTradegate(vector<unique_ptr<UpdateData>> &updates)
 {
     float curr_price = 0.;
     string currency;
@@ -294,9 +291,9 @@ bool AppControl::getPriceFromTradegate(vector<unique_ptr<UpdateData>>& updates)
             continue;
         }
         string url = _providers.at("Tradegate")->_url + it->second->getId();
-        xmlChar* xpathchar1 =
-            (xmlChar*)_providers.at("Tradegate")->_xpath.c_str();
-        xmlChar* xpathchar2 = (xmlChar*)"//*[@id='bid']";
+        xmlChar *xpathchar1 =
+            (xmlChar *)_providers.at("Tradegate")->_xpath.c_str();
+        xmlChar *xpathchar2 = (xmlChar *)"//*[@id='bid']";
 
         auto r = cpr::Get(cpr::Url{url});
         // cout << "Result code: " << r.status_code
@@ -305,11 +302,9 @@ bool AppControl::getPriceFromTradegate(vector<unique_ptr<UpdateData>>& updates)
         //      << flush;
 
         // Parse HTML and create a DOM tree
-        xmlDocPtr doc = htmlReadDoc((xmlChar*)r.text.c_str(), NULL, NULL,
+        xmlDocPtr doc = htmlReadDoc((xmlChar *)r.text.c_str(), NULL, NULL,
                                     HTML_PARSE_NOWARNING | HTML_PARSE_RECOVER |
                                         HTML_PARSE_NOERROR);
-        // Encapsulate raw libxml document in a libxml++ wrapper
-        xmlNode* doc_root = xmlDocGetRootElement(doc);
 
         xmlXPathContextPtr xpath_context = xmlXPathNewContext(doc);
         if (xpath_context == NULL)
@@ -340,7 +335,7 @@ bool AppControl::getPriceFromTradegate(vector<unique_ptr<UpdateData>>& updates)
         xmlNodeSetPtr currency_nodeset = cur_result->nodesetval;
         if (currency_nodeset->nodeNr > 0)
         {
-            xmlChar* curr = xmlNodeListGetString(
+            xmlChar *curr = xmlNodeListGetString(
                 doc, currency_nodeset->nodeTab[0]->xmlChildrenNode, 1);
             stringstream ss;
             ss << curr;
@@ -357,7 +352,7 @@ bool AppControl::getPriceFromTradegate(vector<unique_ptr<UpdateData>>& updates)
         xmlNodeSetPtr nodeset = result->nodesetval;
         for (int i = 0; i < nodeset->nodeNr; i++)
         {
-            xmlChar* keyword = xmlNodeListGetString(
+            xmlChar *keyword = xmlNodeListGetString(
                 doc, nodeset->nodeTab[i]->xmlChildrenNode, 1);
             stringstream ss;
             ss << keyword;
@@ -393,7 +388,7 @@ bool AppControl::getPriceFromTradegate(vector<unique_ptr<UpdateData>>& updates)
         requestFmpApi(updates, fmp_symbols);
     return true;
 }
-void AppControl::update(MsgQueue<UpdateData>& msgqueue, bool& isActive,
+void AppControl::update(MsgQueue<UpdateData> &msgqueue, bool &isActive,
                         unsigned int upd_frequency)
 {
     cout << "AssetUpdate: Start a thread: " << this_thread::get_id() << endl
@@ -402,7 +397,7 @@ void AppControl::update(MsgQueue<UpdateData>& msgqueue, bool& isActive,
     std::chrono::time_point<std::chrono::system_clock> stopWatch;
     // init stop watch
     stopWatch = std::chrono::system_clock::now();
-    long diffUpdate = upd_frequency;
+    unsigned int diffUpdate = upd_frequency;
     vector<unique_ptr<UpdateData>> updates{};
     while (isActive)
     {
@@ -462,18 +457,17 @@ void AppControl::update(MsgQueue<UpdateData>& msgqueue, bool& isActive,
     }
 }
 
-bool AppControl::requestFmpApi(vector<unique_ptr<UpdateData>>& updates,
+bool AppControl::requestFmpApi(vector<unique_ptr<UpdateData>> &updates,
                                string symbols)
 {
     // e.g. https://financialmodelingprep.com/api/v3/quote/ZGUSD,BTCUSD,AAPL
     string url = "https://financialmodelingprep.com/api/v3/quote/" + symbols;
-    cout << "URL: " << url << endl << flush;
     auto r = cpr::Get(cpr::Url{url});
     bool is_found = false;
-    cout << "Result code: " << r.status_code
-         << "\nHeaders: " << r.header["content-type"] << "\n"
-         << r.text << endl
-         << flush;
+    // cout << "Result code: " << r.status_code
+    //      << "\nHeaders: " << r.header["content-type"] << "\n"
+    //      << r.text << endl
+    //      << flush;
     if (r.status_code == 200)
     {
         if (r.header["content-type"].find("application/json") !=
@@ -484,7 +478,7 @@ bool AppControl::requestFmpApi(vector<unique_ptr<UpdateData>>& updates,
             if (json_resp.Size() > 0)
             {
                 is_found = true;
-                for (int i = 0; i < json_resp.Size(); i++)
+                for (unsigned int i = 0; i < json_resp.Size(); i++)
                 { // create an update data and add to the vector reference
                     string id = json_resp[i]["symbol"].GetString();
                     shared_ptr<Asset> asset = _assets->at(id);
@@ -512,7 +506,7 @@ float AppControl::getExchangeRate(string from, string to)
     string symbol;
     bool reverse = false;
     float res = 0.;
-    cout << "From: " << from << " to: " << to << endl;
+
     if (to.compare("USD") == 0)
     {
         symbol = from + to;

@@ -7,6 +7,7 @@
 #include <fstream>
 #include <future>
 #include <iostream>
+#include <sstream>
 mutex Asset::_mtx;
 
 const map<string, Asset::Type> Asset::_typeMap = {
@@ -35,7 +36,6 @@ Asset::~Asset() {}
 void Asset::registerTransaction(Asset::Transaction transaction, time_t reg_date,
                                 float amount, float value_incl_fees)
 {
-
     if (transaction == Transaction::Buy)
     {
         _amount = _amount + amount;
@@ -65,8 +65,12 @@ void Asset::registerTransaction(Asset::Transaction transaction, time_t reg_date,
 void Asset::updateYearlyReturn(time_t reg_date, float total_value,
                                float returns)
 {
-    tm local_tm = *localtime(&reg_date);
-    int register_year = local_tm.tm_year + 1900;
+    std::ostringstream oss;
+    oss << reg_date;
+    int register_year;
+    int mm;
+    int dd;
+    sscanf(oss.str().c_str(), "%d:%d:%d", &register_year, &mm, &dd);
     bool isYearFound = false;
 
     // insert to the return list
