@@ -1,8 +1,10 @@
 # CMake build
 build/
+.vs/
 # CMake local QtCreator setting
 CMakeLists.txt.user
 
+CMakeSettings.json
 data/*.json
 !data/example.json
 !data/example_isin.json

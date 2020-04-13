@@ -11,6 +11,8 @@
 #include <memory>
 using namespace std;
 
+
+
 class Provider
 {
   public:
@@ -24,7 +26,7 @@ class Provider
 class AppControl
 {
   public:
-    AppControl(uint upd_freq);
+    AppControl(unsigned int upd_freq);
     ~AppControl();
 
     enum class QueryType
@@ -78,7 +80,7 @@ class AppControl
   private:
     void calcCurrentTotalValues();
     void update(MsgQueue<UpdateData>& msgqueue, bool& isActive,
-                uint upd_frequency);
+                unsigned int upd_frequency);
     bool requestFmpApi(vector<unique_ptr<UpdateData>>& updates, string symbols);
     float getExchangeRate(string from, string to);
     void checkJson();
@@ -90,7 +92,7 @@ class AppControl
     float _total_values;
     bool _isUpdateActive;
     string _apikey;
-    uint _update_freq;
+    unsigned int _update_freq;
     QueryType _query_type;
     string _currency_ref;
     map<string, shared_ptr<Provider>> _providers;

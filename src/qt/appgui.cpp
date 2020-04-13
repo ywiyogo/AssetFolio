@@ -336,7 +336,7 @@ void AppGui::updateWatchlistModel(UpdateData upd_data)
 
 // ---------------------------------------------------
 // Helper functions section
-void AppGui::initTvTransactions(uint row, uint col)
+void AppGui::initTvTransactions(unsigned int row, unsigned int col)
 {
     if (_transaction_model)
         _transaction_model->clear();

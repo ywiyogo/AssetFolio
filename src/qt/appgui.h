@@ -102,7 +102,7 @@ class AppGui : public QMainWindow
     UpdaterThread _updater;
 
     // internal function
-    void initTvTransactions(uint row, uint col);
+    void initTvTransactions(unsigned int row, unsigned int col);
     void initWatchlistModel();
     void showMsgWindow(QMessageBox::Icon&& msgtype, const std::string title,
                        const std::string msg);

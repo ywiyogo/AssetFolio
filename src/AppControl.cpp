@@ -20,7 +20,7 @@
 #include <sstream> // stringstream
 
 using namespace std;
-const uint MAX_WRITE_BUFFER = 65536;
+const unsigned int MAX_WRITE_BUFFER = 65536;
 
 const map<string, AppControl::QueryType> AppControl::_querytype_map = {
     {"ISIN", QueryType::ISIN}, {"SYMBOL", QueryType::SYMBOL}};
@@ -36,7 +36,7 @@ Provider::Provider(string name, string url, string xpath)
     _xpath = xpath;
 }
 
-AppControl::AppControl(uint upd_freq)
+AppControl::AppControl(unsigned int upd_freq)
     : _jsonDoc(make_shared<rapidjson::Document>()),
       _assets(make_shared<map<string, shared_ptr<Asset>>>()), _futures(),
       _msg_queue(), _isUpdateActive(false), _apikey(""), _update_freq(upd_freq),
@@ -106,7 +106,13 @@ bool AppControl::readLocalRapidJson(const char* filePath,
         // Retrieve the data
         string strdate = json_act[i]["Date"].GetString();
         struct tm tm;
-        strptime(strdate.c_str(), "%d.%m.%Y", &tm);
+        int yy;
+        int mm;
+        int dd;
+        sscanf (strdate.c_str(), "%d:%d:%f", &yy, &mm, &dd);
+        tm.tm_year = yy - 1900;  // Years from 1900
+        tm.tm_mon = mm - 1; // Months from January
+        tm.tm_mday = dd;
         time_t date = mktime(&tm);
         string name = json_act[i]["Name"].GetString();
         string id = json_act[i]["ID"].GetString();
@@ -388,7 +394,7 @@ bool AppControl::getPriceFromTradegate(vector<unique_ptr<UpdateData>>& updates)
     return true;
 }
 void AppControl::update(MsgQueue<UpdateData>& msgqueue, bool& isActive,
-                        uint upd_frequency)
+                        unsigned int upd_frequency)
 {
     cout << "AssetUpdate: Start a thread: " << this_thread::get_id() << endl
          << flush;
@@ -520,7 +526,6 @@ float AppControl::getExchangeRate(string from, string to)
 
     string url = "https://financialmodelingprep.com/api/v3/forex/" + symbol;
     auto r = cpr::Get(cpr::Url{url});
-    bool is_found = false;
     // cout << "Result code: " << r.status_code
     //      << "\nHeaders: " << r.header["content-type"] << "\n"
     //      << r.text << endl
