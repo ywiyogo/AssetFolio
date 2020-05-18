@@ -1,6 +1,6 @@
 ## Introduction
 
-Assetfolio is a multi-asset portfolio tracker that keeps our assets private. In the world of cloud technology, many data and information are shared and concentrate on the big technology companies, banks or the data trader companies. Their activities on how to share our data are not transparent. Assetfolio application helps us to keep or asset information private on our personal computer. It allows us to retrieve information online about the price changes without sharing our asset data.
+AssetFolio is a multi-asset portfolio tracker that keeps our assets private. In the world of cloud technology, many data and information are shared and concentrate on the big technology companies, banks or the data trader companies. Their activities on how to share our data are not transparent. AssetFolio application helps us to keep or asset information private on our personal computer. It allows us to retrieve information online about the price changes without sharing our asset data.
 
 Software Dependencies:
 
@@ -36,15 +36,15 @@ Installing the dependency libraries:
 
 * Ubuntu
 
-        sudo apt-get install build-essential checkinstall libcurl4-openssl-dev libxml2-dev libgtest-dev <libgtk-3-dev|qt5-default qtcreator>
+        sudo apt-get install build-essential checkinstall openssl-dev libcurl4-openssl-dev libxml2-dev libgtest-dev <libgtk-3-dev|qt5-default qtcreator>
 
 * Fedora
 
-        sudo dnf install libcurl-devel libxml2-devel gtest-devel <wxGTK3-devel| qt5-qtbase qt5-qtbase-devel qt-creator>
+        sudo dnf install openssl-devel libcurl-devel libxml2-devel gtest-devel <wxGTK3-devel| qt5-qtbase qt5-qtbase-devel qt-creator>
 
 ### Download the Source
 
-1. Clone this repository: `git clone https://github.com/ywiyogo/Assetfolio.git`
+1. Clone this repository: `git clone https://github.com/ywiyogo/AssetFolio.git`
 
 2. Updating the submodules `git submodule update --init --recursive`
 
@@ -59,7 +59,7 @@ Got to the project folder and type these commands:
 mkdir build && cd build
 cmake ..
 make
-./Assetfolio
+./AssetFolio
 ```
 
 **Windows System**
@@ -70,7 +70,7 @@ Got to the project folder and type these commands:
 mkdir build && cd build
 cmake .. -G "MinGW MakeFiles"
 make
-.\bin\Assetfolio.exe
+.\bin\AssetFolio.exe
 ```
 
 Note, change `set(GUI "Qt")` to `set(GUI "Wx")` to build the GUI with WxWidget.

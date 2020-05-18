@@ -6,17 +6,21 @@ endif()
 
 set(CMAKE_BUILD_TYPE Debug)
 set(GUI "Qt")
-project(Assetfolio VERSION 1.0)
+project(AssetFolio VERSION 1.0 LANGUAGES CXX)
 
 # --------------------------------------
 # third party libraries
 
 if("${GUI}" STREQUAL "Qt")
+    
     set(CMAKE_AUTOUIC ON)
     set(CMAKE_AUTOMOC ON)
     set(CMAKE_AUTORCC ON)
     
-    file(GLOB GUI_SRCS src/qt/*.cpp src/qt/*.ui)
+    set(GUI_SRCS 
+    src/qt/appgui.cpp
+    src/qt/main.cpp
+    src/qt/appgui.ui)
     
     # Windows application icon
     if (WIN32)
@@ -59,20 +63,22 @@ target_include_directories(rapidjson INTERFACE submodules/rapidjson/include)
 
 # Avoid program crash if (RAPID)JSON format is not suitable
 # add_compile_definitions(NDEBUG)
-file(GLOB SRCS src/*.cpp)
 
-# set(LIBSSH2_INCLUDE_DIR "C:/Libs/libssh2/bin/dll/include")
-# set(LIBSSH2_LIBRARY "C:/Libs/libssh2/bin/dll/bin/libssh2.dll")
+set(SRCS
+    src/AppControl.cpp
+    src/Asset.cpp
+    src/Config.cpp
+    src/Stock.cpp
+)
 
+add_subdirectory(submodules/cpr)
 
 if (WIN32)
     if(MSVC)
       add_compile_options(/W3)
-      elseif(MINGW)
+    elseif(MINGW)
       add_compile_options(-Wall -Wextra -Wpedantic)
-      endif()
-    
-
+    endif()
     
     set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib)
     set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
@@ -86,28 +92,19 @@ if (WIN32)
     set(CURL_INCLUDE_DIR "C:/Libs/vcpkg/packages/curl_x64-windows/include")
     list(APPEND CMAKE_PREFIX_PATH "C:/Libs/vcpkg/packages/libssh2_x64-windows/share/libssh2/")
     find_package(Libssh2 REQUIRED)
-    message("DEBUG: start CPR configuration")
-    add_subdirectory(submodules/cpr)
+    
     
     message(STATUS "No CMake Config for LibXml2: set it manually")
     set(LIBXML2_INCLUDE_DIR "C:/Libs/vcpkg/packages/libxml2_x64-windows/include")
     set(LIBXML2_LIBRARY "C:/Libs/vcpkg/packages/libxml2_x64-windows/lib/libxml2.lib")
-    # add_library(xml2 SHARED)
-    # target_include_directories(LibXml2 PUBLIC "C:/Libs/vcpkg/packages/libiconv_x64-windows/include")
-    # target_link_libraries(LibXml2 PRIVATE iconv) #use PUBLIC to iconv!
-    # set_target_properties(xml2 PROPERTIES 
-    # IMPORTED_LOCATION "C:/Libs/vcpkg/packages/libxml2_x64-windows/bin/libxml2.dll"
-    # INTERFACE_INCLUDE_DIRECTORIES "C:/Libs/vcpkg/packages/libxml2_x64-windows/include")
-    # set_property(TARGET xml2 PROPERTY IMPORTED_LOCATION_RELEASE xml2)
-    # set_property(TARGET xml2 PROPERTY IMPORTED_LOCATION_DEBUG xml2)
+
 
     if("${GUI}" STREQUAL "Qt")
-        add_executable(Assetfolio ${SRCS} ${GUI_SRCS} ${RESOURCE_FILES})
-        target_include_directories(Assetfolio PRIVATE ${LIBXML2_INCLUDE_DIR})
-        target_link_libraries(Assetfolio PRIVATE Threads::Threads Qt5::Widgets Qt5::Charts cpr rapidjson ${LIBXML2_LIBRARY} iconv)
+        add_executable(AssetFolio ${SRCS} ${GUI_SRCS} ${RESOURCE_FILES})
+        target_include_directories(AssetFolio PRIVATE ${LIBXML2_INCLUDE_DIR})
+        target_link_libraries(AssetFolio PRIVATE Threads::Threads Qt5::Widgets Qt5::Charts cpr rapidjson ${LIBXML2_LIBRARY} iconv)
         
-        
-        add_custom_command(TARGET Assetfolio POST_BUILD COMMAND ${CMAKE_COMMAND} -E copy_if_different
+        add_custom_command(TARGET AssetFolio POST_BUILD COMMAND ${CMAKE_COMMAND} -E copy_if_different
             $<TARGET_FILE:Qt5::Widgets>
             $<TARGET_FILE:Qt5::Core>
             $<TARGET_FILE:Qt5::Charts>
@@ -115,17 +112,17 @@ if (WIN32)
             "C:/Qt/Qt5.14.1/5.14.1/mingw73_64/bin/libgcc_s_seh-1.dll"
             "C:/Qt/Qt5.14.1/5.14.1/mingw73_64/bin/libstdc++-6.dll"
             "C:/Qt/Qt5.14.1/5.14.1/mingw73_64/bin/libwinpthread-1.dll"
-            $<TARGET_FILE_DIR:Assetfolio>)
+            $<TARGET_FILE_DIR:AssetFolio>)
         
         add_custom_target(build-time-make-directory ALL COMMAND ${CMAKE_COMMAND} -E make_directory platforms)
 
-        add_custom_command(TARGET Assetfolio POST_BUILD COMMAND ${CMAKE_COMMAND} -E copy_if_different
+        add_custom_command(TARGET AssetFolio POST_BUILD COMMAND ${CMAKE_COMMAND} -E copy_if_different
             "C:/Qt/Qt5.14.1/5.14.1/mingw73_64/plugins/platforms/qdirect2d.dll"
             "C:/Qt/Qt5.14.1/5.14.1/mingw73_64/plugins/platforms/qminimal.dll"
             "C:/Qt/Qt5.14.1/5.14.1/mingw73_64/plugins/platforms/qoffscreen.dll"
             "C:/Qt/Qt5.14.1/5.14.1/mingw73_64/plugins/platforms/qwebgl.dll"
             "C:/Qt/Qt5.14.1/5.14.1/mingw73_64/plugins/platforms/qwindows.dll"
-            "$<TARGET_FILE_DIR:Assetfolio>/platforms")
+            "$<TARGET_FILE_DIR:AssetFolio>/platforms")
 
     elseif("${GUI}" STREQUAL "Wx")
         message("Wx Widget for Windows is not supported yet")
@@ -134,31 +131,36 @@ if (WIN32)
     endif()
 
     # Copy the dll to the executable folder
-    add_custom_command ( TARGET Assetfolio POST_BUILD
+    add_custom_command ( TARGET AssetFolio POST_BUILD
     COMMAND ${CMAKE_COMMAND} -E copy_if_different
     "C:/Libs/vcpkg/packages/libxml2_x64-windows/bin/libxml2.dll"
     "C:/Libs/vcpkg/packages/curl_x64-windows/bin/libcurl.dll"
     "C:/Libs/vcpkg/packages/liblzma_x64-windows/bin/lzma.dll"
     "C:/Libs/vcpkg/packages/libiconv_x64-windows/bin/libiconv.dll"
     "C:/Libs/vcpkg/packages/libiconv_x64-windows/bin/libcharset.dll"
-    $<TARGET_FILE_DIR:Assetfolio>)
+    $<TARGET_FILE_DIR:AssetFolio>)
 
-    else()#UNIX
+else()#UNIX
 
     add_compile_options(-Wall -Wextra -Wpedantic)
     find_package(LibXml2 REQUIRED)
-    add_subdirectory(submodules/cpr)
+    
     if("${GUI}" STREQUAL "Qt")
-        add_executable(Assetfolio ${SRCS} ${GUI_SRCS} ${RESOURCE_FILES})
-        # target_include_directories(Assetfolio PRIVATE ${LIBXML2_INCLUDE_DIRS})
-        target_link_libraries(Assetfolio PRIVATE Threads::Threads Qt5::Widgets Qt5::Charts rapidjson cpr LibXml2::LibXml2 )
+        add_executable(AssetFolio ${SRCS} ${GUI_SRCS} ${RESOURCE_FILES})
+        # target_include_directories(AssetFolio PRIVATE ${LIBXML2_INCLUDE_DIRS})
+        target_link_libraries(AssetFolio PRIVATE Threads::Threads Qt5::Widgets Qt5::Charts rapidjson cpr LibXml2::LibXml2 )
     elseif("${GUI}" STREQUAL "Wx")
-        add_executable(Assetfolio ${SRCS} ${GUI_SRCS})
-        target_include_directories(Assetfolio PRIVATE ${wxWidgets_INCLUDE_DIRS})
-        target_link_libraries(Assetfolio Threads::Threads ${wxWidgets_LIBRARIES} curl rapidjson cpr LibXml2::LibXml2)
+        add_executable(AssetFolio ${SRCS} ${GUI_SRCS})
+        target_include_directories(AssetFolio PRIVATE ${wxWidgets_INCLUDE_DIRS})
+        target_link_libraries(AssetFolio Threads::Threads ${wxWidgets_LIBRARIES} curl rapidjson cpr LibXml2::LibXml2)
     endif()
     
 endif()
+
+# Require c++14, better than setting CMAKE_CXX_STANDARD because it won't pollute other targets
+# Set the CC and CXX compiler in the environment variable (unix: .bash_profile)
+target_compile_features(AssetFolio PRIVATE cxx_std_14)
+
 
 
 
