@@ -4,7 +4,7 @@ AssetFolio is a multi-asset portfolio tracker that keeps our assets private. In 
 
 Software Dependencies:
 
-*  [Qt5](https://doc.qt.io/qt-5/gettingstarted.html) or [wxWidgets](https://www.wxwidgets.org/)for the GUI
+* [Qt5](https://doc.qt.io/qt-5/gettingstarted.html) or [wxWidgets](https://www.wxwidgets.org/)for the GUI
 * [RapidJSON](https://github.com/Tencent/rapidjson) (submodule)
 * [C++ Request](https://github.com/whoshuu/cpr) (submodule) which depends on `libcurl`
 * libxml2
@@ -33,10 +33,11 @@ Installing the dependency libraries:
           `.\vcpkg install curl:x64-windows`
           `.\vcpkg install libxml2:x64-windows`
           `.\vcpkg install libssh2:x64-windows`
+          `.\vcpkg install zlib:x64-windows`
 
 * Ubuntu
 
-        sudo apt-get install build-essential checkinstall openssl-dev libcurl4-openssl-dev libxml2-dev libgtest-dev <libgtk-3-dev|qt5-default qtcreator>
+        sudo apt-get install build-essential checkinstall libssl-dev libcurl4-openssl-dev libxml2-dev libgtest-dev <libgtk-3-dev|qt5-default qtcreator>
 
 * Fedora
 

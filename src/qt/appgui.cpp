@@ -348,8 +348,8 @@ void AppGui::initTvTransactions(unsigned int row, unsigned int col)
     // Attach the _transaction_model to the view
 
     ui->tableView->setModel(_transaction_model.get());
-    // editable after double click
-    ui->tableView->setEditTriggers(QAbstractItemView::SelectedClicked);
+    // editable after key press and double click
+    ui->tableView->setEditTriggers(QAbstractItemView::AnyKeyPressed | QAbstractItemView::DoubleClicked);
 
     for (unsigned int i = 0; i < Config::TRANSACTION_COL_NAMES.size(); i++)
     {
