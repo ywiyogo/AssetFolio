@@ -69,6 +69,7 @@
         "hash_set": "cpp",
         "*.ipp": "cpp",
         "qwidget": "cpp",
-        "qchartview": "cpp"
+        "qchartview": "cpp",
+        "qinputdialog": "cpp"
     }
 }

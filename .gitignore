@@ -6,6 +6,7 @@ CMakeLists.txt.user
 
 CMakeSettings.json
 data/*.json
+data/fmp_api.key
 !data/example.json
 !data/example_isin.json
 !data/FMPSymbolList.json

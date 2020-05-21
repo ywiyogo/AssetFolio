@@ -232,7 +232,7 @@
      <x>0</x>
      <y>0</y>
      <width>1500</width>
-     <height>30</height>
+     <height>29</height>
     </rect>
    </property>
   </widget>
@@ -250,7 +250,7 @@
    <addaction name="actionNew"/>
    <addaction name="actionOpen"/>
    <addaction name="actionSave"/>
-   <addaction name="actionRefresh"/>
+   <addaction name="actionAddKey"/>
    <addaction name="actionInfo"/>
    <addaction name="actionExit"/>
    <addaction name="separator"/>
@@ -294,17 +294,17 @@
     <string>Save Data</string>
    </property>
   </action>
-  <action name="actionRefresh">
+  <action name="actionAddKey">
    <property name="icon">
     <iconset>
-     <normalon>:/papirus_refresh32.png</normalon>
+     <normalon>:/papirus_key32.png</normalon>
     </iconset>
    </property>
    <property name="text">
-    <string>Refresh</string>
+    <string>AddKey</string>
    </property>
    <property name="toolTip">
-    <string>Refresh Grid View</string>
+    <string>Add FMP Key</string>
    </property>
   </action>
   <action name="actionInfo">

@@ -4,6 +4,7 @@
 #include "../AppControl.h"
 #include "../MsgQueue.h"
 #include <QFileDialog>
+#include <QInputDialog>
 #include <QLayout>
 #include <QMainWindow>
 #include <QMessageBox>
@@ -75,7 +76,7 @@ class AppGui : public QMainWindow
 
     void on_actionInfo_triggered();
 
-    void on_actionRefresh_triggered();
+    void on_actionAddKey_triggered();
 
     void on_actionSave_triggered();
 

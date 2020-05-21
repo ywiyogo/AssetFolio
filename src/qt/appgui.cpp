@@ -143,7 +143,26 @@ void AppGui::on_actionInfo_triggered()
         "2020");
 }
 
-void AppGui::on_actionRefresh_triggered() {}
+void AppGui::on_actionAddKey_triggered() {
+    bool ok;
+
+    if(!_appControl->readApiKey())
+    {
+        QString fmp_key = QInputDialog::getText(0, "Input FinancialModelingPrep API Key",
+                                            "FMP API Key:", QLineEdit::Normal,
+                                            "", &ok);
+
+        if (ok && !fmp_key.isEmpty()) {
+            _appControl->setApiKey(fmp_key.toStdString());
+        }
+    }
+    else
+    {
+        string msg = "FMP API Key found: " + _appControl->getApiKey();
+        showMsgWindow(QMessageBox::Information, "API Key", msg);
+    }
+    
+}
 
 void AppGui::on_actionSave_triggered()
 {
@@ -227,6 +246,7 @@ void AppGui::on_actionSave_triggered()
 void AppGui::on_tbtnTransaction_clicked()
 {
     ui->tableView->setModel(_transaction_model.get());
+    ui->tableView->resizeColumnsToContents();
     _appControl->stopUpdateTasks();
 }
 
@@ -241,7 +261,17 @@ void AppGui::on_tbtnWatchlist_clicked()
 
         ui->tableView->setModel(_watchlist_model.get());
         ui->tableView->resizeColumnsToContents();
-        _appControl->launchAssetUpdater();
+        ui->tableView->resizeColumnToContents(1);
+        try
+        {
+            _appControl->launchAssetUpdater();
+        }
+        catch(const std::exception& e)
+        {
+            showMsgWindow(QMessageBox::Critical, "Failure", e.what());
+        }
+        
+        
     }
 }
 
@@ -323,17 +353,12 @@ void AppGui::updateWatchlistModel(UpdateData upd_data)
                 ->setForeground(QBrush("red"));
         }
     }
-    // else
-    // {
-    //     cout << "AppGui::Warning, ID " << upd_data._id
-    //          << " not found on the watchlist!" << endl
-    //          << flush;
-    // }
+
     vector<double> data;
     vector<string> categories;
     _appControl->calcCurrentAllocation(categories, data);
-    ui->tableView->horizontalHeader()->setSectionResizeMode(
-        QHeaderView::Stretch);
+    // ui->tableView->horizontalHeader()->setSectionResizeMode(
+    //     QHeaderView::Stretch);
 }
 
 // ---------------------------------------------------
@@ -409,8 +434,8 @@ void AppGui::initWatchlistModel()
         rowPos++;
     }
 
-    ui->tableView->horizontalHeader()->setSectionResizeMode(
-        QHeaderView::Stretch);
+    // ui->tableView->horizontalHeader()->setSectionResizeMode(
+    //     QHeaderView::Stretch);
 
     // Starting the updater thread
     _updater.setAppControl(_appControl);

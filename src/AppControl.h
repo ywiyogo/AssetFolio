@@ -39,8 +39,8 @@ class AppControl
     bool isApiKeyEmpty();
 
     void setApiKey(string key);
-
-    void readApiKey();
+    string getApiKey();
+    bool readApiKey();
 
     bool readLocalRapidJson(const char* filePath);
 
@@ -91,7 +91,7 @@ class AppControl
     MsgQueue<UpdateData> _msg_queue;
     float _total_values;
     bool _isUpdateActive;
-    string _apikey;
+    string _api_key;
     unsigned int _update_freq;
     QueryType _query_type;
     string _currency_ref;

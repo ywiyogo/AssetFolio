@@ -39,7 +39,7 @@ Provider::Provider(string name, string url, string xpath)
 AppControl::AppControl(unsigned int upd_freq)
     : _jsonDoc(make_shared<rapidjson::Document>()),
       _assets(make_shared<map<string, shared_ptr<Asset>>>()), _futures(),
-      _msg_queue(), _isUpdateActive(false), _apikey(""), _update_freq(upd_freq),
+      _msg_queue(), _isUpdateActive(false), _api_key(""), _update_freq(upd_freq),
       _currency_ref("USD")
 {
     // Add the HTML data provider
@@ -49,38 +49,54 @@ AppControl::AppControl(unsigned int upd_freq)
     shared_ptr<Provider> justEtf(make_shared<Provider>(
         "JustETF", "https://www.justetf.com/de/etf-profile.html?isin=",
         "//div[@class='infobox']/div[1]/div[1]/div[1]/span[2]"));
+
+    shared_ptr<Provider> coinMarketCap(make_shared<Provider>(
+        "CoinMarketCap", "https://coinmarketcap.com/currencies/",
+        "/html/body/div/div/div[2]/div[1]/div[2]/div[1]/div/div[1]/span[1]/span[1]"));
     // insert function of a map doesn't accept a shared_ptr or unique_ptr, use
     // emplace instead
     _providers.emplace(tradegate->_name.c_str(), tradegate);
     _providers.emplace(justEtf->_name.c_str(), justEtf);
+    _providers.emplace(coinMarketCap->_name.c_str(), coinMarketCap);
 }
 
 AppControl::~AppControl() {}
 
 bool AppControl::isApiKeyEmpty()
 {
-    return _apikey.compare("") == 0 ? true : false;
+    return _api_key.compare("") == 0 ? true : false;
 }
 
 void AppControl::setApiKey(string key)
 {
-    _apikey = key;
+    _api_key = key;
     ofstream keyfile;
-    keyfile.open("../data/api.key");
+    keyfile.open("../data/fmp_api.key");
     keyfile << key;
     keyfile.close();
 }
-
-void AppControl::readApiKey()
+string AppControl::getApiKey()
 {
-    ifstream keyfile("../data/api.key");
+    return _api_key;
+}
+bool AppControl::readApiKey()
+{
+    ifstream keyfile("../data/fmp_api.key");
     if (keyfile.is_open())
     {
-        getline(keyfile, _apikey);
+        getline(keyfile, _api_key);
         keyfile.close();
+        cout<<" Read API KEY: "<<_api_key<<endl;
+        if (_api_key.empty())
+            return false;
+        else
+            return true;
     }
     else
+    {
         cout << "Unable to open file";
+        return false;
+    }
 }
 bool AppControl::readLocalRapidJson(const char *filePath)
 {
@@ -296,6 +312,7 @@ bool AppControl::getPriceFromTradegate(vector<unique_ptr<UpdateData>> &updates)
         xmlChar *xpathchar2 = (xmlChar *)"//*[@id='bid']";
 
         auto r = cpr::Get(cpr::Url{url});
+
         // cout << "Result code: " << r.status_code
         //      << "\nHeaders: " << r.header["content-type"] << "\n"
         //      << r.text << endl
@@ -332,6 +349,7 @@ bool AppControl::getPriceFromTradegate(vector<unique_ptr<UpdateData>> &updates)
             continue;
             // return NULL;
         }
+
         xmlNodeSetPtr currency_nodeset = cur_result->nodesetval;
         if (currency_nodeset->nodeNr > 0)
         {
@@ -349,6 +367,7 @@ bool AppControl::getPriceFromTradegate(vector<unique_ptr<UpdateData>> &updates)
             printf("No result\n");
             return NULL;
         }
+
         xmlNodeSetPtr nodeset = result->nodesetval;
         for (int i = 0; i < nodeset->nodeNr; i++)
         {
@@ -359,12 +378,14 @@ bool AppControl::getPriceFromTradegate(vector<unique_ptr<UpdateData>> &updates)
             curr_price = stof(ss.str());
             xmlFree(keyword);
         }
+
         xmlXPathFreeObject(cur_result);
         xmlXPathFreeObject(result);
         xmlFreeDoc(doc);
         xmlCleanupParser();
 
         shared_ptr<Asset> asset = _assets->at(it->first);
+
         if (_currency_ref.compare(currency) == 0)
         {
             asset->setCurrPrice(curr_price);
@@ -384,8 +405,11 @@ bool AppControl::getPriceFromTradegate(vector<unique_ptr<UpdateData>> &updates)
         updates.emplace_back(move(upd_data));
     }
     // if FMP symbols exist
-    if (fmp_symbols.size() > 2)
+    if (fmp_symbols.size() > 0)
+    {
         requestFmpApi(updates, fmp_symbols);
+
+    }
     return true;
 }
 void AppControl::update(MsgQueue<UpdateData> &msgqueue, bool &isActive,
@@ -412,7 +436,12 @@ void AppControl::update(MsgQueue<UpdateData> &msgqueue, bool &isActive,
             switch (_query_type)
             {
             case QueryType::ISIN:
-                getPriceFromTradegate(updates);
+
+                if(!getPriceFromTradegate(updates))
+                {
+                    isActive = false;
+                    return;
+                }
                 break;
             case QueryType::SYMBOL:
 
@@ -431,6 +460,7 @@ void AppControl::update(MsgQueue<UpdateData> &msgqueue, bool &isActive,
                 if (!requestFmpApi(updates, symbols))
                 {
                     // stop the task if symbol not found to save CPU resource
+                    isActive = false;
                     return;
                 }
                 break;
@@ -459,9 +489,14 @@ void AppControl::update(MsgQueue<UpdateData> &msgqueue, bool &isActive,
 
 bool AppControl::requestFmpApi(vector<unique_ptr<UpdateData>> &updates,
                                string symbols)
-{
+{   
+    if(_api_key.empty())
+    {
+        cout<<"Warning: FMP API Key is empty!"<<endl<<flush;
+        return false;
+    }
     // e.g. https://financialmodelingprep.com/api/v3/quote/ZGUSD,BTCUSD,AAPL
-    string url = "https://financialmodelingprep.com/api/v3/quote/" + symbols;
+    string url = "https://financialmodelingprep.com/api/v3/quote/" + symbols + "?apikey=" + _api_key;
     auto r = cpr::Get(cpr::Url{url});
     bool is_found = false;
     // cout << "Result code: " << r.status_code
@@ -475,8 +510,9 @@ bool AppControl::requestFmpApi(vector<unique_ptr<UpdateData>> &updates,
         {
             rapidjson::Document json_resp;
             json_resp.Parse(r.text.c_str());
-            if (json_resp.Size() > 0)
-            {
+
+            if (json_resp.IsArray())
+            {   // JSON is an array
                 is_found = true;
                 for (unsigned int i = 0; i < json_resp.Size(); i++)
                 { // create an update data and add to the vector reference
@@ -491,6 +527,14 @@ bool AppControl::requestFmpApi(vector<unique_ptr<UpdateData>> &updates,
                     updates.emplace_back(move(upd_data));
                 }
             }
+            else
+            {   // JSON is an object
+                if (json_resp.HasMember("Error Message"))
+                {
+                    cout << r.text.c_str() << endl;
+                    return false;
+                }
+            }
         }
     }
     else
@@ -503,52 +547,66 @@ bool AppControl::requestFmpApi(vector<unique_ptr<UpdateData>> &updates,
 
 float AppControl::getExchangeRate(string from, string to)
 {
-    string symbol;
-    bool reverse = false;
     float res = 0.;
-
-    if (to.compare("USD") == 0)
-    {
-        symbol = from + to;
-    }
-    else
-    {
-        if (from.compare("USD") == 0)
-            symbol = to + from;
-        reverse = true;
-    }
-
-    string url = "https://financialmodelingprep.com/api/v3/forex/" + symbol;
+    // string symbol;
+    // if (to.compare("USD") == 0)
+    // {
+    //     symbol = from + to;
+    // }
+    // else
+    // {
+    //     if (from.compare("USD") == 0)
+    //         symbol = to + from;
+    // }
+    // string url = "https://financialmodelingprep.com/api/v3/forex/" + symbol;
+    
+    string url = "https://api.exchangeratesapi.io/latest?base="+from+"&symbols="+to;
+    
     auto r = cpr::Get(cpr::Url{url});
-    // cout << "Result code: " << r.status_code
+    
+    // cout << "\nResult code: " << r.status_code
     //      << "\nHeaders: " << r.header["content-type"] << "\n"
     //      << r.text << endl
     //      << flush;
     if (r.status_code == 200)
     {
+        
         if (r.header["content-type"].find("application/json") !=
             std::string::npos)
         {
             rapidjson::Document json_resp;
+            
             json_resp.Parse(r.text.c_str());
-            if (!json_resp.HasMember("bid"))
+
+            if (!json_resp.HasMember("rates"))
             {
                 throw AppException("Currency exchange from " + from + "to " +
                                    to + "is not found");
             }
-            string bid = json_resp["bid"].GetString();
-            if (!reverse)
-                res = stof(bid);
-            else
-            {
-                res = 1. / stof(bid);
+
+            for (rapidjson::Value::ConstMemberIterator itr = json_resp["rates"].MemberBegin(); itr != json_resp["rates"].MemberEnd(); ++itr) {
+                if(to.compare(itr->name.GetString()) == 0)
+                {
+                    res = itr->value.GetFloat();
+                    return res;
+                }
             }
+            // rapidjson::GenericObject rate = json_resp["rates"].GetObject();
+            // cout<<rate<<flush;
+            // if (!reverse)
+            //     res = stof(rate);
+            // else
+            // {
+            //     res = 1. / stof(rate);
+            // }
+            // cout << "Debug 8 "<<rate<<flush;
         }
     }
     else
     {
         cout << "Request error " << r.status_code << ". " << r.text << endl;
     }
+    
     return res;
 }
 

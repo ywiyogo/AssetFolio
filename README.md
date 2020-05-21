@@ -10,8 +10,9 @@ Software Dependencies:
 * libxml2
 
 REST-API Provider:
-* Without API key: [financialmodelingprep](https://financialmodelingprep.com/developer/docs/)
-* With API key: will be done after a feature request
+* FMP API key: [financialmodelingprep](https://financialmodelingprep.com/developer/docs/)
+
+As an option, the API key is needed for retrieving the price of the cryptocurrencies and commodity assets.
 
 Preview for the activity list:
 
