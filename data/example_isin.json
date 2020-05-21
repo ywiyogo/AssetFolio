@@ -134,13 +134,13 @@
         },
         {
             "Date": "20.12.2016",
-            "ID": "DE000ETFL326",
-            "Name": "Deka MSCI China",
-            "AssetType": "ETF",
+            "ID": "RE1",
+            "Name": "Apartment in Frankfurt",
+            "AssetType": "Real Estate",
             "Type": "Buy",
-            "Transaction": 2513.7,
-            "Amount": 350,
-            "Broker": "ING"
+            "Transaction": 20000.0,
+            "Amount": 1,
+            "Broker": "Agent Z"
         },
         {
             "Date": "22.12.2016",

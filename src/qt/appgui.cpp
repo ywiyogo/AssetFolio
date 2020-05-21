@@ -375,7 +375,9 @@ void AppGui::initTvTransactions(unsigned int row, unsigned int col)
     ui->tableView->setModel(_transaction_model.get());
     // editable after key press and double click
     ui->tableView->setEditTriggers(QAbstractItemView::AnyKeyPressed | QAbstractItemView::DoubleClicked);
-
+    // activate the column sorting
+    ui->tableView->setSortingEnabled(true);
+    
     for (unsigned int i = 0; i < Config::TRANSACTION_COL_NAMES.size(); i++)
     {
         _transaction_model->setHeaderData(
