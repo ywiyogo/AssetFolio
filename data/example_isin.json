@@ -13,6 +13,16 @@
             "Broker": "YBroker"
         },
         {
+            "Date": "20.05.2014",
+            "ID": "RE1",
+            "Name": "Apartment in Frankfurt",
+            "AssetType": "Real Estate",
+            "Type": "Buy",
+            "Transaction": 20000.0,
+            "Amount": 1,
+            "Broker": "Agent Z"
+        },
+        {
             "Date": "13.01.2015",
             "ID": "IE00B5LJZQ16",
             "Name": "HSBC MSCI RUSSIA",
@@ -131,16 +141,6 @@
             "Transaction": 5.61,
             "Amount": 0,
             "Broker": ""
-        },
-        {
-            "Date": "20.12.2016",
-            "ID": "RE1",
-            "Name": "Apartment in Frankfurt",
-            "AssetType": "Real Estate",
-            "Type": "Buy",
-            "Transaction": 20000.0,
-            "Amount": 1,
-            "Broker": "Agent Z"
         },
         {
             "Date": "22.12.2016",

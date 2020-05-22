@@ -270,7 +270,7 @@ void AppControl::stopUpdateTasks()
     _msg_queue.send(move(upd));
 
     std::for_each(_futures.begin(), _futures.end(), [](std::future<void> &ftr) {
-        auto status = ftr.wait_for(std::chrono::milliseconds(100));
+        auto status = ftr.wait_for(std::chrono::milliseconds(10));
         if (status == std::future_status::timeout ||
             status == std::future_status::deferred)
         {

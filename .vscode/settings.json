@@ -70,6 +70,11 @@
         "*.ipp": "cpp",
         "qwidget": "cpp",
         "qchartview": "cpp",
-        "qinputdialog": "cpp"
+        "qinputdialog": "cpp",
+        "qmainwindow": "cpp",
+        "qlayout": "cpp",
+        "qtableview": "cpp",
+        "qapplication": "cpp",
+        "qkeyevent": "cpp"
     }
 }

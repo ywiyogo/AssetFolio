@@ -169,7 +169,7 @@
          <property name="handleWidth">
           <number>7</number>
          </property>
-         <widget class="QTableView" name="tableView">
+         <widget class="CustomTableView" name="tableView">
           <property name="sizePolicy">
            <sizepolicy hsizetype="Preferred" vsizetype="Expanding">
             <horstretch>2</horstretch>
@@ -334,6 +334,13 @@
    </property>
   </action>
  </widget>
+ <customwidgets>
+  <customwidget>
+   <class>CustomTableView</class>
+   <extends>QTableView</extends>
+   <header>customtableview.h</header>
+  </customwidget>
+ </customwidgets>
  <resources>
   <include location="../../resource/resources.qrc"/>
  </resources>

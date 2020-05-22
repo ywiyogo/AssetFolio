@@ -16,10 +16,11 @@ if("${GUI}" STREQUAL "Qt")
     set(CMAKE_AUTOUIC ON)
     set(CMAKE_AUTOMOC ON)
     set(CMAKE_AUTORCC ON)
-    
+    # all cpp source files for Qt
     set(GUI_SRCS 
     src/qt/appgui.cpp
     src/qt/main.cpp
+    src/qt/customtableview.cpp
     src/qt/appgui.ui)
     
     # Windows application icon
@@ -52,15 +53,13 @@ endif()
 
 find_package(Threads REQUIRED)
 # C++ Request flags
-
 set(USE_SYSTEM_CURL ON)
 set(BUILD_CPR_TESTS OFF)
 set(USE_SYSTEM_GTEST ON)
-# RapidJSON
 
+# RapidJSON
 add_library(rapidjson INTERFACE)
 target_include_directories(rapidjson INTERFACE submodules/rapidjson/include)
-
 # Avoid program crash if (RAPID)JSON format is not suitable
 # add_compile_definitions(NDEBUG)
 
@@ -101,7 +100,8 @@ if (WIN32)
 
     if("${GUI}" STREQUAL "Qt")
         add_executable(AssetFolio ${SRCS} ${GUI_SRCS} ${RESOURCE_FILES})
-        target_include_directories(AssetFolio PRIVATE ${LIBXML2_INCLUDE_DIR})
+        target_include_directories(AssetFolio PRIVATE ${LIBXML2_INCLUDE_DIR} src/qt)
+        target_include_directories(AssetFolio PRIVATE )
         target_link_libraries(AssetFolio PRIVATE Threads::Threads Qt5::Widgets Qt5::Charts cpr rapidjson ${LIBXML2_LIBRARY} iconv)
         
         add_custom_command(TARGET AssetFolio POST_BUILD COMMAND ${CMAKE_COMMAND} -E copy_if_different
@@ -147,7 +147,8 @@ else()#UNIX
     
     if("${GUI}" STREQUAL "Qt")
         add_executable(AssetFolio ${SRCS} ${GUI_SRCS} ${RESOURCE_FILES})
-        # target_include_directories(AssetFolio PRIVATE ${LIBXML2_INCLUDE_DIRS})
+        # The next line is needed for the Qt custom classes
+        target_include_directories(AssetFolio PRIVATE src/qt)
         target_link_libraries(AssetFolio PRIVATE Threads::Threads Qt5::Widgets Qt5::Charts rapidjson cpr LibXml2::LibXml2 )
     elseif("${GUI}" STREQUAL "Wx")
         add_executable(AssetFolio ${SRCS} ${GUI_SRCS})

@@ -2,6 +2,8 @@
 #include "../Config.h"
 #include "ui_appgui.h"
 #include <QMetaType>
+#include <QClipboard>
+#include "customtableview.h"
 
 AppGui::AppGui(QWidget *parent)
     : QMainWindow(parent), ui(new Ui::AppGui),
@@ -270,18 +272,13 @@ void AppGui::on_tbtnWatchlist_clicked()
         {
             showMsgWindow(QMessageBox::Critical, "Failure", e.what());
         }
-        
-        
     }
 }
 
-void AppGui::closeEvent() { _appControl->stopUpdateTasks(); }
+void AppGui::closeEvent(QCloseEvent *event) { _appControl->stopUpdateTasks(); }
 
 void AppGui::updateWatchlistModel(UpdateData upd_data)
 {
-    // std::cout << "AppGui::watchlistUpdater get data, id: " << upd_data._id
-    //           << endl
-    //           << flush;
     QList<QStandardItem *> found_list = _watchlist_model->findItems(
         QString(upd_data._id.c_str()), Qt::MatchContains);
 
@@ -377,7 +374,7 @@ void AppGui::initTvTransactions(unsigned int row, unsigned int col)
     ui->tableView->setEditTriggers(QAbstractItemView::AnyKeyPressed | QAbstractItemView::DoubleClicked);
     // activate the column sorting
     ui->tableView->setSortingEnabled(true);
-    
+
     for (unsigned int i = 0; i < Config::TRANSACTION_COL_NAMES.size(); i++)
     {
         _transaction_model->setHeaderData(

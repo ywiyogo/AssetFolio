@@ -1,18 +1,10 @@
 ## Introduction
 
-AssetFolio is a multi-asset portfolio tracker that keeps our assets private. In the world of cloud technology, many data and information are shared and concentrate on the big technology companies, banks or the data trader companies. Their activities on how to share our data are not transparent. AssetFolio application helps us to keep or asset information private on our personal computer. It allows us to retrieve information online about the price changes without sharing our asset data.
+AssetFolio is a multi-asset portfolio tracker that keeps our assets private. In the world of cloud technology, many data and information are shared and concentrate on the big technology companies, banks or the data trader companies. Their activities on how to share our data are not transparent. AssetFolio application helps us to keep our asset information private in our computer. It allows us to retrieve information online about the price changes without sharing our asset data.
 
-Software Dependencies:
-
-* [Qt5](https://doc.qt.io/qt-5/gettingstarted.html) or [wxWidgets](https://www.wxwidgets.org/)for the GUI
-* [RapidJSON](https://github.com/Tencent/rapidjson) (submodule)
-* [C++ Request](https://github.com/whoshuu/cpr) (submodule) which depends on `libcurl`
-* libxml2
-
-REST-API Provider:
+As an option, an FMP API key is needed for retrieving the price of the cryptocurrencies and commodity assets. The REST-API key can be optain from:
 * FMP API key: [financialmodelingprep](https://financialmodelingprep.com/developer/docs/)
 
-As an option, the API key is needed for retrieving the price of the cryptocurrencies and commodity assets.
 
 Preview for the activity list:
 
@@ -21,7 +13,22 @@ Preview for the activity list:
 Preview for the watchlist and asset tracker:
 
 ![Watchlist][watchlist]
-## Getting Started
+
+## Donation
+
+You can give me a donation if you want to get the application directly for your OS. 
+If you don't understand about software build and want, or you don't have a time to build, you can donate me first and I'll support you.
+
+[![paypal](https://www.paypalobjects.com/en_US/i/btn/btn_donateCC_LG.gif)](https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=9H9M4LHP8L8EQ&source=url)
+
+## Getting Started for Building the Application
+
+Software Dependencies:
+
+* [Qt5](https://doc.qt.io/qt-5/gettingstarted.html) or [wxWidgets](https://www.wxwidgets.org/)for the GUI
+* [RapidJSON](https://github.com/Tencent/rapidjson) (submodule)
+* [C++ Request](https://github.com/whoshuu/cpr) (submodule) which depends on `libcurl`
+* libxml2
 
 Installing the dependency libraries:
 

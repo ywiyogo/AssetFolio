@@ -14,6 +14,7 @@
 #include <QWaitCondition>
 #include <QtCharts/QChartView>
 #include <QtCharts/QPieSeries>
+#include <QtWidgets/QTableView>
 #include <memory>
 
 QT_BEGIN_NAMESPACE
@@ -107,7 +108,7 @@ class AppGui : public QMainWindow
     void initWatchlistModel();
     void showMsgWindow(QMessageBox::Icon&& msgtype, const std::string title,
                        const std::string msg);
-    void closeEvent();
+    void closeEvent(QCloseEvent *event);
 
     void createPieChart(vector<string>& categories, vector<double>& data);
     void watchlistUpdater();
