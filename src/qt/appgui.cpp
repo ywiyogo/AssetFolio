@@ -137,7 +137,7 @@ void AppGui::on_actionExit_triggered() { QCoreApplication::quit(); }
 void AppGui::on_actionInfo_triggered()
 {
     showMsgWindow(
-        QMessageBox::Information, "About Assetfolio",
+        QMessageBox::Information, "About Assetfolio 1.0",
         "An Asset Portfolio Tracker Application that keeps your asset data "
         "private. We don't need to signup and give up our data to the cloud "
         "server.\nCheck and read the README in "
@@ -170,80 +170,124 @@ void AppGui::on_actionSave_triggered()
 {
     QString filename = QFileDialog::getSaveFileName(
         this, "Save transactions to JSON file", ".", "JSON (*.json)");
-
     if (filename.isNull())
     {
         return;
     }
-
-    // vector<string> col_names;
-    shared_ptr<rapidjson::Document> json_save = _appControl->getJsonDoc();
-    string savepath = filename.toStdString();
-    string backuppath = savepath + ".bak";
-    // save a backup
-    _appControl->saveJson(backuppath);
-    json_save->RemoveAllMembers();
-    json_save->SetObject();
-    rapidjson::Document::AllocatorType &allocator = json_save->GetAllocator();
-
-    rapidjson::Value entry_array(rapidjson::kArrayType);
-
-    for (int row = 0; row < _transaction_model->rowCount(); row++)
+    try
     {
-        rapidjson::Value entry_obj(rapidjson::kObjectType);
-        QModelIndex index = _transaction_model->index(row, 0, QModelIndex());
-        cout << _transaction_model->data(index).toString().toStdString()
-             << endl;
-        if (_transaction_model->data(index).toString().toStdString().empty())
-        { // first empty row
-            continue;
-        }
+        shared_ptr<rapidjson::Document> json_save = _appControl->getJsonDoc();
+        string savepath = filename.toStdString();
+        string backuppath = savepath + ".bak";
+        // save a backup
+        _appControl->saveJson(backuppath);
+        
+        if (json_save->IsObject())
+            json_save->RemoveAllMembers();
 
-        for (uint col = 0; col < Config::TRANSACTION_COL_NAMES.size(); col++)
+        json_save->SetObject();
+        rapidjson::Document::AllocatorType &allocator = json_save->GetAllocator();
+        rapidjson::Value entry_array(rapidjson::kArrayType);
+        struct tm tm;
+
+        for (int row = 0; row < _transaction_model->rowCount(); row++)
         {
-            string column_name =
-                _transaction_model->headerData(col, Qt::Horizontal)
-                    .toString()
-                    .toStdString();
-            rapidjson::Value name(column_name.c_str(), allocator);
-            rapidjson::Value value;
-            index = _transaction_model->index(row, col, QModelIndex());
-            if ((column_name.compare("Transaction") == 0) ||
-                (column_name.compare("Amount") == 0))
-            {
+            rapidjson::Value entry_obj(rapidjson::kObjectType);
+            QModelIndex index = _transaction_model->index(row, 0, QModelIndex());
 
-                value.SetFloat(AppControl::stringToFloat(
-                    _transaction_model->data(index).toString().toStdString(),
-                    2));
-            }
-            else
-            {
-                value.SetString(_transaction_model->data(index)
-                                    .toString()
-                                    .toStdString()
-                                    .c_str(),
-                                allocator);
+            if (_transaction_model->data(index).toString().toStdString().empty())
+            { // first empty row
+                continue;
             }
 
-            entry_obj.AddMember(name, value, allocator);
+            string date = _transaction_model->data(index).toString().toStdString();
+            if (!strptime(date.c_str(), "%d.%m.%Y", &tm))
+                throw runtime_error("Invalid date on row " + std::to_string(row) + " !");
+
+            for (uint col = 0; col < Config::TRANSACTION_COL_NAMES.size(); col++)
+            {
+                string column_name =
+                    _transaction_model->headerData(col, Qt::Horizontal)
+                        .toString()
+                        .toStdString();
+                rapidjson::Value name(column_name.c_str(), allocator);
+                rapidjson::Value value;
+                index = _transaction_model->index(row, col, QModelIndex());
+                string input = _transaction_model->data(index).toString().toStdString();
+                if (column_name.compare("ID") == 0)
+                {
+                    if (input.length() == 12)
+                    {
+                        value.SetString(input.c_str(), allocator);
+                        _appControl->setQueryType("ISIN");
+                    }
+                        
+                    else if (input.length() < 2)
+                    {
+                        throw runtime_error("Invalid ID of row " + std::to_string(row) + " !");
+                    }
+                    else
+                    {
+                        value.SetString(input.c_str(), allocator);
+                        _appControl->setQueryType("SYMBOL");
+                    }
+                }
+                else if ((column_name.compare("Transaction") == 0) ||
+                         (column_name.compare("Amount") == 0))
+                {
+                    for (uint i = 0; i < input.length(); i++)
+                        if (isdigit(input[i]))
+                            value.SetFloat(AppControl::stringToFloat(input, 2));
+                        else
+                        {
+                            //when one non numeric value is found, throw exeption
+                            throw runtime_error("Invalid value on column " + column_name + " row " + std::to_string(row) + " !");
+                        }
+                }
+                else if (column_name.compare("AssetType") == 0)
+                {
+                    if (_appControl->isAssetTypeValid(input))
+                        value.SetString(input.c_str(), allocator);
+                    else
+                    {
+                        throw runtime_error("Invalid value on Column 'AssetType', row " + std::to_string(row) + " !\nChoose one of these options:\nStock, ETF, Bond, Real Estate, Crypto, Commodity, or Certificate");
+                    }
+                        
+                }
+                else if (column_name.compare("Type") == 0)
+                {
+                    if (_appControl->isTransactionTypeValid(input))
+                        value.SetString(input.c_str(), allocator);
+                    else
+                        throw runtime_error("Invalid value on Column 'Type', row " + std::to_string(row) + " !\nChoose one of these options:\nBuy, Sell, ROI");
+                }
+                else
+                {
+                    value.SetString(input.c_str(),
+                                    allocator);
+                }
+                entry_obj.AddMember(name, value, allocator);
+            }
+            entry_array.PushBack(entry_obj, allocator);
         }
-        entry_array.PushBack(entry_obj, allocator);
+        json_save->AddMember("QueryType", _appControl->getQueryType(), allocator);
+        json_save->AddMember("Currency", _appControl->getCurrency(), allocator);
+        json_save->AddMember("Transactions", entry_array, allocator);
+        std::remove(backuppath.c_str());
+        if (!_appControl->saveJson(savepath))
+        {
+            showMsgWindow(QMessageBox::Warning, "Failure",
+                          "JSON file cannot be saved");
+        }
+        // update the piechart
+        vector<double> data;
+        vector<string> categories;
+        _appControl->calcAllocation(categories, data);
     }
-
-    json_save->AddMember("QueryType", _appControl->getQueryType(), allocator);
-    json_save->AddMember("Currency", _appControl->getCurrency(), allocator);
-    json_save->AddMember("Transactions", entry_array, allocator);
-    std::remove(backuppath.c_str());
-    if (!_appControl->saveJson(savepath))
+    catch (const std::exception &e)
     {
-        showMsgWindow(QMessageBox::Warning, "Failure",
-                      "JSON file cannot be saved");
+        showMsgWindow(QMessageBox::Critical, "Failure", e.what());
     }
-
-    // update the piechart
-    vector<double> data;
-    vector<string> categories;
-    _appControl->calcAllocation(categories, data);
 }
 void AppGui::on_tbtnTransaction_clicked()
 {

@@ -656,7 +656,7 @@ float AppControl::stringToFloat(string numstr, int precision)
     stringstream stream;
     stream << fixed << setprecision(precision) << stof(numstr);
     return stof(stream.str());
-    ;
+    
 }
 
 rapidjson::Value AppControl::getQueryType()
@@ -666,9 +666,44 @@ rapidjson::Value AppControl::getQueryType()
                     _reverse_querytype_map.at(_query_type).size());
     return query;
 }
+void AppControl::setQueryType(string type)
+{
+    _query_type = _querytype_map.at(type);
+}
+
 rapidjson::Value AppControl::getCurrency()
 {
     rapidjson::Value curency(rapidjson::kStringType);
     curency.SetString(_currency_ref.c_str(), _currency_ref.size());
     return curency;
+}
+
+void AppControl::setCurrency(string currency)
+{
+    _currency_ref = currency;
+}
+
+bool AppControl::isAssetTypeValid(string input)
+{
+    if (Asset::_typeMap.find(input) == Asset::_typeMap.end())
+    {
+        return false;
+    }
+    else
+    {
+        return true;
+    }
+    
+}
+
+bool AppControl::isTransactionTypeValid(string input)
+{
+    if (Asset::_transactionMap.find(input) == Asset::_transactionMap.end())
+    {
+        return false;
+    }
+    else
+    {
+        return true;
+    }
 }

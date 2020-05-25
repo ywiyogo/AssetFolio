@@ -47,6 +47,10 @@ class AppControl
     void writeDataToJson(vector<string>& column_names);
 
     bool saveJson(string savepath);
+
+    bool isAssetTypeValid(string input);
+    bool isTransactionTypeValid(string input);
+
     shared_ptr<rapidjson::Document> getJsonDoc() const;
 
     shared_ptr<map<string, shared_ptr<Asset>>> getAssets() const;
@@ -67,7 +71,11 @@ class AppControl
     static string floatToString(float number, int precision);
     static float stringToFloat(string numstr, int precision);
     rapidjson::Value getQueryType();
+    void setQueryType(string type);
+
     rapidjson::Value getCurrency();
+    
+    void setCurrency(string currency);
 
     struct AppException : public exception
     {

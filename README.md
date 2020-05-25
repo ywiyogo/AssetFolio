@@ -37,7 +37,8 @@ Installing the dependency libraries:
     1. Install Git, MinGW w64, and Qt5
     2. Clone vcpkg to C:/Libs/: `git clone https://github.com/microsoft/vcpkg.git`
     2. Build vcpkg by running `.\bootstrap-vcpkg.bat`
-    3. Install the libraries:
+    3. Hook-up user-wide integration: `.\vcpkg integrate install`
+    3. Install the library packages:
           `.\vcpkg install curl:x64-windows`
           `.\vcpkg install libxml2:x64-windows`
           `.\vcpkg install libssh2:x64-windows`
@@ -69,6 +70,14 @@ mkdir build && cd build
 cmake ..
 make
 ./AssetFolio
+```
+
+In order to create an AppImage of the AssetFolio, run these commands after `make`:
+
+```
+make install DESTDIR=AppDir
+./createAppImage.sh
+
 ```
 
 **Windows System**

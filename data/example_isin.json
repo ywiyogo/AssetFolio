@@ -95,7 +95,7 @@
         {
             "Date": "17.11.2016",
             "ID": "IE00B0M63177",
-            "Name": "iShares MSCI Emerging Market",
+            "Name": "iShares MSCI EM",
             "AssetType": "ETF",
             "Type": "Buy",
             "Transaction": 2149.7,
@@ -155,7 +155,7 @@
         {
             "Date": "23.12.2016",
             "ID": "LU1686830909",
-            "Name": "Lyxor iBOXX Emerging Market",
+            "Name": "Lyxor iBOXX EM",
             "AssetType": "ETF",
             "Type": "Buy",
             "Transaction": 1429.88,

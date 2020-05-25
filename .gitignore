@@ -1,6 +1,7 @@
 # CMake build
 build/
 .vs/
+.vscode/settings.json
 # CMake local QtCreator setting
 CMakeLists.txt.user
 
