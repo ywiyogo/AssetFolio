@@ -1,0 +1,11 @@
+[Desktop Entry]
+Version=1.0
+Name=AssetFolio
+Comment=Cross-platform asset portfolio
+Exec=AssetFolio %f
+Icon=AssetFolio
+Terminal=false
+X-MultipleArgs=false
+Type=Application
+Categories=Development;
+StartupNotify=true

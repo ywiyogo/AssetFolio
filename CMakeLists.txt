@@ -6,6 +6,7 @@ endif()
 
 set(CMAKE_BUILD_TYPE Debug)
 set(GUI "Qt")
+
 project(AssetFolio VERSION 1.0 LANGUAGES CXX)
 
 # --------------------------------------
@@ -53,9 +54,7 @@ endif()
 
 find_package(Threads REQUIRED)
 # C++ Request flags
-set(USE_SYSTEM_CURL ON)
-set(BUILD_CPR_TESTS OFF)
-set(USE_SYSTEM_GTEST ON)
+set(BUILD_CPR_TESTS OFF CACHE BOOL "Don't build cpr tests")
 
 # RapidJSON
 add_library(rapidjson INTERFACE)
@@ -69,8 +68,13 @@ set(SRCS
     src/Config.cpp
     src/Stock.cpp
 )
-
+if (WIN32)
+  set(CURL_DIR "C:/Libs/vcpkg/installed/x64-windows/share/curl")
+endif()
+find_package(CURL REQUIRED)
+set(USE_SYSTEM_CURL ON CACHE BOOL "Use the system curl for faster builds")
 add_subdirectory(submodules/cpr)
+
 
 if (WIN32)
     if(MSVC)
@@ -84,14 +88,7 @@ if (WIN32)
     add_library(iconv INTERFACE)
     target_include_directories(iconv INTERFACE "C:/Libs/vcpkg/packages/libiconv_x64-windows/include")
 
-    list(APPEND CMAKE_PREFIX_PATH "C:/Libs/vcpkg/packages/curl_x64-windows/share/curl/")
-    find_package(CURL CONFIG REQUIRED)
-    # For deal with the old cmake in CPR, use the static library
-    set(CURL_LIBRARY "C:/Libs/vcpkg/packages/curl_x64-windows/lib/libcurl.lib")
-    set(CURL_INCLUDE_DIR "C:/Libs/vcpkg/packages/curl_x64-windows/include")
-    list(APPEND CMAKE_PREFIX_PATH "C:/Libs/vcpkg/packages/libssh2_x64-windows/share/libssh2/")
     find_package(Libssh2 REQUIRED)
-    
     
     message(STATUS "No CMake Config for LibXml2: set it manually")
     set(LIBXML2_INCLUDE_DIR "C:/Libs/vcpkg/packages/libxml2_x64-windows/include")
@@ -114,7 +111,7 @@ if (WIN32)
             "C:/Qt/Qt5.14.1/5.14.1/mingw73_64/bin/libwinpthread-1.dll"
             $<TARGET_FILE_DIR:AssetFolio>)
         
-        add_custom_target(build-time-make-directory ALL COMMAND ${CMAKE_COMMAND} -E make_directory platforms)
+        file(MAKE_DIRECTORY "${CMAKE_BINARY_DIR}/bin/platforms/")
 
         add_custom_command(TARGET AssetFolio POST_BUILD COMMAND ${CMAKE_COMMAND} -E copy_if_different
             "C:/Qt/Qt5.14.1/5.14.1/mingw73_64/plugins/platforms/qdirect2d.dll"
@@ -141,6 +138,7 @@ if (WIN32)
     $<TARGET_FILE_DIR:AssetFolio>)
 
 else()#UNIX
+    # For AppImage
 
     add_compile_options(-Wall -Wextra -Wpedantic)
     find_package(LibXml2 REQUIRED)
@@ -155,13 +153,14 @@ else()#UNIX
         target_include_directories(AssetFolio PRIVATE ${wxWidgets_INCLUDE_DIRS})
         target_link_libraries(AssetFolio Threads::Threads ${wxWidgets_LIBRARIES} curl rapidjson cpr LibXml2::LibXml2)
     endif()
-    
+    install(FILES resource/AssetFolio.desktop DESTINATION .)
 endif()
 
 # Require c++14, better than setting CMAKE_CXX_STANDARD because it won't pollute other targets
 # Set the CC and CXX compiler in the environment variable (unix: .bash_profile)
 target_compile_features(AssetFolio PRIVATE cxx_std_14)
-
+# placing the binary in the bin folder of the destination
+install(TARGETS AssetFolio DESTINATION bin)
 
 
 
