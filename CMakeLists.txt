@@ -68,16 +68,9 @@ set(SRCS
     src/Config.cpp
     src/Stock.cpp
 )
-if (WIN32)
-  set(CURL_DIR "C:/Libs/vcpkg/installed/x64-windows/share/curl/")
-  set(OPENSSL_ROOT_DIR "C:/Program Files/OpenSSL-Win64")
-  set(OPENSSL_LIBRARIES
-  "C:/Program Files/OpenSSL-Win64/lib/libcrypto.lib"
-  "C:/Program Files/OpenSSL-Win64/lib/libssl.lib")
-endif()
+
 set(USE_SYSTEM_CURL ON CACHE BOOL "Use the system curl for faster builds")
-find_package(CURL CONFIG REQUIRED)
-add_subdirectory(submodules/cpr)
+
 
 if (WIN32)
     if(MSVC)
@@ -88,6 +81,15 @@ if (WIN32)
     
     set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib)
     set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
+
+    set(CURL_DIR "C:/Libs/vcpkg/installed/x64-windows/share/curl/")
+    set(OPENSSL_ROOT_DIR "C:/Program Files/OpenSSL-Win64")
+    set(OPENSSL_LIBRARIES
+    "C:/Program Files/OpenSSL-Win64/lib/libcrypto.lib"
+    "C:/Program Files/OpenSSL-Win64/lib/libssl.lib")
+    find_package(CURL CONFIG REQUIRED)
+    add_subdirectory(submodules/cpr)
+
     add_library(iconv INTERFACE)
     target_include_directories(iconv INTERFACE "C:/Libs/vcpkg/packages/libiconv_x64-windows/include")
 
@@ -148,9 +150,10 @@ if (WIN32)
     $<TARGET_FILE_DIR:AssetFolio>)
 
 else()#UNIX
-    # For AppImage
-
     add_compile_options(-Wall -Wextra -Wpedantic)
+    find_package(CURL REQUIRED)
+    add_subdirectory(submodules/cpr)
+
     find_package(LibXml2 REQUIRED)
     
     if("${GUI}" STREQUAL "Qt")
