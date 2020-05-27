@@ -34,7 +34,7 @@ Installing the dependency libraries:
 
 * Windows
 
-    1. Install Git, MinGW w64, and Qt5
+    1. Install Git, MinGW w64, Qt5 and [OpenSSl v1.1.1](https://slproweb.com/products/Win32OpenSSL.html)
     2. Clone vcpkg to C:/Libs/: `git clone https://github.com/microsoft/vcpkg.git`
     2. Build vcpkg by running `.\bootstrap-vcpkg.bat`
     3. Hook-up user-wide integration: `.\vcpkg integrate install`
@@ -167,6 +167,12 @@ Creating and starting an asynchronous task from the main GUI task leads to an un
 
 For the chart visualization, the application includes the [wxFreeChart](https://iwbnwif.github.io/freechart_docs/html/index.html) components. The source code can be found in [this repository](https://github.com/iwbnwif/wxFreeChart).
 
+### Software Delivery and Software Release
+
+For Windows, several dlls have to be copied to the binary folder.
+The library _vcruntime140.dll_ has been obtained from _C:\User\\$(Username)\\.vscode\extensions\ms-vscode.cpptools-0.28.1\debugAdapters\vsdbg\bin\Remote Debugger\x64\vcruntime140.dll_.
+
+For Linux, an AppImage file is generated to serve different Linux distributions.
 
 ### Getting the Toolbar Icons
 

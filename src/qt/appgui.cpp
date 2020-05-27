@@ -27,6 +27,7 @@ AppGui::AppGui(QWidget *parent)
 
 AppGui::~AppGui() { delete ui; }
 
+
 void AppGui::on_actionOpen_triggered()
 {
     QString filename = QFileDialog::getOpenFileName(this, "Open a JSON file",
@@ -188,7 +189,6 @@ void AppGui::on_actionSave_triggered()
         json_save->SetObject();
         rapidjson::Document::AllocatorType &allocator = json_save->GetAllocator();
         rapidjson::Value entry_array(rapidjson::kArrayType);
-        struct tm tm;
 
         for (int row = 0; row < _transaction_model->rowCount(); row++)
         {
@@ -200,8 +200,12 @@ void AppGui::on_actionSave_triggered()
                 continue;
             }
 
-            string date = _transaction_model->data(index).toString().toStdString();
-            if (!strptime(date.c_str(), "%d.%m.%Y", &tm))
+            string strdate = _transaction_model->data(index).toString().toStdString();
+            int yy;
+            int mm;
+            int dd;
+            sscanf(strdate.c_str(), "%d:%d:%d", &yy, &mm, &dd);
+            if ((dd<1 || dd>31) || (mm<1 || mm>12) || (yy<1900 || yy>2100))
                 throw runtime_error("Invalid date on row " + std::to_string(row) + " !");
 
             for (uint col = 0; col < Config::TRANSACTION_COL_NAMES.size(); col++)
@@ -319,7 +323,11 @@ void AppGui::on_tbtnWatchlist_clicked()
     }
 }
 
-void AppGui::closeEvent(QCloseEvent *event) { _appControl->stopUpdateTasks(); }
+void AppGui::closeEvent(QCloseEvent *event)
+{
+    _appControl->stopUpdateTasks();
+    (void)event; //do nothing, only for inhibit the warning unused parameter
+}
 
 void AppGui::updateWatchlistModel(UpdateData upd_data)
 {

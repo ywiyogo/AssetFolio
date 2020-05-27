@@ -4,7 +4,7 @@ if(${CMAKE_VERSION} VERSION_LESS 3.12)
     cmake_policy(VERSION ${CMAKE_MAJOR_VERSION}.${CMAKE_MINOR_VERSION})
 endif()
 
-set(CMAKE_BUILD_TYPE Debug)
+set(CMAKE_BUILD_TYPE Release)
 set(GUI "Qt")
 
 project(AssetFolio VERSION 1.0 LANGUAGES CXX)
@@ -69,12 +69,15 @@ set(SRCS
     src/Stock.cpp
 )
 if (WIN32)
-  set(CURL_DIR "C:/Libs/vcpkg/installed/x64-windows/share/curl")
+  set(CURL_DIR "C:/Libs/vcpkg/installed/x64-windows/share/curl/")
+  set(OPENSSL_ROOT_DIR "C:/Program Files/OpenSSL-Win64")
+  set(OPENSSL_LIBRARIES
+  "C:/Program Files/OpenSSL-Win64/lib/libcrypto.lib"
+  "C:/Program Files/OpenSSL-Win64/lib/libssl.lib")
 endif()
-find_package(CURL REQUIRED)
 set(USE_SYSTEM_CURL ON CACHE BOOL "Use the system curl for faster builds")
+find_package(CURL CONFIG REQUIRED)
 add_subdirectory(submodules/cpr)
-
 
 if (WIN32)
     if(MSVC)
@@ -94,11 +97,9 @@ if (WIN32)
     set(LIBXML2_INCLUDE_DIR "C:/Libs/vcpkg/packages/libxml2_x64-windows/include")
     set(LIBXML2_LIBRARY "C:/Libs/vcpkg/packages/libxml2_x64-windows/lib/libxml2.lib")
 
-
     if("${GUI}" STREQUAL "Qt")
         add_executable(AssetFolio ${SRCS} ${GUI_SRCS} ${RESOURCE_FILES})
         target_include_directories(AssetFolio PRIVATE ${LIBXML2_INCLUDE_DIR} src/qt)
-        target_include_directories(AssetFolio PRIVATE )
         target_link_libraries(AssetFolio PRIVATE Threads::Threads Qt5::Widgets Qt5::Charts cpr rapidjson ${LIBXML2_LIBRARY} iconv)
         
         add_custom_command(TARGET AssetFolio POST_BUILD COMMAND ${CMAKE_COMMAND} -E copy_if_different
@@ -120,6 +121,13 @@ if (WIN32)
             "C:/Qt/Qt5.14.1/5.14.1/mingw73_64/plugins/platforms/qwebgl.dll"
             "C:/Qt/Qt5.14.1/5.14.1/mingw73_64/plugins/platforms/qwindows.dll"
             "$<TARGET_FILE_DIR:AssetFolio>/platforms")
+        
+        if (CMAKE_BUILD_TYPE STREQUAL "DEBUG")
+            add_custom_command ( TARGET AssetFolio POST_BUILD
+            COMMAND ${CMAKE_COMMAND} -E copy_if_different
+            "${CMAKE_BINARY_DIR}/lib/libcurl-d.dll"
+            $<TARGET_FILE_DIR:AssetFolio>)
+        endif()
 
     elseif("${GUI}" STREQUAL "Wx")
         message("Wx Widget for Windows is not supported yet")
@@ -135,6 +143,8 @@ if (WIN32)
     "C:/Libs/vcpkg/packages/liblzma_x64-windows/bin/lzma.dll"
     "C:/Libs/vcpkg/packages/libiconv_x64-windows/bin/libiconv.dll"
     "C:/Libs/vcpkg/packages/libiconv_x64-windows/bin/libcharset.dll"
+    "C:/Libs/vcpkg/packages/zlib_x64-windows/bin/zlib1.dll"
+    "C:/Windows/SysWOW64/vcruntime140.dll"
     $<TARGET_FILE_DIR:AssetFolio>)
 
 else()#UNIX
@@ -158,7 +168,7 @@ endif()
 
 # Require c++14, better than setting CMAKE_CXX_STANDARD because it won't pollute other targets
 # Set the CC and CXX compiler in the environment variable (unix: .bash_profile)
-target_compile_features(AssetFolio PRIVATE cxx_std_14)
+target_compile_features(AssetFolio PRIVATE cxx_std_17)
 # placing the binary in the bin folder of the destination
 install(TARGETS AssetFolio DESTINATION bin)
 
