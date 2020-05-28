@@ -1,5 +1,4 @@
 {
-  "QueryType": "SYMBOL",
   "Currency": "USD",
   "Transactions": [
     {
@@ -7,8 +6,8 @@
       "ID": "ZGUSD",
       "Name": "Gold (oz)",
       "AssetType": "Commodity",
-      "Type": "Buy",
-      "Transaction": 13000,
+      "Transaction": "Buy",
+      "Price": 13000,
       "Amount": 10,
       "Broker": "YBroker"
     },
@@ -17,8 +16,8 @@
       "ID": "EEM",
       "Name": "iShares MSCI Emerging Markets",
       "AssetType": "ETF",
-      "Type": "Buy",
-      "Transaction": 1800.80,
+      "Transaction": "Buy",
+      "Price": 1800.80,
       "Amount": 60,
       "Broker": "XBroker"
     },
@@ -27,8 +26,8 @@
       "ID": "BTCUSD",
       "Name": "Bitcoin",
       "AssetType": "Crypto",
-      "Type": "Buy",
-      "Transaction": 8500,
+      "Transaction": "Buy",
+      "Price": 8500,
       "Amount": 1,
       "Broker": "Kraken"
     },
@@ -37,8 +36,8 @@
       "ID": "QCOM",
       "Name": "Qualcomm",
       "AssetType": "ETF",
-      "Type": "Buy",
-      "Transaction": 2185.90,
+      "Transaction": "Buy",
+      "Price": 2185.90,
       "Amount": 50,
       "Broker": "BankX"
     },
@@ -47,8 +46,8 @@
       "ID": "QCOM",
       "Name": "Qualcomm",
       "AssetType": "ETF",
-      "Type": "ROI",
-      "Transaction": 22.52,
+      "Transaction": "ROI",
+      "Price": 22.52,
       "Amount": 0,
       "Broker": "BankX"
     },
@@ -57,8 +56,8 @@
       "ID": "XWD.TO",
       "Name": "iShares MSCI World",
       "AssetType": "ETF",
-      "Type": "Buy",
-      "Transaction": 4400,
+      "Transaction": "Buy",
+      "Price": 4400,
       "Amount": 55,
       "Broker": "BankX"
     }

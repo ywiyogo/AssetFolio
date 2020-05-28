@@ -22,12 +22,6 @@
 using namespace std;
 const unsigned int MAX_WRITE_BUFFER = 65536;
 
-const map<string, AppControl::QueryType> AppControl::_querytype_map = {
-    {"ISIN", QueryType::ISIN}, {"SYMBOL", QueryType::SYMBOL}};
-
-const map<AppControl::QueryType, string> AppControl::_reverse_querytype_map = {
-    {QueryType::ISIN, "ISIN"}, {QueryType::SYMBOL, "SYMBOL"}};
-
 Provider::Provider() {}
 Provider::Provider(string name, string url, string xpath)
 {
@@ -86,7 +80,7 @@ bool AppControl::readApiKey()
     {
         getline(keyfile, _api_key);
         keyfile.close();
-        cout<<" Read API KEY: "<<_api_key<<endl;
+        cout << " Read API KEY: " << _api_key << endl;
         if (_api_key.empty())
             return false;
         else
@@ -98,6 +92,12 @@ bool AppControl::readApiKey()
         return false;
     }
 }
+
+bool AppControl::isEmpty()
+{
+    return _assets->empty();
+}
+
 bool AppControl::readLocalRapidJson(const char *filePath)
 {
     FILE *fp = fopen(filePath, "rb"); // non-Windows use "r"
@@ -109,8 +109,7 @@ bool AppControl::readLocalRapidJson(const char *filePath)
     _jsonDoc->ParseStream(is);
 
     checkJson();
-    _query_type =
-        _querytype_map.at(_jsonDoc->GetObject()["QueryType"].GetString());
+
     _currency_ref = _jsonDoc->GetObject()["Currency"].GetString();
 
     auto json_act = _jsonDoc->GetObject()["Transactions"].GetArray();
@@ -141,12 +140,12 @@ bool AppControl::readLocalRapidJson(const char *filePath)
             throw AppException("JSON Amount of " + id + " has to be a number.");
         }
         float amount = json_act[i]["Amount"].GetFloat();
-        if (!json_act[i]["Transaction"].IsNumber())
+        if (!json_act[i]["Price"].IsNumber())
         {
             throw AppException("JSON Transaction of " + id +
                                " has to be a number.");
         }
-        float price = json_act[i]["Transaction"].GetFloat();
+        float price = json_act[i]["Price"].GetFloat();
         // Check if the acquired id has already existed, if not then create
         // a new asset
         if (_assets->find(id) == _assets->end())
@@ -408,7 +407,6 @@ bool AppControl::getPriceFromTradegate(vector<unique_ptr<UpdateData>> &updates)
     if (fmp_symbols.size() > 0)
     {
         requestFmpApi(updates, fmp_symbols);
-
     }
     return true;
 }
@@ -431,43 +429,11 @@ void AppControl::update(MsgQueue<UpdateData> &msgqueue, bool &isActive,
         if (diffUpdate >= upd_frequency)
         {
             updates.clear();
-            string symbols = "";
-            bool is_first = true;
-            switch (_query_type)
+
+            if (!getPriceFromTradegate(updates))
             {
-            case QueryType::ISIN:
-
-                if(!getPriceFromTradegate(updates))
-                {
-                    isActive = false;
-                    return;
-                }
-                break;
-            case QueryType::SYMBOL:
-
-                for (auto it = _assets->begin(); it != _assets->end(); it++)
-                {
-                    if (is_first)
-                    {
-                        symbols += it->first;
-                        is_first = false;
-                    }
-                    else
-                    {
-                        symbols += "," + it->first;
-                    }
-                }
-                if (!requestFmpApi(updates, symbols))
-                {
-                    // stop the task if symbol not found to save CPU resource
-                    isActive = false;
-                    return;
-                }
-                break;
-            default:
-                throw AppException(
-                    "ID Type invalid, supported ID are ISIN or SYMBOL");
-                break;
+                isActive = false;
+                return;
             }
 
             while (updates.size() > 0)
@@ -489,10 +455,11 @@ void AppControl::update(MsgQueue<UpdateData> &msgqueue, bool &isActive,
 
 bool AppControl::requestFmpApi(vector<unique_ptr<UpdateData>> &updates,
                                string symbols)
-{   
-    if(_api_key.empty())
+{
+    if (_api_key.empty())
     {
-        cout<<"Warning: FMP API Key is empty!"<<endl<<flush;
+        cout << "Warning: FMP API Key is empty!" << endl
+             << flush;
         return false;
     }
     // e.g. https://financialmodelingprep.com/api/v3/quote/ZGUSD,BTCUSD,AAPL
@@ -512,7 +479,7 @@ bool AppControl::requestFmpApi(vector<unique_ptr<UpdateData>> &updates,
             json_resp.Parse(r.text.c_str());
 
             if (json_resp.IsArray())
-            {   // JSON is an array
+            { // JSON is an array
                 is_found = true;
                 for (unsigned int i = 0; i < json_resp.Size(); i++)
                 { // create an update data and add to the vector reference
@@ -528,7 +495,7 @@ bool AppControl::requestFmpApi(vector<unique_ptr<UpdateData>> &updates,
                 }
             }
             else
-            {   // JSON is an object
+            { // JSON is an object
                 if (json_resp.HasMember("Error Message"))
                 {
                     cout << r.text.c_str() << endl;
@@ -559,23 +526,23 @@ float AppControl::getExchangeRate(string from, string to)
     //         symbol = to + from;
     // }
     // string url = "https://financialmodelingprep.com/api/v3/forex/" + symbol;
-    
-    string url = "https://api.exchangeratesapi.io/latest?base="+from+"&symbols="+to;
-    
+
+    string url = "https://api.exchangeratesapi.io/latest?base=" + from + "&symbols=" + to;
+
     auto r = cpr::Get(cpr::Url{url});
-    
+
     // cout << "\nResult code: " << r.status_code
     //      << "\nHeaders: " << r.header["content-type"] << "\n"
     //      << r.text << endl
     //      << flush;
     if (r.status_code == 200)
     {
-        
+
         if (r.header["content-type"].find("application/json") !=
             std::string::npos)
         {
             rapidjson::Document json_resp;
-            
+
             json_resp.Parse(r.text.c_str());
 
             if (!json_resp.HasMember("rates"))
@@ -584,29 +551,21 @@ float AppControl::getExchangeRate(string from, string to)
                                    to + "is not found");
             }
 
-            for (rapidjson::Value::ConstMemberIterator itr = json_resp["rates"].MemberBegin(); itr != json_resp["rates"].MemberEnd(); ++itr) {
-                if(to.compare(itr->name.GetString()) == 0)
+            for (rapidjson::Value::ConstMemberIterator itr = json_resp["rates"].MemberBegin(); itr != json_resp["rates"].MemberEnd(); ++itr)
+            {
+                if (to.compare(itr->name.GetString()) == 0)
                 {
                     res = itr->value.GetFloat();
                     return res;
                 }
             }
-            // rapidjson::GenericObject rate = json_resp["rates"].GetObject();
-            // cout<<rate<<flush;
-            // if (!reverse)
-            //     res = stof(rate);
-            // else
-            // {
-            //     res = 1. / stof(rate);
-            // }
-            // cout << "Debug 8 "<<rate<<flush;
         }
     }
     else
     {
         cout << "Request error " << r.status_code << ". " << r.text << endl;
     }
-    
+
     return res;
 }
 
@@ -615,11 +574,6 @@ void AppControl::checkJson()
     if (!_jsonDoc->IsObject())
     {
         throw AppException("JSON format is not an object");
-    }
-
-    if (!_jsonDoc->GetObject().HasMember("QueryType"))
-    {
-        throw AppException("JSON format has to have e member 'QueryType'");
     }
 
     if (!_jsonDoc->GetObject().HasMember("Transactions"))
@@ -656,19 +610,6 @@ float AppControl::stringToFloat(string numstr, int precision)
     stringstream stream;
     stream << fixed << setprecision(precision) << stof(numstr);
     return stof(stream.str());
-    
-}
-
-rapidjson::Value AppControl::getQueryType()
-{
-    rapidjson::Value query(rapidjson::kStringType);
-    query.SetString(_reverse_querytype_map.at(_query_type).c_str(),
-                    _reverse_querytype_map.at(_query_type).size());
-    return query;
-}
-void AppControl::setQueryType(string type)
-{
-    _query_type = _querytype_map.at(type);
 }
 
 rapidjson::Value AppControl::getCurrency()
@@ -693,7 +634,6 @@ bool AppControl::isAssetTypeValid(string input)
     {
         return true;
     }
-    
 }
 
 bool AppControl::isTransactionTypeValid(string input)

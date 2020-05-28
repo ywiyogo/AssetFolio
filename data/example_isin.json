@@ -1,5 +1,4 @@
 {
-    "QueryType": "ISIN",
     "Currency": "EUR",
     "Transactions": [
         {
@@ -8,7 +7,7 @@
             "Name": "Gold (oz)",
             "AssetType": "Commodity",
             "Type": "Buy",
-            "Transaction": 13000,
+            "Price": 13000,
             "Amount": 10,
             "Broker": "YBroker"
         },
@@ -18,7 +17,7 @@
             "Name": "Apartment in Frankfurt",
             "AssetType": "Real Estate",
             "Type": "Buy",
-            "Transaction": 20000.0,
+            "Price": 20000.0,
             "Amount": 1,
             "Broker": "Agent Z"
         },
@@ -28,7 +27,7 @@
             "Name": "HSBC MSCI RUSSIA",
             "AssetType": "ETF",
             "Type": "Buy",
-            "Transaction": 1155.8,
+            "Price": 1155.8,
             "Amount": 55,
             "Broker": "Comdirect"
         },
@@ -38,7 +37,7 @@
             "Name": "ComStage FR DAX EUR",
             "AssetType": "ETF",
             "Type": "Buy",
-            "Transaction": 2868.01,
+            "Price": 2868.01,
             "Amount": 53,
             "Broker": "IB"
         },
@@ -48,7 +47,7 @@
             "Name": "ComStage FR DAX EUR",
             "AssetType": "ETF",
             "Type": "ROI",
-            "Transaction": 57.96,
+            "Price": 57.96,
             "Amount": 0,
             "Broker": "DKB"
         },
@@ -58,7 +57,7 @@
             "Name": "HSBC FTSE EPRA REIT",
             "AssetType": "ETF",
             "Type": "Buy",
-            "Transaction": 3779.52,
+            "Price": 3779.52,
             "Amount": 186,
             "Broker": ""
         },
@@ -68,7 +67,7 @@
             "Name": "Deka MSCI China",
             "AssetType": "ETF",
             "Type": "Buy",
-            "Transaction": 3640,
+            "Price": 3640,
             "Amount": 500,
             "Broker": ""
         },
@@ -78,7 +77,7 @@
             "Name": "ComStage FR DAX EUR",
             "AssetType": "ETF",
             "Type": "Buy",
-            "Transaction": 2472.7,
+            "Price": 2472.7,
             "Amount": 50,
             "Broker": ""
         },
@@ -88,7 +87,7 @@
             "Name": "HSBC FTSE EPRA REIT",
             "AssetType": "ETF",
             "Type": "ROI",
-            "Transaction": 11.89,
+            "Price": 11.89,
             "Amount": 0,
             "Broker": ""
         },
@@ -98,7 +97,7 @@
             "Name": "iShares MSCI EM",
             "AssetType": "ETF",
             "Type": "Buy",
-            "Transaction": 2149.7,
+            "Price": 2149.7,
             "Amount": 70,
             "Broker": ""
         },
@@ -108,7 +107,7 @@
             "Name": "HSBC MSCI RUSSIA",
             "AssetType": "ETF",
             "Type": "Buy",
-            "Transaction": 2904.88,
+            "Price": 2904.88,
             "Amount": 440,
             "Broker": ""
         },
@@ -118,7 +117,7 @@
             "Name": "Deka MSCI China",
             "AssetType": "ETF",
             "Type": "Buy",
-            "Transaction": 1126.5,
+            "Price": 1126.5,
             "Amount": 150,
             "Broker": "Consor"
         },
@@ -128,7 +127,7 @@
             "Name": "BMW (Vz)",
             "AssetType": "Stock",
             "Type": "Buy",
-            "Transaction": 5191.98,
+            "Price": 5191.98,
             "Amount": 77,
             "Broker": ""
         },
@@ -138,7 +137,7 @@
             "Name": "Deka MSCI China",
             "AssetType": "ETF",
             "Type": "ROI",
-            "Transaction": 5.61,
+            "Price": 5.61,
             "Amount": 0,
             "Broker": ""
         },
@@ -148,7 +147,7 @@
             "Name": "Volkswagen (Vz)",
             "AssetType": "Stock",
             "Type": "Buy",
-            "Transaction": 1384.99,
+            "Price": 1384.99,
             "Amount": 10,
             "Broker": ""
         },
@@ -158,7 +157,7 @@
             "Name": "Lyxor iBOXX EM",
             "AssetType": "ETF",
             "Type": "Buy",
-            "Transaction": 1429.88,
+            "Price": 1429.88,
             "Amount": 15,
             "Broker": "ING"
         },
@@ -168,7 +167,7 @@
             "Name": "Apple DL notes",
             "AssetType": "ETF",
             "Type": "Buy",
-            "Transaction": 2000,
+            "Price": 2000,
             "Amount": 20,
             "Broker": "ING"
         },
@@ -178,7 +177,7 @@
             "Name": "Bitcoin",
             "AssetType": "Crypto",
             "Type": "Buy",
-            "Transaction": 8500,
+            "Price": 8500,
             "Amount": 1,
             "Broker": "Brok"
         }

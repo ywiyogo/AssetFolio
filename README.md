@@ -14,6 +14,32 @@ Preview for the watchlist and asset tracker:
 
 ![Watchlist][watchlist]
 
+Go to the release tab to download the release binary either for Linux or for Windows 10 x64.
+
+## How to Use
+
+If you never have a watchlist or a transaction list, you can just start a new empty sheet by choosing the new button on top left with the plus sign. Fill the sheet with your transactions history, and save it by clicking the save button (down arrow button). Choose your local currency or asset currency and save it as a JSON file (*.json).
+
+If have already a watchlist or a list of your investments you can export it to a JSON file. The JSON file has to have three members: "QueryType", "Currency", and "Transactions". 
+
+```
+{
+    "Currency": "EUR",
+    "Transactions": [
+        {
+            "Date": "17.11.2016",
+            "ID": "IE00B0M63177",
+            "Name": "iShares MSCI Emerging Market",
+            "AssetType": "ETF",
+            "Type": "Buy",
+            "Transaction": 2149.7,
+            "Amount": 70,
+            "Broker": ""
+        }
+    ]
+}
+```
+
 ## Donation
 
 You can give me a donation if you want to get the application directly for your OS. 
@@ -98,14 +124,13 @@ An example dataset in _data/example.json_ can be opened with the "arrow up" tool
 The C++ Request submodules include GTest to test its code. If we don't want to install GTest in our system, we can disable it in CMakeLists.txt `set(USE_SYSTEM_GTEST OFF)`.
 
 ### Dataset Format
-The application uses the JSON format for saving the transaction activity data. All the user data shall be located in the data folder. The user can see the example.json as the template. Three obligatory member names are `QueryType`, `Currency`, and `Activities`.
+The application uses the JSON format for saving the transaction activity data. All the user data shall be located in the data folder. The user can see the example.json as the template. Three obligatory member names are `Currency` and `Activities`.
 
-An `ID` can be an ISIN or a symbol ticker. The symbol has to be found in https://financialmodelingprep.com/api/v3/company/stock/list or [FMPSymbolList.json](data/FMPSymbolList.json). The `QueryType` can be a `SYMBOL` or `ISIN` which describes how the asset can be updated. Since commodities and cryptocurrency do not have ISIN, the ID of each commodity or cryptocurrency shall be a symbol ticker.
+An `ID` can be an ISIN or a symbol ticker. The symbol has to be found in https://financialmodelingprep.com/api/v3/company/stock/list or [FMPSymbolList.json](data/FMPSymbolList.json).
 
 For instance:
 ```
 {
-    "QueryType": "ISIN",
     "Currency": "EUR",
     "Transactions": [
         {
@@ -113,8 +138,8 @@ For instance:
             "ID": "IE00B0M63177",
             "Name": "iShares MSCI Emerging Market",
             "AssetType": "ETF",
-            "Type": "Buy",
-            "Transaction": 2149.7,
+            "Transaction": "Buy",
+            "Price": 2149.7,
             "Amount": 70,
             "Broker": ""
         }

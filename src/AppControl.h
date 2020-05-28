@@ -34,13 +34,16 @@ class AppControl
         ISIN,
         SYMBOL
     };
-    static const map<string, QueryType> _querytype_map;
-    static const map<QueryType, string> _reverse_querytype_map;
+
     bool isApiKeyEmpty();
 
     void setApiKey(string key);
+
     string getApiKey();
+
     bool readApiKey();
+
+    bool isEmpty();
 
     bool readLocalRapidJson(const char* filePath);
 
@@ -101,7 +104,6 @@ class AppControl
     bool _isUpdateActive;
     string _api_key;
     unsigned int _update_freq;
-    QueryType _query_type;
     string _currency_ref;
     map<string, shared_ptr<Provider>> _providers;
 };

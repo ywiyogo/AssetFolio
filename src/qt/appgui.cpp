@@ -27,11 +27,10 @@ AppGui::AppGui(QWidget *parent)
 
 AppGui::~AppGui() { delete ui; }
 
-
 void AppGui::on_actionOpen_triggered()
 {
     QString filename = QFileDialog::getOpenFileName(this, "Open a JSON file",
-                                                    ".", "Images (*.json)");
+                                                    ".", "JSON (*.json);; All Files (*.*)");
     if (filename.isNull())
     {
         return;
@@ -133,7 +132,11 @@ void AppGui::on_actionNew_triggered()
     initTvTransactions(10, Config::WATCHLIST_COL_NAMES.size());
 }
 
-void AppGui::on_actionExit_triggered() { QCoreApplication::quit(); }
+void AppGui::on_actionExit_triggered()
+{
+    _appControl->stopUpdateTasks();
+    QCoreApplication::quit();
+}
 
 void AppGui::on_actionInfo_triggered()
 {
@@ -146,16 +149,18 @@ void AppGui::on_actionInfo_triggered()
         "2020");
 }
 
-void AppGui::on_actionAddKey_triggered() {
+void AppGui::on_actionAddKey_triggered()
+{
     bool ok;
 
-    if(!_appControl->readApiKey())
+    if (!_appControl->readApiKey())
     {
         QString fmp_key = QInputDialog::getText(0, "Input FinancialModelingPrep API Key",
-                                            "FMP API Key:", QLineEdit::Normal,
-                                            "", &ok);
+                                                "FMP API Key:", QLineEdit::Normal,
+                                                "", &ok);
 
-        if (ok && !fmp_key.isEmpty()) {
+        if (ok && !fmp_key.isEmpty())
+        {
             _appControl->setApiKey(fmp_key.toStdString());
         }
     }
@@ -164,11 +169,21 @@ void AppGui::on_actionAddKey_triggered() {
         string msg = "FMP API Key found: " + _appControl->getApiKey();
         showMsgWindow(QMessageBox::Information, "API Key", msg);
     }
-    
 }
 
 void AppGui::on_actionSave_triggered()
 {
+    if (_appControl->isEmpty())
+    {
+        bool ok;
+        QStringList items;
+        items << tr("EUR") << tr("USD") << tr("RMB") << tr("GBP") << tr("SEK") << tr("CHF") << tr("IDR");
+        QString item = QInputDialog::getItem(this, tr("Choose your local currency"),
+                                             tr("Currency:"), items, 0, false, &ok);
+        if (ok && !items.isEmpty())
+            _appControl->setCurrency(item.toStdString());
+    }
+
     QString filename = QFileDialog::getSaveFileName(
         this, "Save transactions to JSON file", ".", "JSON (*.json)");
     if (filename.isNull())
@@ -182,7 +197,7 @@ void AppGui::on_actionSave_triggered()
         string backuppath = savepath + ".bak";
         // save a backup
         _appControl->saveJson(backuppath);
-        
+
         if (json_save->IsObject())
             json_save->RemoveAllMembers();
 
@@ -204,8 +219,9 @@ void AppGui::on_actionSave_triggered()
             int yy;
             int mm;
             int dd;
-            sscanf(strdate.c_str(), "%d:%d:%d", &yy, &mm, &dd);
-            if ((dd<1 || dd>31) || (mm<1 || mm>12) || (yy<1900 || yy>2100))
+            sscanf(strdate.c_str(), "%d.%d.%d", &dd, &mm, &yy);
+            cout << "date: " << dd << " month: " << mm << " year: " << yy << endl;
+            if ((dd < 1 || dd > 31) || (mm < 1 || mm > 12) || (yy < 1900 || yy > 2100))
                 throw runtime_error("Invalid date on row " + std::to_string(row) + " !");
 
             for (uint col = 0; col < Config::TRANSACTION_COL_NAMES.size(); col++)
@@ -220,23 +236,16 @@ void AppGui::on_actionSave_triggered()
                 string input = _transaction_model->data(index).toString().toStdString();
                 if (column_name.compare("ID") == 0)
                 {
-                    if (input.length() == 12)
-                    {
-                        value.SetString(input.c_str(), allocator);
-                        _appControl->setQueryType("ISIN");
-                    }
-                        
-                    else if (input.length() < 2)
+                    if (input.length() < 2 || input.length() > 12)
                     {
                         throw runtime_error("Invalid ID of row " + std::to_string(row) + " !");
                     }
                     else
                     {
                         value.SetString(input.c_str(), allocator);
-                        _appControl->setQueryType("SYMBOL");
                     }
                 }
-                else if ((column_name.compare("Transaction") == 0) ||
+                else if ((column_name.compare("Price") == 0) ||
                          (column_name.compare("Amount") == 0))
                 {
                     for (uint i = 0; i < input.length(); i++)
@@ -256,9 +265,8 @@ void AppGui::on_actionSave_triggered()
                     {
                         throw runtime_error("Invalid value on Column 'AssetType', row " + std::to_string(row) + " !\nChoose one of these options:\nStock, ETF, Bond, Real Estate, Crypto, Commodity, or Certificate");
                     }
-                        
                 }
-                else if (column_name.compare("Type") == 0)
+                else if (column_name.compare("Transaction") == 0)
                 {
                     if (_appControl->isTransactionTypeValid(input))
                         value.SetString(input.c_str(), allocator);
@@ -274,7 +282,6 @@ void AppGui::on_actionSave_triggered()
             }
             entry_array.PushBack(entry_obj, allocator);
         }
-        json_save->AddMember("QueryType", _appControl->getQueryType(), allocator);
         json_save->AddMember("Currency", _appControl->getCurrency(), allocator);
         json_save->AddMember("Transactions", entry_array, allocator);
         std::remove(backuppath.c_str());
@@ -316,7 +323,7 @@ void AppGui::on_tbtnWatchlist_clicked()
         {
             _appControl->launchAssetUpdater();
         }
-        catch(const std::exception& e)
+        catch (const std::exception &e)
         {
             showMsgWindow(QMessageBox::Critical, "Failure", e.what());
         }
