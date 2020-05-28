@@ -38,10 +38,11 @@ If have already a watchlist or a list of your investments you can export it to a
         }
     ]
 }
+```
 
 Signup to [https://financialmodelingprep.com/register](https://financialmodelingprep.com/register) to get the API key. Then klick the key button on the toolbar icon to add the API key in order to update the price of your symbolic ticker assets, cryptocurrency and other commodities.
 
-```
+
 
 ## Donation
 
@@ -127,30 +128,12 @@ An example dataset in _data/example.json_ can be opened with the "arrow up" tool
 The C++ Request submodules include GTest to test its code. If we don't want to install GTest in our system, we can disable it in CMakeLists.txt `set(USE_SYSTEM_GTEST OFF)`.
 
 ### Dataset Format
+
 The application uses the JSON format for saving the transaction activity data. All the user data shall be located in the data folder. The user can see the example.json as the template. Three obligatory member names are `Currency` and `Activities`.
 
 An `ID` can be an ISIN or a symbol ticker. The symbol has to be found in https://financialmodelingprep.com/api/v3/company/stock/list or [FMPSymbolList.json](data/FMPSymbolList.json).
 
-For instance:
-```
-{
-    "Currency": "EUR",
-    "Transactions": [
-        {
-            "Date": "17.11.2016",
-            "ID": "IE00B0M63177",
-            "Name": "iShares MSCI Emerging Market",
-            "AssetType": "ETF",
-            "Transaction": "Buy",
-            "Price": 2149.7,
-            "Amount": 70,
-            "Broker": ""
-        }
-    ]
-}
-```
-
-The supported `AssetType` values are
+The supported `AssetType` values are:
 
 ```
 Stock
@@ -162,9 +145,9 @@ Commodity
 Certificate
 ```
 
-For `Type`, the possible values are `Buy, Sell, ROI`. 
+For `Transaction`, the possible values are `Buy, Sell, ROI`. 
 
-The `Transaction` and `Amount` values have to be a number (float).
+The `Price` and `Amount` values have to be a number (float).
 
 
 ## Lesson Learned
