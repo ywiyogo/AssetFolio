@@ -129,7 +129,7 @@ void AppGui::on_actionNew_triggered()
 {
     _appControl.reset(new AppControl(Config::UPDATE_PERIODE));
     _appControl->clearJsonData();
-    initTvTransactions(10, Config::WATCHLIST_COL_NAMES.size());
+    initTvTransactions(10, Config::TRANSACTION_COL_NAMES.size());
 }
 
 void AppGui::on_actionExit_triggered()

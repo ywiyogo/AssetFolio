@@ -38,6 +38,9 @@ If have already a watchlist or a list of your investments you can export it to a
         }
     ]
 }
+
+Signup to [https://financialmodelingprep.com/register](https://financialmodelingprep.com/register) to get the API key. Then klick the key button on the toolbar icon to add the API key in order to update the price of your symbolic ticker assets, cryptocurrency and other commodities.
+
 ```
 
 ## Donation
