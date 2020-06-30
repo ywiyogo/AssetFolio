@@ -7,8 +7,8 @@
       "Name": "Gold (oz)",
       "AssetType": "Commodity",
       "Transaction": "Buy",
-      "Price": 13000,
-      "Amount": 10,
+      "Price": 13000.0,
+      "Amount": 10.0,
       "Broker": "YBroker"
     },
     {
@@ -17,8 +17,8 @@
       "Name": "iShares MSCI Emerging Markets",
       "AssetType": "ETF",
       "Transaction": "Buy",
-      "Price": 1800.80,
-      "Amount": 60,
+      "Price": 1800.8,
+      "Amount": 60.0,
       "Broker": "XBroker"
     },
     {
@@ -27,28 +27,28 @@
       "Name": "Bitcoin",
       "AssetType": "Crypto",
       "Transaction": "Buy",
-      "Price": 8500,
-      "Amount": 1,
+      "Price": 8500.0,
+      "Amount": 1.0,
       "Broker": "Kraken"
     },
     {
       "Date": "04.05.2018",
       "ID": "QCOM",
       "Name": "Qualcomm",
-      "AssetType": "ETF",
+      "AssetType": "Stock",
       "Transaction": "Buy",
-      "Price": 2185.90,
-      "Amount": 50,
+      "Price": 2185.9,
+      "Amount": 50.0,
       "Broker": "BankX"
     },
     {
       "Date": "25.06.2018",
       "ID": "QCOM",
       "Name": "Qualcomm",
-      "AssetType": "ETF",
+      "AssetType": "Stock",
       "Transaction": "ROI",
       "Price": 22.52,
-      "Amount": 0,
+      "Amount": 0.0,
       "Broker": "BankX"
     },
     {
@@ -57,9 +57,19 @@
       "Name": "iShares MSCI World",
       "AssetType": "ETF",
       "Transaction": "Buy",
-      "Price": 4400,
-      "Amount": 55,
+      "Price": 4400.0,
+      "Amount": 55.0,
       "Broker": "BankX"
+    },
+    {
+      "Date": "01.05.2019",
+      "ID": "QCOM",
+      "Name": "Qualcomm",
+      "AssetType": "Stock",
+      "Transaction": "ROI",
+      "Price": 34.0,
+      "Amount": 0.0,
+      "Broker": ""
     }
   ]
 }

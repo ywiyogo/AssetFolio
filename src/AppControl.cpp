@@ -34,7 +34,8 @@ AppControl::AppControl(unsigned int upd_freq)
     : _jsonDoc(make_shared<rapidjson::Document>()),
       _assets(make_shared<map<string, shared_ptr<Asset>>>()), _futures(),
       _msg_queue(), _isUpdateActive(false), _api_key(""), _update_freq(upd_freq),
-      _currency_ref("USD")
+      _currency_ref("USD"),
+      _roi_by_date(make_shared<map<string, double>>())
 {
     // Add the HTML data provider
     shared_ptr<Provider> tradegate(make_shared<Provider>(
@@ -113,7 +114,7 @@ bool AppControl::readLocalRapidJson(const char *filePath)
     _currency_ref = _jsonDoc->GetObject()["Currency"].GetString();
 
     auto json_act = _jsonDoc->GetObject()["Transactions"].GetArray();
-
+    double acc_roi = 0;
     // creating all asset objects
     for (unsigned int i = 0; i < json_act.Size(); i++)
     {
@@ -132,9 +133,12 @@ bool AppControl::readLocalRapidJson(const char *filePath)
         string id = json_act[i]["ID"].GetString();
         Asset::Type asset_type =
             Asset::_typeMap.at(json_act[i]["AssetType"].GetString());
-        string type = json_act[i]["Type"].GetString();
+        string transactionType = json_act[i]["Transaction"].GetString();
 
-        Asset::Transaction transact_type = Asset::_transactionMap.at(type);
+        Asset::Transaction transact_type = Asset::_transactionMap.at(transactionType);
+
+
+
         if (!json_act[i]["Amount"].IsNumber())
         {
             throw AppException("JSON Amount of " + id + " has to be a number.");
@@ -166,6 +170,14 @@ bool AppControl::readLocalRapidJson(const char *filePath)
                 _assets->emplace(asset->getId(), move(asset));
             }
         }
+
+        // collecting the ROI
+        if(transact_type == Asset::Transaction::ROI )
+        {
+            acc_roi+=price;
+            _roi_by_date->emplace(strdate, acc_roi);
+        }
+            
     }
     return true;
 }
@@ -569,6 +581,10 @@ float AppControl::getExchangeRate(string from, string to)
     return res;
 }
 
+shared_ptr<map<string,double>> AppControl::getRoiByDate()
+{
+    return _roi_by_date;
+}
 void AppControl::checkJson()
 {
     if (!_jsonDoc->IsObject())

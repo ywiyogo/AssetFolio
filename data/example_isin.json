@@ -6,7 +6,7 @@
             "ID": "ZGUSD",
             "Name": "Gold (oz)",
             "AssetType": "Commodity",
-            "Type": "Buy",
+            "Transaction": "Buy",
             "Price": 13000,
             "Amount": 10,
             "Broker": "YBroker"
@@ -16,7 +16,7 @@
             "ID": "RE1",
             "Name": "Apartment in Frankfurt",
             "AssetType": "Real Estate",
-            "Type": "Buy",
+            "Transaction": "Buy",
             "Price": 20000.0,
             "Amount": 1,
             "Broker": "Agent Z"
@@ -26,7 +26,7 @@
             "ID": "IE00B5LJZQ16",
             "Name": "HSBC MSCI RUSSIA",
             "AssetType": "ETF",
-            "Type": "Buy",
+            "Transaction": "Buy",
             "Price": 1155.8,
             "Amount": 55,
             "Broker": "Comdirect"
@@ -36,7 +36,7 @@
             "ID": "LU0488317024",
             "Name": "ComStage FR DAX EUR",
             "AssetType": "ETF",
-            "Type": "Buy",
+            "Transaction": "Buy",
             "Price": 2868.01,
             "Amount": 53,
             "Broker": "IB"
@@ -46,7 +46,7 @@
             "ID": "LU0488317024",
             "Name": "ComStage FR DAX EUR",
             "AssetType": "ETF",
-            "Type": "ROI",
+            "Transaction": "ROI",
             "Price": 57.96,
             "Amount": 0,
             "Broker": "DKB"
@@ -56,7 +56,7 @@
             "ID": "IE00B5L01S80",
             "Name": "HSBC FTSE EPRA REIT",
             "AssetType": "ETF",
-            "Type": "Buy",
+            "Transaction": "Buy",
             "Price": 3779.52,
             "Amount": 186,
             "Broker": ""
@@ -66,7 +66,7 @@
             "ID": "DE000ETFL326",
             "Name": "Deka MSCI China",
             "AssetType": "ETF",
-            "Type": "Buy",
+            "Transaction": "Buy",
             "Price": 3640,
             "Amount": 500,
             "Broker": ""
@@ -76,7 +76,7 @@
             "ID": "LU0488317024",
             "Name": "ComStage FR DAX EUR",
             "AssetType": "ETF",
-            "Type": "Buy",
+            "Transaction": "Buy",
             "Price": 2472.7,
             "Amount": 50,
             "Broker": ""
@@ -86,7 +86,7 @@
             "ID": "IE00B5L01S80",
             "Name": "HSBC FTSE EPRA REIT",
             "AssetType": "ETF",
-            "Type": "ROI",
+            "Transaction": "ROI",
             "Price": 11.89,
             "Amount": 0,
             "Broker": ""
@@ -96,7 +96,7 @@
             "ID": "IE00B0M63177",
             "Name": "iShares MSCI EM",
             "AssetType": "ETF",
-            "Type": "Buy",
+            "Transaction": "Buy",
             "Price": 2149.7,
             "Amount": 70,
             "Broker": ""
@@ -106,7 +106,7 @@
             "ID": "IE00B5LJZQ16",
             "Name": "HSBC MSCI RUSSIA",
             "AssetType": "ETF",
-            "Type": "Buy",
+            "Transaction": "Buy",
             "Price": 2904.88,
             "Amount": 440,
             "Broker": ""
@@ -116,7 +116,7 @@
             "ID": "DE000ETFL326",
             "Name": "Deka MSCI China",
             "AssetType": "ETF",
-            "Type": "Buy",
+            "Transaction": "Buy",
             "Price": 1126.5,
             "Amount": 150,
             "Broker": "Consor"
@@ -126,7 +126,7 @@
             "ID": "DE0005190037",
             "Name": "BMW (Vz)",
             "AssetType": "Stock",
-            "Type": "Buy",
+            "Transaction": "Buy",
             "Price": 5191.98,
             "Amount": 77,
             "Broker": ""
@@ -136,7 +136,7 @@
             "ID": "DE000ETFL326",
             "Name": "Deka MSCI China",
             "AssetType": "ETF",
-            "Type": "ROI",
+            "Transaction": "ROI",
             "Price": 5.61,
             "Amount": 0,
             "Broker": ""
@@ -146,7 +146,7 @@
             "ID": "DE0007664039",
             "Name": "Volkswagen (Vz)",
             "AssetType": "Stock",
-            "Type": "Buy",
+            "Transaction": "Buy",
             "Price": 1384.99,
             "Amount": 10,
             "Broker": ""
@@ -156,7 +156,7 @@
             "ID": "LU1686830909",
             "Name": "Lyxor iBOXX EM",
             "AssetType": "ETF",
-            "Type": "Buy",
+            "Transaction": "Buy",
             "Price": 1429.88,
             "Amount": 15,
             "Broker": "ING"
@@ -166,7 +166,7 @@
             "ID": "US037833AK68",
             "Name": "Apple DL notes",
             "AssetType": "ETF",
-            "Type": "Buy",
+            "Transaction": "Buy",
             "Price": 2000,
             "Amount": 20,
             "Broker": "ING"
@@ -176,7 +176,7 @@
             "ID": "BTCUSD",
             "Name": "Bitcoin",
             "AssetType": "Crypto",
-            "Type": "Buy",
+            "Transaction": "Buy",
             "Price": 8500,
             "Amount": 1,
             "Broker": "Brok"

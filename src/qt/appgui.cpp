@@ -3,6 +3,8 @@
 #include "ui_appgui.h"
 #include <QMetaType>
 #include <QClipboard>
+#include <QDate>
+#include <QDateTime>
 #include "customtableview.h"
 
 AppGui::AppGui(QWidget *parent)
@@ -10,19 +12,41 @@ AppGui::AppGui(QWidget *parent)
       _qchart(new QtCharts::QChart()),
       _pieseries(new QtCharts::QPieSeries()),
       _chartView(new QtCharts::QChartView(_qchart)),
+      _roichart(new QtCharts::QChart()),
+      _roiChartView(new QtCharts::QChartView(_roichart)),
+      _axisX(new QtCharts::QDateTimeAxis()),
+      _axisY(new QtCharts::QValueAxis()),
+      _roi_date_series(new QtCharts::QLineSeries()),
       _appControl(make_shared<AppControl>(Config::UPDATE_PERIODE)),
       _transaction_model(make_shared<QStandardItemModel>(
           0, Config::TRANSACTION_COL_NAMES.size(), this)),
       _updater()
 {
     ui->setupUi(this);
-    // init chart
+    // init pie chart
     _qchart->setAnimationOptions(QtCharts::QChart::AllAnimations);
     _qchart->legend()->setAlignment(Qt::AlignRight);
     _chartView->setRenderHint(QPainter::Antialiasing);
     _chartView->chart()->setTheme(QtCharts::QChart::ChartThemeBlueCerulean);
     layout.addWidget(_chartView);
+    // set the chart to the tab widget
     ui->tab_alloc->setLayout(&layout);
+
+    // init ROI plot
+    // Prepare the X and Y axis object and its properties
+    _axisX->setTickCount(10);
+    _axisX->setFormat("MMM yyyy");
+    _axisX->setTitleText("Date");
+
+    _axisY->setLabelFormat("%i");
+    QString title = "ROI in ";
+    title += _appControl->getCurrency().GetString();
+    _axisY->setTitleText(title);
+    _roiChartView->chart()->addAxis(_axisX, Qt::AlignBottom);
+    _roiChartView->chart()->addAxis(_axisY, Qt::AlignLeft);
+    _roiChartView->chart()->setTitle("Accumulated ROI");
+    layout_roi.addWidget(_roiChartView);
+    ui->tab_plots->setLayout(&layout_roi);
 }
 
 AppGui::~AppGui() { delete ui; }
@@ -118,6 +142,7 @@ void AppGui::on_actionOpen_triggered()
         vector<string> categories;
         _appControl->calcAllocation(categories, data);
         createPieChart(categories, data);
+        createRoiChart();
     }
     else
     {
@@ -248,14 +273,17 @@ void AppGui::on_actionSave_triggered()
                 else if ((column_name.compare("Price") == 0) ||
                          (column_name.compare("Amount") == 0))
                 {
-                    for (uint i = 0; i < input.length(); i++)
-                        if (isdigit(input[i]))
-                            value.SetFloat(AppControl::stringToFloat(input, 2));
-                        else
-                        {
-                            //when one non numeric value is found, throw exeption
-                            throw runtime_error("Invalid value on column " + column_name + " row " + std::to_string(row) + " !");
-                        }
+
+                    try
+                    {
+                        double input_val = stod(input);
+                        value.SetDouble(input_val);
+                    }
+                    catch (const std::invalid_argument &ia)
+                    {
+                        //when one non numeric value is found, throw exeption
+                        throw runtime_error("Invalid value on column " + column_name + " row " + std::to_string(row) + " !");
+                    }
                 }
                 else if (column_name.compare("AssetType") == 0)
                 {
@@ -271,7 +299,7 @@ void AppGui::on_actionSave_triggered()
                     if (_appControl->isTransactionTypeValid(input))
                         value.SetString(input.c_str(), allocator);
                     else
-                        throw runtime_error("Invalid value on Column 'Type', row " + std::to_string(row) + " !\nChoose one of these options:\nBuy, Sell, ROI");
+                        throw runtime_error("Invalid value on Column 'Transaction', row " + std::to_string(row) + " !\nChoose one of these options:\nBuy, Sell, ROI");
                 }
                 else
                 {
@@ -533,6 +561,32 @@ void AppGui::createPieChart(vector<string> &categories, vector<double> &data)
                 QString("%1%").arg(100 * slice->percentage(), 0, 'f', 1)));
         _qchart->addSeries(_pieseries);
     }
+}
+
+void AppGui::createRoiChart()
+{
+    //prepare the data
+    _roi_date_series->clear();
+    map<string, double>::iterator it;
+    for (it = _appControl->getRoiByDate()->begin(); it != _appControl->getRoiByDate()->end(); it++)
+    {
+        QString str_date = it->first.c_str();
+        QStringList date_components = str_date.split(QLatin1Char('.'), Qt::SkipEmptyParts);
+        QDateTime datetime;
+        datetime.setDate(QDate(date_components[2].toInt(), date_components[1].toInt(), date_components[0].toInt()));
+        _roi_date_series->append(datetime.toMSecsSinceEpoch(), it->second);
+    }
+
+    // Set the X-Y axes and the data series to the chart
+    // Attach axes after adding the data series to the chart
+    if (_roi_date_series->attachedAxes().size() == 0)
+    {
+        _roiChartView->chart()->addSeries(_roi_date_series);
+        _roi_date_series->attachAxis(_axisX);
+        _roi_date_series->attachAxis(_axisY);
+    }
+
+    _roiChartView->setRenderHint(QPainter::Antialiasing);
 }
 // -------------------------------------------
 void UpdaterThread::run()

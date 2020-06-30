@@ -87,6 +87,8 @@ class AppControl
         ~AppException() throw() {} // Updated
         const char* what() const throw() { return str.c_str(); }
     };
+    
+    shared_ptr<map<string,double>> getRoiByDate();
 
   private:
     void calcCurrentTotalValues();
@@ -106,6 +108,7 @@ class AppControl
     unsigned int _update_freq;
     string _currency_ref;
     map<string, shared_ptr<Provider>> _providers;
+    shared_ptr<map<string,double>> _roi_by_date;
 };
 
 #endif

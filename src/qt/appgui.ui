@@ -206,16 +206,16 @@
            </size>
           </property>
           <property name="currentIndex">
-           <number>0</number>
+           <number>1</number>
           </property>
           <widget class="QWidget" name="tab_alloc">
            <attribute name="title">
             <string>Asset Allocation</string>
            </attribute>
           </widget>
-          <widget class="QWidget" name="tab_tracker">
+          <widget class="QWidget" name="tab_plots">
            <attribute name="title">
-            <string>Tracker Chart</string>
+            <string>Portfolio Plots</string>
            </attribute>
           </widget>
          </widget>
@@ -232,7 +232,7 @@
      <x>0</x>
      <y>0</y>
      <width>1500</width>
-     <height>29</height>
+     <height>24</height>
     </rect>
    </property>
   </widget>

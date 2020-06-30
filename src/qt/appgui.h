@@ -14,6 +14,9 @@
 #include <QWaitCondition>
 #include <QtCharts/QChartView>
 #include <QtCharts/QPieSeries>
+#include <QtCharts/QLineSeries>
+#include <QtCharts/QDateTimeAxis>
+#include <QtCharts/QValueAxis>
 #include <QtWidgets/QTableView>
 #include <memory>
 
@@ -94,7 +97,13 @@ class AppGui : public QMainWindow
     QtCharts::QChart* _qchart;
     QtCharts::QPieSeries* _pieseries;
     QtCharts::QChartView* _chartView;
+    QtCharts::QChart* _roichart;
+    QtCharts::QChartView* _roiChartView;
+    QtCharts::QDateTimeAxis* _axisX;
+    QtCharts::QValueAxis* _axisY;
+    QtCharts::QLineSeries* _roi_date_series;
     QGridLayout layout;
+    QGridLayout layout_roi;
 
     // Control variables
     shared_ptr<AppControl> _appControl;
@@ -111,6 +120,7 @@ class AppGui : public QMainWindow
     void closeEvent(QCloseEvent *event);
 
     void createPieChart(vector<string>& categories, vector<double>& data);
+    void createRoiChart();
     void watchlistUpdater();
 };
 #endif // APPGUI_H
