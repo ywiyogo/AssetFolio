@@ -5,6 +5,7 @@
 #include <QClipboard>
 #include <QDate>
 #include <QDateTime>
+#include <regex>
 #include "customtableview.h"
 
 AppGui::AppGui(QWidget *parent)
@@ -102,12 +103,40 @@ void AppGui::on_actionOpen_triggered()
                 // }
                 QModelIndex index =
                     _transaction_model->index(rowPos, colPos, QModelIndex());
+
                 if (itr2->value.IsString())
                 {
-
-                    // 0 for all data
-                    _transaction_model->setData(
-                        index, QString(itr2->value.GetString()));
+                    // check of date format, thanks to https://stackoverflow.com/a/26972181
+                    const std::regex re_eudate("(0[1-9]|[12][0-9]|3[01])[- /.](0[1-9]|1[012])[- /.](19|20\\d\\d)$");
+                    const std::regex re_usdate("(0[1-9]|1[012])[- /.](0[1-9]|[12][0-9]|3[01])[- /.](19|20\\d\\d)$");
+                    std::smatch submatches;
+                    string valstring = itr2->value.GetString();
+                    if (regex_match(valstring, submatches, re_eudate))
+                    {
+                        cout << "Debuging date" << endl;
+                        for (size_t i = 0; i < submatches.size(); ++i)
+                        {
+                            cout << submatches[i].str() << " ";
+                        }
+                        cout << endl;
+                        QDate date(stoi(submatches[3].str()), stoi(submatches[2].str()), stoi(submatches[1].str()));
+                        _transaction_model->setData(index, date);
+                    }
+                    else if (regex_match(valstring, submatches, re_usdate))
+                    {
+                        for (size_t i = 0; i < submatches.size(); ++i)
+                        {
+                            cout << submatches[i].str() << " ";
+                        }
+                        cout << endl;
+                        QDate date(stoi(submatches[3].str()), stoi(submatches[1].str()), stoi(submatches[2].str()));
+                        _transaction_model->setData(index, date);
+                    }
+                    else
+                    {
+                        _transaction_model->setData(
+                            index, QString(itr2->value.GetString()));
+                    }
                 }
                 else if (itr2->value.IsNumber())
                 {
@@ -240,14 +269,14 @@ void AppGui::on_actionSave_triggered()
                 continue;
             }
 
-            string strdate = _transaction_model->data(index).toString().toStdString();
-            int yy;
-            int mm;
-            int dd;
-            sscanf(strdate.c_str(), "%d.%d.%d", &dd, &mm, &yy);
-            cout << "date: " << dd << " month: " << mm << " year: " << yy << endl;
-            if ((dd < 1 || dd > 31) || (mm < 1 || mm > 12) || (yy < 1900 || yy > 2100))
-                throw runtime_error("Invalid date on row " + std::to_string(row) + " !");
+            // string strdate = _transaction_model->data(index).toString().toStdString();
+            // int yy;
+            // int mm;
+            // int dd;
+            // sscanf(strdate.c_str(), "%d.%d.%d", &dd, &mm, &yy);
+            // cout << "date: " << dd << " month: " << mm << " year: " << yy << endl;
+            // if ((dd < 1 || dd > 31) || (mm < 1 || mm > 12) || (yy < 1900 || yy > 2100))
+            //     throw runtime_error("Invalid date on row " + std::to_string(row) + " !");
 
             for (uint col = 0; col < Config::TRANSACTION_COL_NAMES.size(); col++)
             {
@@ -259,7 +288,12 @@ void AppGui::on_actionSave_triggered()
                 rapidjson::Value value;
                 index = _transaction_model->index(row, col, QModelIndex());
                 string input = _transaction_model->data(index).toString().toStdString();
-                if (column_name.compare("ID") == 0)
+                if (column_name.compare("Date") == 0)
+                {
+                    input = _transaction_model->data(index).toDate().toString("dd.MM.yyyy").toStdString();
+                    value.SetString(input.c_str(), allocator);
+                }
+                else if (column_name.compare("ID") == 0)
                 {
                     if (input.length() < 2 || input.length() > 12)
                     {
@@ -303,8 +337,7 @@ void AppGui::on_actionSave_triggered()
                 }
                 else
                 {
-                    value.SetString(input.c_str(),
-                                    allocator);
+                    value.SetString(input.c_str(), allocator);
                 }
                 entry_obj.AddMember(name, value, allocator);
             }
