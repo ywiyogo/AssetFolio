@@ -1,0 +1,293 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="utf-8">
+        <meta http-equiv="X-UA-Compatible" content="IE=edge">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <meta name="description" content="An All-in-One Asset Tracker and Watchlist Application that keeps your asset data private.">
+        <meta name="author" content="Yongkie Wiyogo">
+        <link rel="canonical" href="https://gitlab.com/ywiyogo/assetfolio/">
+        <link rel="shortcut icon" href="img/favicon.ico">
+        <title>AssetFolio</title>
+        <link href="css/bootstrap.min.css" rel="stylesheet">
+        <link href="css/font-awesome.min.css" rel="stylesheet">
+        <link href="css/base.css" rel="stylesheet">
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/styles/github.min.css">
+        <link href="css/extra.css" rel="stylesheet">
+
+        <script src="js/jquery-1.10.2.min.js" defer></script>
+        <script src="js/bootstrap.min.js" defer></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/highlight.min.js"></script>
+        <script>hljs.initHighlightingOnLoad();</script> 
+    </head>
+
+    <body class="homepage">
+        <div class="navbar fixed-top navbar-expand-lg navbar-dark bg-primary">
+            <div class="container">
+                <a class="navbar-brand" href=".">AssetFolio</a>
+                <!-- Expander button -->
+                <button type="button" class="navbar-toggler" data-toggle="collapse" data-target="#navbar-collapse">
+                    <span class="navbar-toggler-icon"></span>
+                </button>
+
+                <!-- Expanded navigation -->
+                <div id="navbar-collapse" class="navbar-collapse collapse">
+                        <!-- Main navigation -->
+                        <ul class="nav navbar-nav">
+                            <li class="navitem active">
+                                <a href="." class="nav-link">Home</a>
+                            </li>
+                            <li class="dropdown">
+                                <a href="#" class="nav-link dropdown-toggle" data-toggle="dropdown">User Guide <b class="caret"></b></a>
+                                <ul class="dropdown-menu">
+                                    
+<li>
+    <a href="user_guide/" class="dropdown-item">User Guide</a>
+</li>
+                                </ul>
+                            </li>
+                            <li class="dropdown">
+                                <a href="#" class="nav-link dropdown-toggle" data-toggle="dropdown">Releases <b class="caret"></b></a>
+                                <ul class="dropdown-menu">
+                                    
+<li>
+    <a href="releases/release_notes/" class="dropdown-item">Release Notes</a>
+</li>
+                                </ul>
+                            </li>
+                        </ul>
+
+                    <ul class="nav navbar-nav ml-auto">
+                        <li class="nav-item">
+                            <a href="#" class="nav-link" data-toggle="modal" data-target="#mkdocs_search_modal">
+                                <i class="fa fa-search"></i> Search
+                            </a>
+                        </li>
+                            <li class="nav-item">
+                                <a rel="prev" class="nav-link disabled">
+                                    <i class="fa fa-arrow-left"></i> Previous
+                                </a>
+                            </li>
+                            <li class="nav-item">
+                                <a rel="next" href="user_guide/" class="nav-link">
+                                    Next <i class="fa fa-arrow-right"></i>
+                                </a>
+                            </li>
+                            <li class="nav-item">
+                                <a href="https://gitlab.com/ywiyogo/assetfolio" class="nav-link">ywiyogo/assetfolio</a>
+                            </li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <div class="container">
+            <div class="row">
+                    <div class="col-md-3"><div class="navbar-light navbar-expand-md bs-sidebar hidden-print affix" role="complementary">
+    <div class="navbar-header">
+        <button type="button" class="navbar-toggler collapsed" data-toggle="collapse" data-target="#toc-collapse" title="Table of Contents">
+            <span class="fa fa-angle-down"></span>
+        </button>
+    </div>
+
+    
+    <div id="toc-collapse" class="navbar-collapse collapse card bg-secondary">
+        <ul class="nav flex-column">
+            
+            <li class="nav-item" data-level="1"><a href="#assetfolio" class="nav-link">AssetFolio</a>
+              <ul class="nav flex-column">
+            <li class="nav-item" data-level="2"><a href="#overview" class="nav-link">Overview</a>
+              <ul class="nav flex-column">
+              </ul>
+            </li>
+            <li class="nav-item" data-level="2"><a href="#installation" class="nav-link">Installation</a>
+              <ul class="nav flex-column">
+              </ul>
+            </li>
+            <li class="nav-item" data-level="2"><a href="#getting-started" class="nav-link">Getting Started</a>
+              <ul class="nav flex-column">
+              </ul>
+            </li>
+              </ul>
+            </li>
+        </ul>
+    </div>
+</div></div>
+                    <div class="col-md-9" role="main">
+
+<h1 id="assetfolio">AssetFolio<a class="headerlink" href="#assetfolio" title="Permanent link">&para;</a></h1>
+<p>An All-in-One Asset Tracker and Watchlist Application that keeps your asset data private.</p>
+<hr />
+<h2 id="overview">Overview<a class="headerlink" href="#overview" title="Permanent link">&para;</a></h2>
+<p>AssetFolio is a <strong>multi-asset portfolio tracker</strong> that keeps our assets <strong>private</strong>. In the world of cloud technology, many data and information are shared and concentrate on the big technology companies, banks or the data trader companies. Their activities on how to share our data are not transparent. AssetFolio application helps us to keep our asset information private in our computer. It allows us to retrieve information online about the price changes without sharing our asset data.</p>
+<p>Preview for the activity list using Qt5 and Qt5 pie chart:</p>
+<p><img alt="Activity list" src="imgs/activity.png" title="Screenshot of the activity list" /></p>
+<p>Preview for the watchlist and asset tracker using WxWidget UI Library:</p>
+<p><img alt="Watchlist" src="imgs/watchlist.png" title="Screenshot of the watchlist and the tracker" /></p>
+<hr />
+<h2 id="installation">Installation<a class="headerlink" href="#installation" title="Permanent link">&para;</a></h2>
+<p>Software Dependencies:</p>
+<ul>
+<li><a href="https://doc.qt.io/qt-5/gettingstarted.html">Qt5</a> or <a href="https://www.wxwidgets.org/">wxWidgets</a>for the GUI</li>
+<li><a href="https://github.com/Tencent/rapidjson">RapidJSON</a> (submodule)</li>
+<li><a href="https://github.com/whoshuu/cpr">C++ Request</a> (submodule) which depends on <code>libcurl</code></li>
+<li><a href="http://www.xmlsoft.org/">libxml2</a></li>
+</ul>
+<p>Installing the dependency libraries:</p>
+<ul>
+<li>
+<p>Windows</p>
+<ol>
+<li>Install Git, MinGW w64, Qt5 and <a href="https://slproweb.com/products/Win32OpenSSL.html">OpenSSl v1.1.1</a></li>
+<li>Clone <em>vcpkg</em> to C:/Libs/: <code>git clone https://github.com/microsoft/vcpkg.git</code></li>
+<li>Build <em>vcpkg</em> by running <code>.\bootstrap-vcpkg.bat</code></li>
+<li>Hook-up user-wide integration: <code>.\vcpkg integrate install</code></li>
+<li>Install the library packages:
+      <code>.\vcpkg install curl:x64-windows</code>
+      <code>.\vcpkg install libxml2:x64-windows</code>
+      <code>.\vcpkg install libssh2:x64-windows</code>
+      <code>.\vcpkg install zlib:x64-windows</code></li>
+</ol>
+</li>
+<li>
+<p>Ubuntu</p>
+<div class="codehilite"><pre><span></span><code>sudo apt-get install build-essential checkinstall libssl-dev libcurl4-openssl-dev libxml2-dev libgtest-dev &lt;libgtk-3-dev|qt5-default qtcreator&gt;
+</code></pre></div>
+
+
+</li>
+<li>
+<p>Fedora</p>
+<div class="codehilite"><pre><span></span><code>sudo dnf install openssl-devel libcurl-devel libxml2-devel gtest-devel &lt;wxGTK3-devel| qt5-qtbase qt5-qtbase-devel qt-creator&gt;
+</code></pre></div>
+
+
+</li>
+</ul>
+<hr />
+<h2 id="getting-started">Getting Started<a class="headerlink" href="#getting-started" title="Permanent link">&para;</a></h2>
+<h3 id="download-the-source">Download the Source<a class="headerlink" href="#download-the-source" title="Permanent link">&para;</a></h3>
+<ol>
+<li>
+<p>Clone this repository: <code>git clone https://github.com/ywiyogo/AssetFolio.git</code></p>
+</li>
+<li>
+<p>Updating the submodules <code>git submodule update --init --recursive</code></p>
+</li>
+</ol>
+<h3 id="build-and-start-the-project">Build and Start the Project<a class="headerlink" href="#build-and-start-the-project" title="Permanent link">&para;</a></h3>
+<p>Currently, the project supports UNIX and Windows. It shall work also on MAC, however, I don't test it yet.</p>
+<h4 id="unix-system">UNIX System<a class="headerlink" href="#unix-system" title="Permanent link">&para;</a></h4>
+<hr />
+<p>Got to the project folder and type these commands:</p>
+<div class="codehilite"><pre><span></span><code>mkdir build &amp;&amp; cd build
+cmake ..
+make
+./AssetFolio
+</code></pre></div>
+
+
+<p>In order to create an AppImage of the AssetFolio, run these commands after <code>make</code>:</p>
+<div class="codehilite"><pre><span></span><code>make install DESTDIR=AppDir
+./createAppImage.sh
+</code></pre></div>
+
+
+<h4 id="windows-system">Windows System<a class="headerlink" href="#windows-system" title="Permanent link">&para;</a></h4>
+<hr />
+<p>Got to the project folder and type these commands:</p>
+<div class="codehilite"><pre><span></span><code>mkdir build &amp;&amp; cd build
+cmake .. -G &quot;MinGW MakeFiles&quot;
+make
+.\bin\AssetFolio.exe
+</code></pre></div>
+
+
+<p>Note, change <code>set(GUI "Qt")</code> to <code>set(GUI "Wx")</code> to build the GUI with WxWidget.</p>
+<p>An example dataset in <em>data/example.json</em> can be opened with the "arrow up" toolbar icon.</p>
+<p>The C++ Request submodules include GTest to test its code. If we don't want to install GTest in our system, we can disable it in CMakeLists.txt <code>set(USE_SYSTEM_GTEST OFF)</code>.</p></div>
+            </div>
+        </div>
+
+        <footer class="col-md-12">
+            <hr>
+            <p>Documentation built with <a href="https://www.mkdocs.org/">MkDocs</a>.</p>
+        </footer>
+        <script>
+            var base_url = ".",
+                shortcuts = {"help": 191, "next": 78, "previous": 80, "search": 83};
+        </script>
+        <script src="js/base.js" defer></script>
+        <script src="search/main.js" defer></script>
+
+        <div class="modal" id="mkdocs_search_modal" tabindex="-1" role="dialog" aria-labelledby="searchModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h4 class="modal-title" id="searchModalLabel">Search</h4>
+                <button type="button" class="close" data-dismiss="modal"><span aria-hidden="true">&times;</span><span class="sr-only">Close</span></button>
+            </div>
+            <div class="modal-body">
+                <p>
+                    From here you can search these documents. Enter
+                    your search terms below.
+                </p>
+                <form>
+                    <div class="form-group">
+                        <input type="search" class="form-control" placeholder="Search..." id="mkdocs-search-query" title="Type search term here">
+                    </div>
+                </form>
+                <div id="mkdocs-search-results"></div>
+            </div>
+            <div class="modal-footer">
+            </div>
+        </div>
+    </div>
+</div><div class="modal" id="mkdocs_keyboard_modal" tabindex="-1" role="dialog" aria-labelledby="keyboardModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h4 class="modal-title" id="keyboardModalLabel">Keyboard Shortcuts</h4>
+                <button type="button" class="close" data-dismiss="modal"><span aria-hidden="true">&times;</span><span class="sr-only">Close</span></button>
+            </div>
+            <div class="modal-body">
+              <table class="table">
+                <thead>
+                  <tr>
+                    <th style="width: 20%;">Keys</th>
+                    <th>Action</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr>
+                    <td class="help shortcut"><kbd>?</kbd></td>
+                    <td>Open this help</td>
+                  </tr>
+                  <tr>
+                    <td class="next shortcut"><kbd>n</kbd></td>
+                    <td>Next page</td>
+                  </tr>
+                  <tr>
+                    <td class="prev shortcut"><kbd>p</kbd></td>
+                    <td>Previous page</td>
+                  </tr>
+                  <tr>
+                    <td class="search shortcut"><kbd>s</kbd></td>
+                    <td>Search</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+            <div class="modal-footer">
+            </div>
+        </div>
+    </div>
+</div>
+
+    </body>
+</html>
+
+<!--
+MkDocs version : 1.1.2
+Build Date UTC : 2020-07-02 15:20:54.823796+00:00
+-->
