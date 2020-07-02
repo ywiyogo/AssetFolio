@@ -88,7 +88,8 @@ class AppControl
         const char* what() const throw() { return str.c_str(); }
     };
     
-    shared_ptr<map<string,double>> getRoiByDate();
+    // year, realized RoI
+    const map<time_t, float, less<time_t>>& getTotalRealizedRoi();
 
   private:
     void calcCurrentTotalValues();
@@ -108,7 +109,8 @@ class AppControl
     unsigned int _update_freq;
     string _currency_ref;
     map<string, shared_ptr<Provider>> _providers;
-    shared_ptr<map<string,double>> _roi_by_date;
+    map<time_t, float> _accumulated_roi;
+
 };
 
 #endif

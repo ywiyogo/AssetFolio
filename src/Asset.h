@@ -57,13 +57,11 @@ class Asset : public std::enable_shared_from_this<Asset>
     void updateYearlyReturn(time_t reg_date, float total_value,
                             float returns = 0.);
 
-    void requestAlphaVantageApi(string symbol, string apikey);
-
-    bool requestFmpApi(string symbol);
-    void runDemo();
-
+    // get the asset id
     string getId() const;
+    // get the asset name
     string getName() const;
+    // Get the asset's amount
     float getAmount() const;
     float getBalance() const;
     float getAvgPrice() const;
@@ -73,8 +71,15 @@ class Asset : public std::enable_shared_from_this<Asset>
     float getDiffInPercent() const;
     float getReturn() const;
     float getReturnInPercent() const;
+    float getProfitLoss() const;
+    // Get the asset type 
     Type getType() const;
+
     void setCurrPrice(float price);
+
+    void updateYearlyRoi(time_t reg_date, float value);
+    // get the realized RoI
+    const map<time_t, float>& getRois();
 
   protected:
     std::shared_ptr<Asset> get_shared_this() { return shared_from_this(); }
@@ -104,8 +109,13 @@ class Asset : public std::enable_shared_from_this<Asset>
     float _return;
     float _return_in_percent;
 
+    float _profit_loss;
+    float _profit_in_percent;
+
     // list of the returns with its value and its returns
     map<int, YearlyReturn> _return_years;
+    // date time, roi value
+    map<time_t, float> _rois;
     static mutex _mtx;
 };
 

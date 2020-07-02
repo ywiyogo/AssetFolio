@@ -23,11 +23,12 @@ class UpdateData
     float _diff_in_percent;
     float _return;
     float _return_in_percent;
+    float _profit_loss;
 
     UpdateData(){};
     // Constructor
     UpdateData(string id, float currprice, float currvalue, float diff,
-               float diff_in_percent, float ret, float returninpercent)
+               float diff_in_percent, float ret, float returninpercent, float profitloss)
     {
         _id = id;
         _curr_price = currprice;
@@ -36,6 +37,7 @@ class UpdateData
         _diff_in_percent = diff_in_percent;
         _return = ret;
         _return_in_percent = returninpercent;
+        _profit_loss = profitloss;
     };
     UpdateData(const UpdateData& source) // 2 : copy constructor
     {
@@ -46,6 +48,7 @@ class UpdateData
         _diff_in_percent = source._diff_in_percent;
         _return = source._return;
         _return_in_percent = source._return_in_percent;
+        _profit_loss = source._profit_loss;
         // std::cout << "COPYING content of instance " << source._id << " "
         //           << &source << " to instance " << this << std::endl;
     }
@@ -64,6 +67,7 @@ class UpdateData
         _diff_in_percent = source._diff_in_percent;
         _return = source._return;
         _return_in_percent = source._return_in_percent;
+        _profit_loss = source._profit_loss;
         return *this;
     }
 
@@ -78,6 +82,7 @@ class UpdateData
         _diff_in_percent = source._diff_in_percent;
         _return = source._return;
         _return_in_percent = source._return_in_percent;
+        _profit_loss = source._profit_loss;
     }
 
     // 5. Move constructor
@@ -94,6 +99,7 @@ class UpdateData
         _diff_in_percent = source._diff_in_percent;
         _return = source._return;
         _return_in_percent = source._return_in_percent;
+        _profit_loss = source._profit_loss;
         return *this;
     }
 

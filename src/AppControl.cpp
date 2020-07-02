@@ -34,8 +34,7 @@ AppControl::AppControl(unsigned int upd_freq)
     : _jsonDoc(make_shared<rapidjson::Document>()),
       _assets(make_shared<map<string, shared_ptr<Asset>>>()), _futures(),
       _msg_queue(), _isUpdateActive(false), _api_key(""), _update_freq(upd_freq),
-      _currency_ref("USD"),
-      _roi_by_date(make_shared<map<string, double>>())
+      _currency_ref("USD"), _accumulated_roi()
 {
     // Add the HTML data provider
     shared_ptr<Provider> tradegate(make_shared<Provider>(
@@ -115,20 +114,26 @@ bool AppControl::readLocalRapidJson(const char *filePath)
 
     auto json_act = _jsonDoc->GetObject()["Transactions"].GetArray();
     double acc_roi = 0;
+
+    int yy;
+    int mm;
+    int dd;
+    struct tm tm;
+    time_t rawtime;
+    time_t date;
+    time(&rawtime);
+    tm = *localtime(&rawtime);
     // creating all asset objects
     for (unsigned int i = 0; i < json_act.Size(); i++)
     {
-        // Retrieve the data
+        // Retrieve the date data
         string strdate = json_act[i]["Date"].GetString();
-        struct tm tm;
-        int yy;
-        int mm;
-        int dd;
-        sscanf(strdate.c_str(), "%d:%d:%d", &yy, &mm, &dd);
+        sscanf(strdate.c_str(), "%d.%d.%d", &dd, &mm, &yy);
         tm.tm_year = yy - 1900; // Years from 1900
         tm.tm_mon = mm - 1;     // Months from January
         tm.tm_mday = dd;
-        time_t date = mktime(&tm);
+        date = mktime(&tm);
+        // Retrieve the asset information
         string name = json_act[i]["Name"].GetString();
         string id = json_act[i]["ID"].GetString();
         Asset::Type asset_type =
@@ -136,8 +141,6 @@ bool AppControl::readLocalRapidJson(const char *filePath)
         string transactionType = json_act[i]["Transaction"].GetString();
 
         Asset::Transaction transact_type = Asset::_transactionMap.at(transactionType);
-
-
 
         if (!json_act[i]["Amount"].IsNumber())
         {
@@ -152,32 +155,42 @@ bool AppControl::readLocalRapidJson(const char *filePath)
         float price = json_act[i]["Price"].GetFloat();
         // Check if the acquired id has already existed, if not then create
         // a new asset
-        if (_assets->find(id) == _assets->end())
-        { // Differentiate the equity asset with the others
-            if (asset_type == Asset::Type::Stock ||
-                asset_type == Asset::Type::ETF ||
-                asset_type == Asset::Type::Bond)
-            {
-                unique_ptr<Stock> stock = make_unique<Stock>(id, name);
-                stock->registerTransaction(transact_type, date, amount, price);
-                _assets->emplace(stock->getId(), move(stock));
+        try
+        {
+            if (_assets->find(id) == _assets->end())
+            { // Differentiate the equity asset with the others
+                if (asset_type == Asset::Type::Stock ||
+                    asset_type == Asset::Type::ETF ||
+                    asset_type == Asset::Type::Bond)
+                {
+                    unique_ptr<Stock> stock = make_unique<Stock>(id, name);
+                    stock->registerTransaction(transact_type, date, amount, price);
+                    _assets->emplace(stock->getId(), move(stock));
+                }
+                else
+                {
+                    unique_ptr<Asset> asset =
+                        make_unique<Asset>(id, name, asset_type);
+                    asset->registerTransaction(transact_type, date, amount, price);
+                    _assets->emplace(asset->getId(), move(asset));
+                }
             }
             else
             {
-                unique_ptr<Asset> asset =
-                    make_unique<Asset>(id, name, asset_type);
-                asset->registerTransaction(transact_type, date, amount, price);
-                _assets->emplace(asset->getId(), move(asset));
+                _assets->find(id)->second->registerTransaction(transact_type, date, amount, price);
+            }
+
+            // collecting the ROI
+            if (transact_type == Asset::Transaction::ROI)
+            {
+                acc_roi += price;
+                _accumulated_roi.emplace(date, acc_roi);
             }
         }
-
-        // collecting the ROI
-        if(transact_type == Asset::Transaction::ROI )
+        catch (const std::exception &e)
         {
-            acc_roi+=price;
-            _roi_by_date->emplace(strdate, acc_roi);
+            throw AppException(e.what());
         }
-            
     }
     return true;
 }
@@ -276,7 +289,7 @@ void AppControl::stopUpdateTasks()
         _isUpdateActive = false;
     }
     // send a disconnect message to stop the wile loop of the GUI async
-    unique_ptr<UpdateData> upd(new UpdateData("disconnect", 0, 0, 0, 0, 0, 0));
+    unique_ptr<UpdateData> upd(new UpdateData("disconnect", 0, 0, 0, 0, 0, 0, 0));
     _msg_queue.clear();
     _msg_queue.send(move(upd));
 
@@ -317,103 +330,119 @@ bool AppControl::getPriceFromTradegate(vector<unique_ptr<UpdateData>> &updates)
             }
             continue;
         }
-        string url = _providers.at("Tradegate")->_url + it->second->getId();
-        xmlChar *xpathchar1 =
-            (xmlChar *)_providers.at("Tradegate")->_xpath.c_str();
-        xmlChar *xpathchar2 = (xmlChar *)"//*[@id='bid']";
-
-        auto r = cpr::Get(cpr::Url{url});
-
-        // cout << "Result code: " << r.status_code
-        //      << "\nHeaders: " << r.header["content-type"] << "\n"
-        //      << r.text << endl
-        //      << flush;
-
-        // Parse HTML and create a DOM tree
-        xmlDocPtr doc = htmlReadDoc((xmlChar *)r.text.c_str(), NULL, NULL,
-                                    HTML_PARSE_NOWARNING | HTML_PARSE_RECOVER |
-                                        HTML_PARSE_NOERROR);
-
-        xmlXPathContextPtr xpath_context = xmlXPathNewContext(doc);
-        if (xpath_context == NULL)
+        // ISIN length is 12 chars
+        if (it->second->getType() == Asset::Type::Stock && (it->second->getId().length() == 12))
         {
-            throw AppException("Error in xmlXPathNewContext\n");
-        }
+            string url = _providers.at("Tradegate")->_url + it->second->getId();
+            xmlChar *xpathchar1 =
+                (xmlChar *)_providers.at("Tradegate")->_xpath.c_str();
+            xmlChar *xpathchar2 = (xmlChar *)"//*[@id='bid']";
 
-        xmlXPathObjectPtr cur_result =
-            xmlXPathEvalExpression(xpathchar1, xpath_context);
-        xmlXPathObjectPtr result =
-            xmlXPathEvalExpression(xpathchar2, xpath_context);
-        xmlXPathFreeContext(xpath_context);
-        if (cur_result == NULL)
-        {
-            throw AppException("Error in xmlXPathEvalExpression\n");
-        }
-        if (result == NULL)
-        {
-            throw AppException("Error in xmlXPathEvalExpression\n");
-        }
-        if (xmlXPathNodeSetIsEmpty(cur_result->nodesetval))
-        {
+            auto r = cpr::Get(cpr::Url{url});
+
+            // cout << "Result code: " << r.status_code
+            //      << "\nHeaders: " << r.header["content-type"] << "\n"
+            //      << r.text << endl
+            //      << flush;
+
+            // Parse HTML and create a DOM tree
+            xmlDocPtr doc = htmlReadDoc((xmlChar *)r.text.c_str(), NULL, NULL,
+                                        HTML_PARSE_NOWARNING | HTML_PARSE_RECOVER |
+                                            HTML_PARSE_NOERROR);
+
+            xmlXPathContextPtr xpath_context = xmlXPathNewContext(doc);
+            if (xpath_context == NULL)
+            {
+                throw AppException("Error in xmlXPathNewContext\n");
+            }
+
+            xmlXPathObjectPtr cur_result =
+                xmlXPathEvalExpression(xpathchar1, xpath_context);
+            xmlXPathObjectPtr result =
+                xmlXPathEvalExpression(xpathchar2, xpath_context);
+            xmlXPathFreeContext(xpath_context);
+            if (cur_result == NULL)
+            {
+                throw AppException("Error in xmlXPathEvalExpression\n");
+            }
+            if (result == NULL)
+            {
+                throw AppException("Error in xmlXPathEvalExpression\n");
+            }
+            if (xmlXPathNodeSetIsEmpty(cur_result->nodesetval))
+            {
+                xmlXPathFreeObject(cur_result);
+                printf("No result\n");
+                continue;
+                // return NULL;
+            }
+
+            xmlNodeSetPtr currency_nodeset = cur_result->nodesetval;
+            if (currency_nodeset->nodeNr > 0)
+            {
+                xmlChar *curr = xmlNodeListGetString(
+                    doc, currency_nodeset->nodeTab[0]->xmlChildrenNode, 1);
+                stringstream ss;
+                ss << curr;
+                currency = ss.str();
+                xmlFree(curr);
+            }
+
+            if (xmlXPathNodeSetIsEmpty(result->nodesetval))
+            {
+                xmlXPathFreeObject(result);
+                printf("No result\n");
+                return NULL;
+            }
+
+            xmlNodeSetPtr nodeset = result->nodesetval;
+            for (int i = 0; i < nodeset->nodeNr; i++)
+            {
+                xmlChar *keyword = xmlNodeListGetString(
+                    doc, nodeset->nodeTab[i]->xmlChildrenNode, 1);
+                stringstream ss;
+                ss << keyword;
+                curr_price = stof(ss.str());
+                xmlFree(keyword);
+            }
+
             xmlXPathFreeObject(cur_result);
-            printf("No result\n");
-            continue;
-            // return NULL;
-        }
-
-        xmlNodeSetPtr currency_nodeset = cur_result->nodesetval;
-        if (currency_nodeset->nodeNr > 0)
-        {
-            xmlChar *curr = xmlNodeListGetString(
-                doc, currency_nodeset->nodeTab[0]->xmlChildrenNode, 1);
-            stringstream ss;
-            ss << curr;
-            currency = ss.str();
-            xmlFree(curr);
-        }
-
-        if (xmlXPathNodeSetIsEmpty(result->nodesetval))
-        {
             xmlXPathFreeObject(result);
-            printf("No result\n");
-            return NULL;
-        }
+            xmlFreeDoc(doc);
+            xmlCleanupParser();
 
-        xmlNodeSetPtr nodeset = result->nodesetval;
-        for (int i = 0; i < nodeset->nodeNr; i++)
-        {
-            xmlChar *keyword = xmlNodeListGetString(
-                doc, nodeset->nodeTab[i]->xmlChildrenNode, 1);
-            stringstream ss;
-            ss << keyword;
-            curr_price = stof(ss.str());
-            xmlFree(keyword);
-        }
+            shared_ptr<Asset> asset = _assets->at(it->first);
 
-        xmlXPathFreeObject(cur_result);
-        xmlXPathFreeObject(result);
-        xmlFreeDoc(doc);
-        xmlCleanupParser();
+            if (_currency_ref.compare(currency) == 0)
+            {
+                asset->setCurrPrice(curr_price);
+            }
+            else
+            {
+                float rate = getExchangeRate(currency, _currency_ref);
+                cout << "Exchange rate: " << rate << endl;
+                asset->setCurrPrice(curr_price);
+            }
 
-        shared_ptr<Asset> asset = _assets->at(it->first);
+            unique_ptr<UpdateData> upd_data(new UpdateData(
+                it->first, asset->getCurrPrice(), asset->getCurrValue(),
+                asset->getDiff(), asset->getDiffInPercent(), asset->getReturn(),
+                asset->getReturnInPercent(), asset->getProfitLoss()));
 
-        if (_currency_ref.compare(currency) == 0)
-        {
-            asset->setCurrPrice(curr_price);
+            updates.emplace_back(move(upd_data));
         }
         else
         {
-            float rate = getExchangeRate(currency, _currency_ref);
-            cout << "Exchange rate: " << rate << endl;
-            asset->setCurrPrice(curr_price);
+            if (is_first)
+            {
+                fmp_symbols += it->second->getId();
+                is_first = false;
+            }
+            else
+            {
+                fmp_symbols += "," + it->second->getId();
+            }
         }
-
-        unique_ptr<UpdateData> upd_data(new UpdateData(
-            it->first, asset->getCurrPrice(), asset->getCurrValue(),
-            asset->getDiff(), asset->getDiffInPercent(), asset->getReturn(),
-            asset->getReturnInPercent()));
-
-        updates.emplace_back(move(upd_data));
     }
     // if FMP symbols exist
     if (fmp_symbols.size() > 0)
@@ -502,7 +531,7 @@ bool AppControl::requestFmpApi(vector<unique_ptr<UpdateData>> &updates,
                     unique_ptr<UpdateData> upd_data(new UpdateData(
                         id, asset->getCurrPrice(), asset->getCurrValue(),
                         asset->getDiff(), asset->getDiffInPercent(),
-                        asset->getReturn(), asset->getReturnInPercent()));
+                        asset->getReturn(), asset->getReturnInPercent(), asset->getProfitLoss()));
                     updates.emplace_back(move(upd_data));
                 }
             }
@@ -543,10 +572,6 @@ float AppControl::getExchangeRate(string from, string to)
 
     auto r = cpr::Get(cpr::Url{url});
 
-    // cout << "\nResult code: " << r.status_code
-    //      << "\nHeaders: " << r.header["content-type"] << "\n"
-    //      << r.text << endl
-    //      << flush;
     if (r.status_code == 200)
     {
 
@@ -581,9 +606,33 @@ float AppControl::getExchangeRate(string from, string to)
     return res;
 }
 
-shared_ptr<map<string,double>> AppControl::getRoiByDate()
+const map<time_t, float> &AppControl::getTotalRealizedRoi()
 {
-    return _roi_by_date;
+    float acc_val = 0;
+    map<time_t, float> sorted_entries;
+    for (auto it = _assets->begin(); it != _assets->end(); it++)
+    { //iterate the assets
+        const map<time_t, float> &maprois = it->second->getRois();
+
+        for (auto iter = maprois.begin(); iter != maprois.end(); ++iter)
+        { //iterate the roi of each asset. Do not iterate for accumulation graph
+            map<time_t, float>::iterator iteration = sorted_entries.find(iter->first);
+            if (iteration == sorted_entries.end())
+            {
+                sorted_entries.insert(make_pair(iter->first, iter->second));
+            }
+            else
+            {
+                iteration->second += iter->second;
+            }
+        }
+    }
+    for (auto entry : sorted_entries)
+    {
+        acc_val += entry.second;
+        _accumulated_roi.insert(make_pair(entry.first, acc_val));
+    }
+    return _accumulated_roi;
 }
 void AppControl::checkJson()
 {
@@ -613,6 +662,7 @@ void AppControl::clearJsonData()
     if (_jsonDoc->IsObject())
         _jsonDoc->RemoveAllMembers();
     _assets->clear();
+    _accumulated_roi.clear();
 }
 
 string AppControl::floatToString(float number, int precision)

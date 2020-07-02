@@ -122,5 +122,6 @@ class AppGui : public QMainWindow
     void createPieChart(vector<string>& categories, vector<double>& data);
     void createRoiChart();
     void watchlistUpdater();
+    void setWatchlistColor(float update_var, uint rowidx, uint colidx, float threshold=10.);
 };
 #endif // APPGUI_H

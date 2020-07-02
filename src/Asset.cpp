@@ -27,7 +27,7 @@ const map<string, Asset::Transaction> Asset::_transactionMap = {
 Asset::Asset(string id, string name, Type type)
     : _id(id), _name(name), _type(type), _amount(0), _balance(0), _avg_price(0),
       _curr_price(0), _curr_value(0), _diff(0), _diff_in_percent(0), _return(0),
-      _return_in_percent(0)
+      _return_in_percent(0), _profit_loss(0), _return_years(), _rois()
 {
 }
 
@@ -45,16 +45,32 @@ void Asset::registerTransaction(Asset::Transaction transaction, time_t reg_date,
     }
     else if (transaction == Transaction::Sell)
     {
+        _profit_loss = value_incl_fees - (amount * _avg_price);
         _amount = _amount - amount;
-        _balance = _balance - value_incl_fees;
-        _avg_price = _balance / _amount;
+        if (_amount < 0)
+            throw std::runtime_error("Invalid transaction, selling amount is more than the existing amount!");
+        if (_amount == 0)
+        {
+            _avg_price = 0;
+            _balance = 0;
+        }
+        else
+        {
+            _balance = _balance - value_incl_fees;
+            // only update average price if balance more than 0
+            if (_balance > 0)
+                _avg_price = _balance / _amount;
+        }
         updateYearlyReturn(reg_date, _balance, 0);
+
+        updateYearlyRoi(reg_date, _profit_loss);
     }
     else if (transaction == Transaction::ROI)
     {
         _return = _return + value_incl_fees;
         _return_in_percent = _return / _balance * 100;
         updateYearlyReturn(reg_date, _balance, value_incl_fees);
+        updateYearlyRoi(reg_date, value_incl_fees);
     }
     else
     {
@@ -65,12 +81,8 @@ void Asset::registerTransaction(Asset::Transaction transaction, time_t reg_date,
 void Asset::updateYearlyReturn(time_t reg_date, float total_value,
                                float returns)
 {
-    std::ostringstream oss;
-    oss << reg_date;
-    int register_year;
-    int mm;
-    int dd;
-    sscanf(oss.str().c_str(), "%d:%d:%d", &register_year, &mm, &dd);
+    struct tm *tmp = gmtime(&reg_date);
+    int register_year = tmp->tm_year + 1900;
     bool isYearFound = false;
 
     // insert to the return list
@@ -79,16 +91,24 @@ void Asset::updateYearlyReturn(time_t reg_date, float total_value,
     {
         if (register_year == it->first)
         {
-            it->second._total_return = +returns;
-            it->second._total_value = total_value;
-            it->second._return_in_percent =
-                it->second._total_return / it->second._total_value * 100;
+            it->second._total_return += returns;
+            if (total_value > 0)
+            {
+                it->second._total_value = total_value;
+                it->second._return_in_percent =
+                    it->second._total_return / it->second._total_value * 100;
+            }
+            else
+            {
+                it->second._total_value = 0;
+                it->second._return_in_percent = 0;
+            }
             isYearFound = true;
             break;
         }
     }
     if (!isYearFound)
-    {
+    { // create a new entry of the year
         YearlyReturn year_returns(register_year, total_value, returns,
                                   returns / total_value * 100.);
         _return_years.insert(
@@ -96,55 +116,30 @@ void Asset::updateYearlyReturn(time_t reg_date, float total_value,
     }
 }
 
-// void Asset::requestAlphaVantageApi(string symbol, string apikey)
-// {
-//     // update current price form web api. This function is the worker tasks
-//     // called by async create a http REST request using an API key.
-//     // std::unique_lock<std::mutex> ulock(_mtx);
-//     string url =
-//         "https://www.alphavantage.co/query?function=GLOBAL_QUOTE&symbol=" +
-//         symbol + "&apikey=" + apikey;
-
-//     auto r = cpr::Get(cpr::Url{url}, cpr::Parameters{{"anon", "true"}});
-//     // r.status_code;                  // 200
-//     // r.headers["content-type"];      // application/json; charset=utf-8
-//     // r.text;                         // JSON text string
-
-//     cout << "Result code: " << r.status_code
-//          << "\nHeaders: " << r.header["content-type"] << "\n"
-//          << r.text << endl
-//          << flush;
-//     if (r.status_code == 200)
-//     {
-//         if (r.header["content-type"].find("application/json") !=
-//             std::string::npos)
-//         {
-//             rapidjson::Document json_response;
-//             json_response.Parse(r.text.c_str());
-//             _curr_price =
-//                 stof(json_response["Global Quote"]["05. price"].GetString());
-
-//             _curr_value = _amount * _curr_price;
-//             _diff = _amount * (_curr_price - _avg_price);
-//             _diff_in_percent = _diff / _balance * 100;
-//         }
-//     }
-// }
-
-void Asset::runDemo()
+void Asset::updateYearlyRoi(time_t reg_date, float value)
 {
-    _curr_price = _avg_price;
-    for (int i = 0; i < 3; i++)
+    struct tm *tmp = gmtime(&reg_date);
+    string date = to_string(tmp->tm_mday) + "." + to_string(tmp->tm_mon + 1) + "." + to_string(tmp->tm_year + 1900);
+    map<time_t, float>::iterator find_it = _rois.find(reg_date);
+    if (find_it != _rois.end())
     {
-        std::this_thread::sleep_for(std::chrono::seconds(3));
-
-        _curr_price++;
-        cout << "Price for asset " << _name << ": " << _curr_price << endl
-             << flush;
-        _curr_value = _amount * _curr_price;
-        _diff = _amount * (_curr_price - _avg_price);
-        _diff_in_percent = _diff / _balance * 100;
+        find_it->second += value;
     }
+    else
+    {
+        time_t newtime = reg_date;
+        _rois.insert(make_pair(newtime, value));
+    }
+}
+
+const map<time_t, float> &Asset::getRois()
+{
+    for (auto it = _rois.begin(); it != _rois.end(); it++)
+    {
+        struct tm *tmp = gmtime(&it->first);
+        string date = to_string(tmp->tm_mday) + "." + to_string(tmp->tm_mon + 1) + "." + to_string(tmp->tm_year + 1900);
+    }
+    return _rois;
 }
 
 string Asset::getId() const { return _id; }
@@ -158,13 +153,27 @@ float Asset::getDiff() const { return _diff; }
 float Asset::getDiffInPercent() const { return _diff_in_percent; }
 float Asset::getReturn() const { return _return; }
 float Asset::getReturnInPercent() const { return _return_in_percent; }
+float Asset::getProfitLoss() const { return _profit_loss; }
 Asset::Type Asset::getType() const { return _type; }
 void Asset::setCurrPrice(float price)
 {
     _curr_price = price;
     _curr_value = _curr_price * _amount;
-    _diff = _curr_value - _balance;
-    _diff_in_percent = _diff / _balance * 100;
-    _return += _diff;
-    _return_in_percent = _return / _balance * 100;
+    _diff = _curr_price - _avg_price;
+    if (_amount > 0)
+    {
+        _diff_in_percent = _diff / _avg_price * 100;
+        _return += _diff * _amount;
+        if (_balance > 0)
+            _return_in_percent = _return / _balance * 100;
+        else
+        { // in case of selling part of the asset with more than 100% profit
+            _return_in_percent = _return / _avg_price * 100;
+        }
+    }
+    else
+    { // All of the asset has been sold
+        _diff_in_percent = 0;
+        _return_in_percent = 0;
+    }
 }

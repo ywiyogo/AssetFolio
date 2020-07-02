@@ -162,6 +162,16 @@
             "Broker": "ING"
         },
         {
+            "Date": "21.10.2017",
+            "ID": "DE0005190037",
+            "Name": "BMW (Vz)",
+            "AssetType": "Stock",
+            "Transaction": "Sell",
+            "Price": 5591.98,
+            "Amount": 37,
+            "Broker": "ABC"
+        },
+        {
             "Date": "23.12.2017",
             "ID": "US037833AK68",
             "Name": "Apple DL notes",
@@ -179,6 +189,16 @@
             "Transaction": "Buy",
             "Price": 8500,
             "Amount": 1,
+            "Broker": "Brok"
+        },
+        {
+            "Date": "08.06.2020",
+            "ID": "BTCUSD",
+            "Name": "Bitcoin",
+            "AssetType": "Crypto",
+            "Transaction": "Sell",
+            "Price": 9500,
+            "Amount": 0.8,
             "Broker": "Brok"
         }
     ]

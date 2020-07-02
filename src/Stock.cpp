@@ -9,7 +9,8 @@ Stock::Stock(string id, string name)
 {
 }
 
-Stock::~Stock() { cout << _name << " destructor called" << endl << flush; }
+Stock::~Stock() { cout << _name << " destructor called" << endl
+                       << flush; }
 
 void Stock::registerDividend(time_t register_date, double dividend_incl_tax)
 {

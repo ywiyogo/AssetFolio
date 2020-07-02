@@ -34,18 +34,9 @@ AppGui::AppGui(QWidget *parent)
     ui->tab_alloc->setLayout(&layout);
 
     // init ROI plot
-    // Prepare the X and Y axis object and its properties
-    _axisX->setTickCount(10);
-    _axisX->setFormat("MMM yyyy");
-    _axisX->setTitleText("Date");
 
-    _axisY->setLabelFormat("%i");
-    QString title = "ROI in ";
-    title += _appControl->getCurrency().GetString();
-    _axisY->setTitleText(title);
     _roiChartView->chart()->addAxis(_axisX, Qt::AlignBottom);
     _roiChartView->chart()->addAxis(_axisY, Qt::AlignLeft);
-    _roiChartView->chart()->setTitle("Accumulated ROI");
     layout_roi.addWidget(_roiChartView);
     ui->tab_plots->setLayout(&layout_roi);
 }
@@ -66,8 +57,7 @@ void AppGui::on_actionOpen_triggered()
     try
     {
         _appControl->clearJsonData();
-        isValid = _appControl->readLocalRapidJson(
-            filename.toStdString().c_str());
+        isValid = _appControl->readLocalRapidJson(filename.toStdString().c_str());
     }
     catch (const exception &e)
     {
@@ -106,19 +96,13 @@ void AppGui::on_actionOpen_triggered()
 
                 if (itr2->value.IsString())
                 {
-                    // check of date format, thanks to https://stackoverflow.com/a/26972181
+                    // check of date format, thanks to https://stackoverflow.com/a/15491967/5700318
                     const std::regex re_eudate("(0[1-9]|[12][0-9]|3[01])[- /.](0[1-9]|1[012])[- /.](19|20\\d\\d)$");
                     const std::regex re_usdate("(0[1-9]|1[012])[- /.](0[1-9]|[12][0-9]|3[01])[- /.](19|20\\d\\d)$");
                     std::smatch submatches;
                     string valstring = itr2->value.GetString();
                     if (regex_match(valstring, submatches, re_eudate))
                     {
-                        cout << "Debuging date" << endl;
-                        for (size_t i = 0; i < submatches.size(); ++i)
-                        {
-                            cout << submatches[i].str() << " ";
-                        }
-                        cout << endl;
                         QDate date(stoi(submatches[3].str()), stoi(submatches[2].str()), stoi(submatches[1].str()));
                         _transaction_model->setData(index, date);
                     }
@@ -374,6 +358,7 @@ void AppGui::on_tbtnWatchlist_clicked()
     {
         if (!_watchlist_model)
         {
+            on_actionAddKey_triggered();
             initWatchlistModel();
         }
 
@@ -414,61 +399,34 @@ void AppGui::updateWatchlistModel(UpdateData upd_data)
         index = _watchlist_model->index(item->row(), 7, QModelIndex());
         _watchlist_model->setData(
             index, AppControl::floatToString(upd_data._diff, 2).c_str());
-        int threshold = 10;
-        if (upd_data._diff > threshold)
-        {
-            _watchlist_model->item(item->row(), 7)
-                ->setForeground(QBrush("green"));
-        }
-        else if (upd_data._diff < (-1 * threshold))
-        {
-            _watchlist_model->item(item->row(), 7)
-                ->setForeground(QBrush("red"));
-        }
+        
+        setWatchlistColor(upd_data._diff, item->row(), 7);
         index = _watchlist_model->index(item->row(), 8, QModelIndex());
         _watchlist_model->setData(
             index,
             (AppControl::floatToString(upd_data._diff_in_percent, 2) + "%")
                 .c_str());
-        if (upd_data._diff_in_percent > 1)
-        {
-            _watchlist_model->item(item->row(), 8)
-                ->setForeground(QBrush("green"));
-        }
+        setWatchlistColor(upd_data._diff_in_percent, item->row(), 8, 1);
 
-        else if (upd_data._diff_in_percent < -1)
-        {
-            _watchlist_model->item(item->row(), 8)
-                ->setForeground(QBrush("red"));
-        }
         index = _watchlist_model->index(item->row(), 9, QModelIndex());
         _watchlist_model->setData(
             index, AppControl::floatToString(upd_data._return, 2).c_str());
-        if (upd_data._return > threshold)
-        {
-            _watchlist_model->item(item->row(), 9)
-                ->setForeground(QBrush("green"));
-        }
-        else if (upd_data._return < -threshold)
-        {
-            _watchlist_model->item(item->row(), 9)
-                ->setForeground(QBrush("red"));
-        }
+
+        setWatchlistColor(upd_data._return, item->row(), 9);
+
         index = _watchlist_model->index(item->row(), 10, QModelIndex());
         _watchlist_model->setData(
             index,
             (AppControl::floatToString(upd_data._return_in_percent, 2) + "%")
                 .c_str());
-        if (upd_data._return_in_percent > 1)
-        {
-            _watchlist_model->item(item->row(), 10)
-                ->setForeground(QBrush("green"));
-        }
-        else if (upd_data._return_in_percent < -1)
-        {
-            _watchlist_model->item(item->row(), 10)
-                ->setForeground(QBrush("red"));
-        }
+
+        setWatchlistColor(upd_data._return_in_percent, item->row(), 10, 1);
+
+        index = _watchlist_model->index(item->row(), 11, QModelIndex());
+        _watchlist_model->setData(
+            index,
+            (AppControl::floatToString(upd_data._profit_loss, 2)).c_str());
+        setWatchlistColor(upd_data._profit_loss, item->row(), 11);
     }
 
     vector<double> data;
@@ -483,7 +441,15 @@ void AppGui::updateWatchlistModel(UpdateData upd_data)
 void AppGui::initTvTransactions(unsigned int row, unsigned int col)
 {
     if (_transaction_model)
+    {
         _transaction_model->clear();
+        if(_watchlist_model)
+        {
+            _watchlist_model.reset();
+            
+        }
+            
+    }
 
     _transaction_model = make_shared<QStandardItemModel>(row, col, this);
 
@@ -527,6 +493,7 @@ void AppGui::initWatchlistModel()
         // QStandardItem(QString("test2"));
         item_list << new QStandardItem(QString(it->first.c_str()));
         item_list << new QStandardItem(QString(it->second->getName().c_str()));
+
         item_list << new QStandardItem(QString(
             AppControl::floatToString(it->second->getAmount(), 2).c_str()));
         item_list << new QStandardItem(QString(
@@ -542,10 +509,15 @@ void AppGui::initWatchlistModel()
         item_list << new QStandardItem(
             QString(AppControl::floatToString(it->second->getDiffInPercent(), 2)
                         .c_str()));
+
         item_list << new QStandardItem(QString(
             AppControl::floatToString(it->second->getReturn(), 2).c_str()));
         item_list << new QStandardItem(QString(
             AppControl::floatToString(it->second->getReturnInPercent(), 2)
+                .c_str()));
+
+        item_list << new QStandardItem(QString(
+            AppControl::floatToString(it->second->getProfitLoss(), 2)
                 .c_str()));
 
         _watchlist_model->appendRow(item_list);
@@ -600,14 +572,42 @@ void AppGui::createRoiChart()
 {
     //prepare the data
     _roi_date_series->clear();
-    map<string, double>::iterator it;
-    for (it = _appControl->getRoiByDate()->begin(); it != _appControl->getRoiByDate()->end(); it++)
+    QDateTime mindatetime, maxdatetime;
+    QDate initdate(1900, 1, 1);
+    mindatetime.setDate(initdate);
+    vector<double> values;
+    int numTick = 0;
+    const map<time_t, float> &totalRoi = _appControl->getTotalRealizedRoi();
+    map<QDate, float> orderedROI;
+    for (auto it = totalRoi.begin(); it != totalRoi.end(); ++it)
     {
-        QString str_date = it->first.c_str();
+        struct tm *tmp = gmtime(&it->first);
+        string date = to_string(tmp->tm_mday) + "." + to_string(tmp->tm_mon + 1) + "." + to_string(tmp->tm_year + 1900);
+        QString str_date = date.c_str();
         QStringList date_components = str_date.split(QLatin1Char('.'), Qt::SkipEmptyParts);
-        QDateTime datetime;
-        datetime.setDate(QDate(date_components[2].toInt(), date_components[1].toInt(), date_components[0].toInt()));
-        _roi_date_series->append(datetime.toMSecsSinceEpoch(), it->second);
+        QDate roidate(date_components[2].toInt(), date_components[1].toInt(), date_components[0].toInt());
+        if (initdate == mindatetime.date())
+        {
+            mindatetime.setDate(roidate);
+        }
+        else if (roidate < mindatetime.date())
+        {
+            if (mindatetime.date() > maxdatetime.date())
+                maxdatetime.setDate(mindatetime.date());
+            mindatetime.setDate(roidate);
+        }
+        else if (maxdatetime.date() < roidate)
+        {
+            maxdatetime.setDate(roidate);
+        }
+        numTick++;
+        orderedROI.insert(pair<QDate, float>(roidate, it->second));
+        values.push_back(it->second);
+    }
+    for (auto iter = orderedROI.begin(); iter != orderedROI.end(); ++iter)
+    {
+
+        _roi_date_series->append(QDateTime(iter->first).toMSecsSinceEpoch(), iter->second);
     }
 
     // Set the X-Y axes and the data series to the chart
@@ -615,11 +615,39 @@ void AppGui::createRoiChart()
     if (_roi_date_series->attachedAxes().size() == 0)
     {
         _roiChartView->chart()->addSeries(_roi_date_series);
+        _roiChartView->chart()->setTitle("Realized RoI");
         _roi_date_series->attachAxis(_axisX);
+        _axisX->setTickCount(numTick * 2);
+        _axisX->setFormat("MMM yyyy");
+        _axisX->setTitleText("Date");
         _roi_date_series->attachAxis(_axisY);
+        _axisY->setLabelFormat("%i");
     }
 
+    // Update the axis ranges
+    _axisX->setRange(mindatetime, maxdatetime);
+    std::vector<double>::iterator minIterator = min_element(values.begin(), values.end());
+    std::vector<double>::iterator maxIterator = max_element(values.begin(), values.end());
+    _axisY->setRange(*minIterator, *maxIterator);
+    QString title = "RoI in ";
+    title += _appControl->getCurrency().GetString();
+    _axisY->setTitleText(title);
+
     _roiChartView->setRenderHint(QPainter::Antialiasing);
+}
+
+void AppGui::setWatchlistColor(float update_var, uint rowidx, uint colidx, float threshold)
+{
+    if (update_var > threshold)
+    {
+        _watchlist_model->item(rowidx, colidx)
+            ->setForeground(QBrush("green"));
+    }
+    else if (update_var < (-1 * threshold))
+    {
+        _watchlist_model->item(rowidx, colidx)
+            ->setForeground(QBrush("red"));
+    }
 }
 // -------------------------------------------
 void UpdaterThread::run()
@@ -636,11 +664,9 @@ void UpdaterThread::run()
             UpdateData _update_data(data->_id, data->_curr_price,
                                     data->_curr_value, data->_diff,
                                     data->_diff_in_percent, data->_return,
-                                    data->_return_in_percent);
+                                    data->_return_in_percent,
+                                    data->_profit_loss);
 
-            // std::cout << "UpdaterThread:: incoming data " << _update_data._id
-            //           << endl
-            //           << flush;
             if (_update_data._id == "disconnect")
             {
                 // std::cout << "UpdaterThread::disconnect! " << endl << flush;
