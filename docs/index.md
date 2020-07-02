@@ -1,32 +1,23 @@
-## Introduction
+# AssetFolio
 
-AssetFolio is a multi-asset portfolio tracker that keeps our assets private. In the world of cloud technology, many data and information are shared and concentrate on the big technology companies, banks or the data trader companies. Their activities on how to share our data are not transparent. AssetFolio application helps us to keep our asset information private in our computer. It allows us to retrieve information online about the price changes without sharing our asset data.
+An All-in-One Asset Tracker and Watchlist Application that keeps your asset data private.
 
-As an option, an FMP API key is needed for retrieving the price of the cryptocurrencies and commodity assets. The REST-API key can be optain from:
-* FMP API key: [financialmodelingprep](https://financialmodelingprep.com/developer/docs/)
+---
 
+## Overview
+
+AssetFolio is a **multi-asset portfolio tracker** that keeps our assets **private**. In the world of cloud technology, many data and information are shared and concentrate on the big technology companies, banks or the data trader companies. Their activities on how to share our data are not transparent. AssetFolio application helps us to keep our asset information private in our computer. It allows us to retrieve information online about the price changes without sharing our asset data.
 
 Preview for the activity list using Qt5 and Qt5 pie chart:
 
 ![Activity list][activity]
 
+
 Preview for the watchlist and asset tracker using WxWidget UI Library:
 
 ![Watchlist][watchlist]
 
-Go to the release tab to download the release binary either for Linux or for Windows 10 x64.
-
-## How to Use
-
-Please see the user guide in [docs/user_guide.md](docs/user_guide.md).
-
-
-## Donation
-
-You can give me a donation if you want to get the application directly for your OS. 
-If you don't understand about software build and want, or you don't have a time to build, you can donate me first and I'll support you.
-
-[![paypal](https://www.paypalobjects.com/en_US/i/btn/btn_donateCC_LG.gif)](https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=9H9M4LHP8L8EQ&source=url)
+---
 
 ## Installation
 
@@ -59,7 +50,10 @@ Installing the dependency libraries:
 
         sudo dnf install openssl-devel libcurl-devel libxml2-devel gtest-devel <wxGTK3-devel| qt5-qtbase qt5-qtbase-devel qt-creator>
 
+---
+
 ## Getting Started 
+
 ### Download the Source
 
 1. Clone this repository: `git clone https://github.com/ywiyogo/AssetFolio.git`
@@ -69,7 +63,10 @@ Installing the dependency libraries:
 
 ### Build and Start the Project
 
-**UNIX System**
+Currently, the project supports UNIX and Windows. It shall work also on MAC, however, I don't test it yet.
+
+#### UNIX System
+---
 
 Got to the project folder and type these commands:
 
@@ -88,7 +85,8 @@ make install DESTDIR=AppDir
 
 ```
 
-**Windows System**
+#### Windows System
+---
 
 Got to the project folder and type these commands:
 
@@ -106,13 +104,5 @@ An example dataset in _data/example.json_ can be opened with the "arrow up" tool
 The C++ Request submodules include GTest to test its code. If we don't want to install GTest in our system, we can disable it in CMakeLists.txt `set(USE_SYSTEM_GTEST OFF)`.
 
 
-
-
-## License
-
-Licensed under the [MIT License](LICENSE)
-
-
-
-[activity]: docs/imgs/activity.png "Screenshot of the activity list"
-[watchlist]: docs/imgs/watchlist.png "Screenshot of the watchlist and the tracker"
+[activity]: imgs/activity.png "Screenshot of the activity list"
+[watchlist]: imgs/watchlist.png "Screenshot of the watchlist and the tracker"
