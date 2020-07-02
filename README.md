@@ -106,11 +106,9 @@ An example dataset in _data/example.json_ can be opened with the "arrow up" tool
 The C++ Request submodules include GTest to test its code. If we don't want to install GTest in our system, we can disable it in CMakeLists.txt `set(USE_SYSTEM_GTEST OFF)`.
 
 
-
-
 ## License
 
-Licensed under the [MIT License](LICENSE)
+Licensed under the [GPL-3.0 License](LICENSE)
 
 
 
