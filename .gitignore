@@ -11,3 +11,8 @@ data/fmp_api.key
 !data/example.json
 !data/example_isin.json
 !data/FMPSymbolList.json
+# C++ Request has to be cloned manually, no more submodule
+submodules/cpr
+
+# generated mkdocs folder
+site

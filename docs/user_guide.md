@@ -19,7 +19,7 @@ The user interface of the application contains 4 parts:
 If you never have a watchlist or a transaction list, you can just start a new empty sheet by choosing the new button on top left with the plus sign. Fill the sheet with your transactions history, and save it by clicking the save button (down arrow button). Choose your local currency or asset currency and save it as a *JSON* file (**.json*).
 
 
-If have already a watchlist or an Excel list of your investments you can export it to a *JSON* file. The *JSON* file has to have three members: "QueryType", "Currency", and "Transactions". In order to create your own compatible json file, you can load the test json file [example.json](data/example.json) for the symbol ticker or [example_isin.json](../data/example_isin.json) for ISIN.
+If have already a watchlist or an Excel list of your investments you can export it to a *JSON* file. The *JSON* file has to have three members: "QueryType", "Currency", and "Transactions". In order to create your own compatible json file, you can load the test json file [example.json](../data/example.json) for the symbol ticker or [example_isin.json](../data/example_isin.json) for ISIN.
 
 Below is an example of a simple *JSON* file.
 
@@ -45,7 +45,7 @@ Below is an example of a simple *JSON* file.
 
 The application uses the JSON format for saving the transaction activity data. All the user data shall be located in the data folder. The user can see the example.json as the template. Three obligatory member names are `Currency` and `Activities`.
 
-An `ID` can be an ISIN or a symbol ticker. The symbol has to be found in https://financialmodelingprep.com/api/v3/company/stock/list or [FMPSymbolList.json](data/FMPSymbolList.json).
+An `ID` can be an ISIN or a symbol ticker. The symbol has to be found in https://financialmodelingprep.com/api/v3/company/stock/list or [FMPSymbolList.json](../data/FMPSymbolList.json).
 
 The supported `AssetType` values are:
 

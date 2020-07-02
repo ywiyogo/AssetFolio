@@ -62,9 +62,11 @@ Installing the dependency libraries:
 ## Getting Started 
 ### Download the Source
 
-1. Clone this repository: `git clone https://github.com/ywiyogo/AssetFolio.git`
+1. Clone this repository: `git clone https://github.com/ywiyogo/AssetFolio.git`.
 
-2. Updating the submodules `git submodule update --init --recursive`
+2. Updating the submodules `git submodule update --init --recursive`.
+
+3. Clone the CPR library in the submodule folder: `cd submodules && https://github.com/whoshuu/cpr.git`.
 
 
 ### Build and Start the Project
