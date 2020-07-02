@@ -135,7 +135,7 @@
 <p><img alt="UI" src="../imgs/roi.png" title="Screenshot of the accumulated RoI plot" /></p>
 <h2 id="transaction-data">Transaction Data<a class="headerlink" href="#transaction-data" title="Permanent link">&para;</a></h2>
 <p>If you never have a watchlist or a transaction list, you can just start a new empty sheet by choosing the new button on top left with the plus sign. Fill the sheet with your transactions history, and save it by clicking the save button (down arrow button). Choose your local currency or asset currency and save it as a <em>JSON</em> file (*<em>.json</em>).</p>
-<p>If have already a watchlist or an Excel list of your investments you can export it to a <em>JSON</em> file. The <em>JSON</em> file has to have three members: "QueryType", "Currency", and "Transactions". In order to create your own compatible json file, you can load the test json file <a href="data/example.json">example.json</a> for the symbol ticker or <a href="../data/example_isin.json">example_isin.json</a> for ISIN.</p>
+<p>If have already a watchlist or an Excel list of your investments you can export it to a <em>JSON</em> file. The <em>JSON</em> file has to have three members: "QueryType", "Currency", and "Transactions". In order to create your own compatible json file, you can load the test json file <a href="../data/example.json">example.json</a> for the symbol ticker or <a href="../data/example_isin.json">example_isin.json</a> for ISIN.</p>
 <p>Below is an example of a simple <em>JSON</em> file.</p>
 <div class="codehilite"><pre><span></span><code>{
     &quot;Currency&quot;: &quot;EUR&quot;,
@@ -157,7 +157,7 @@
 
 <h2 id="dataset-format">Dataset Format<a class="headerlink" href="#dataset-format" title="Permanent link">&para;</a></h2>
 <p>The application uses the JSON format for saving the transaction activity data. All the user data shall be located in the data folder. The user can see the example.json as the template. Three obligatory member names are <code>Currency</code> and <code>Activities</code>.</p>
-<p>An <code>ID</code> can be an ISIN or a symbol ticker. The symbol has to be found in https://financialmodelingprep.com/api/v3/company/stock/list or <a href="data/FMPSymbolList.json">FMPSymbolList.json</a>.</p>
+<p>An <code>ID</code> can be an ISIN or a symbol ticker. The symbol has to be found in https://financialmodelingprep.com/api/v3/company/stock/list or <a href="../data/FMPSymbolList.json">FMPSymbolList.json</a>.</p>
 <p>The supported <code>AssetType</code> values are:</p>
 <div class="codehilite"><pre><span></span><code>Stock
 ETF
