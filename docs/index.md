@@ -79,11 +79,11 @@ make
 ./AssetFolio
 ```
 
-In order to create an AppImage of the AssetFolio, run these commands after `make`:
+In order to create an AppImage of the AssetFolio, run these commands in the _build_ folder after executing `make`:
 
 ```
 make install DESTDIR=AppDir
-./createAppImage.sh
+../createAppImage.sh
 
 ```
 
