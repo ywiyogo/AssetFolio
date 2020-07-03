@@ -6,7 +6,7 @@
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
         
         <meta name="author" content="Yongkie Wiyogo">
-        <link rel="canonical" href="https://gitlab.com/ywiyogo/assetfolio/lesson_learned/">
+        <link rel="canonical" href="https://github.com/ywiyogo/assetfolio/lesson_learned/">
         <link rel="shortcut icon" href="../img/favicon.ico">
         <title>Lesson Learned - AssetFolio</title>
         <link href="../css/bootstrap.min.css" rel="stylesheet">
@@ -77,7 +77,7 @@
                                 </a>
                             </li>
                             <li class="nav-item">
-                                <a href="https://gitlab.com/ywiyogo/assetfolio" class="nav-link">ywiyogo/assetfolio</a>
+                                <a href="https://github.com/ywiyogo/assetfolio" class="nav-link">ywiyogo/assetfolio</a>
                             </li>
                     </ul>
                 </div>
@@ -127,7 +127,13 @@
                     <div class="col-md-9" role="main">
 
 <h1 id="lesson-learned">Lesson Learned<a class="headerlink" href="#lesson-learned" title="Permanent link">&para;</a></h1>
-<p>This section documents the lesson learned of the development process. It aims for the developers, not for the users.</p>
+<p>This section documents the lesson learned of the development process. It aims for the developers, not for the users. My main motivation to start this project was to build a simple scaleable application which applies the following concepts:</p>
+<ul>
+<li>multi-platform build using CMake, one source code for creating an application that runs on Windows 10, all Linux Distribution and macOS.</li>
+<li>the <a href="https://blog.cleancoder.com/uncle-bob/2012/08/13/the-clean-architecture.html">clean architecture</a> or <a href="https://jeffreypalermo.com/2008/07/the-onion-architecture-part-1/">onion architecture</a> which separates the core logic, use case logic, controllers and the frameworks. The architecture allows us to switch the GUI frameworks (Qt5 or wxWidget) and the data sources (API or web-crawling) in the application code.</li>
+<li>C++ multi-threading and message pasing.</li>
+</ul>
+<p>Any comments and critics regarding those three concepts are welcome.</p>
 <h2 id="concurrency-and-messagequeue">Concurrency and MessageQueue<a class="headerlink" href="#concurrency-and-messagequeue" title="Permanent link">&para;</a></h2>
 <p>The challenge in this application is how to manage the running concurrent async tasks for the main GUI task, the GUI updater task and several API request tasks.</p>
 <p>The message queue is implemented with the template design, and thus the implementation is written in the header file, see <a href="https://stackoverflow.com/a/495056">1</a>.
