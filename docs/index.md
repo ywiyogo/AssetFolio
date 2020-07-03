@@ -1,12 +1,12 @@
 # AssetFolio
 
-An All-in-One Asset Tracker and Watchlist Application that keeps your asset data private.
+An all-in-one asset tracker and watchlist application that keeps your assets private.
 
 ---
 
 ## Overview
 
-AssetFolio is a **multi-asset portfolio tracker** that keeps our assets **private**. In the world of cloud technology, many data and information are shared and concentrate on the big technology companies, banks or the data trader companies. Their activities on how to share our data are not transparent. AssetFolio application helps us to keep our asset information private in our computer. It allows us to retrieve information online about the price changes without sharing our asset data.
+AssetFolio is a **multi-assets portfolio tracker** that keeps our assets **private**. In the world of cloud technology, many data and information are shared and concentrate on the big technology companies, banks or the data trader companies. Their activities on how to share our data are not transparent. AssetFolio application helps us to keep our asset information private in our computer. It allows us to retrieve information online about the price changes without sharing our asset data.
 
 Preview for the activity list using Qt5 and Qt5 pie chart:
 
@@ -94,7 +94,7 @@ Got to the project folder and type these commands:
 
 ```
 mkdir build && cd build
-cmake .. -G "MinGW MakeFiles"
+cmake .. -G "MinGW Makefiles"
 make
 .\bin\AssetFolio.exe
 ```

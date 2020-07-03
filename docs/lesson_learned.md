@@ -1,6 +1,12 @@
 # Lesson Learned
 
-This section documents the lesson learned of the development process. It aims for the developers, not for the users.
+This section documents the lesson learned of the development process. It aims for the developers, not for the users. My main motivation to start this project was to build a simple scaleable application which applies the following concepts:
+
+* multi-platform build using CMake, one source code for creating an application that runs on Windows 10, all Linux Distribution and macOS.
+* the [clean architecture](https://blog.cleancoder.com/uncle-bob/2012/08/13/the-clean-architecture.html) or [onion architecture](https://jeffreypalermo.com/2008/07/the-onion-architecture-part-1/) which separates the core logic, use case logic, controllers and the frameworks. The architecture allows us to switch the GUI frameworks (Qt5 or wxWidget) and the data sources (API or web-crawling) in the application code.
+* C++ multi-threading and message pasing.
+
+Any comments and critics regarding those three concepts are welcome.
 
 ## Concurrency and MessageQueue
 

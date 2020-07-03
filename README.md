@@ -96,7 +96,7 @@ Got to the project folder and type these commands:
 
 ```
 mkdir build && cd build
-cmake .. -G "MinGW MakeFiles"
+cmake .. -G "MinGW Makefiles"
 make
 .\bin\AssetFolio.exe
 ```

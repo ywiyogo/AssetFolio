@@ -1,11 +1,11 @@
 site_name: AssetFolio
-site_url: https://gitlab.com/ywiyogo/assetfolio
+site_url: https://github.com/ywiyogo/assetfolio
 site_author: Yongkie Wiyogo
 site_description: An All-in-One Asset Tracker and Watchlist Application that keeps your asset data private.
 
 # Repository
 repo_name: ywiyogo/assetfolio
-repo_url: https://gitlab.com/ywiyogo/assetfolio
+repo_url: https://github.com/ywiyogo/assetfolio
 edit_uri: ""
 
 # Copyright

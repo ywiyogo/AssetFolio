@@ -65,7 +65,7 @@ The `Price` and `Amount` values have to be a number (float).
 
 ## API Key
 
-An API key is required in order to update the price of the symbolic ticker assets, cryptocurrency and other commodities. The API Key can be obtain from[https://financialmodelingprep.com/register](https://financialmodelingprep.com/register) or by contacting me. After getting the API key, the user can insert the key by clicking the key toolbar button on the top.
+An API key is required in order to update the price of the symbolic ticker assets, cryptocurrency and other commodities. The API key can be obtain from[https://financialmodelingprep.com](https://financialmodelingprep.com/register) or by contacting me to order the API key. After getting the API key, the user can insert the key by clicking the key toolbar button on the top.
 
 ![API Key][key]
 
