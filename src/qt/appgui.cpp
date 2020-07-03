@@ -78,6 +78,10 @@ void AppGui::on_actionOpen_triggered()
 
         initTvTransactions(numOfRows, json_entries[0].MemberCount());
 
+        // check of date format, thanks to https://stackoverflow.com/a/15491967/5700318
+        const std::regex re_eudate("(0[1-9]|[12][0-9]|3[01])[- /.](0[1-9]|1[012])[- /.](19|20\\d\\d)$");
+        const std::regex re_usdate("(0[1-9]|1[012])[- /.](0[1-9]|[12][0-9]|3[01])[- /.](19|20\\d\\d)$");
+        std::smatch submatches;
         for (rapidjson::Value::ConstValueIterator itr = json_entries.Begin();
              itr != json_entries.End(); ++itr)
         {
@@ -96,10 +100,6 @@ void AppGui::on_actionOpen_triggered()
 
                 if (itr2->value.IsString())
                 {
-                    // check of date format, thanks to https://stackoverflow.com/a/15491967/5700318
-                    const std::regex re_eudate("(0[1-9]|[12][0-9]|3[01])[- /.](0[1-9]|1[012])[- /.](19|20\\d\\d)$");
-                    const std::regex re_usdate("(0[1-9]|1[012])[- /.](0[1-9]|[12][0-9]|3[01])[- /.](19|20\\d\\d)$");
-                    std::smatch submatches;
                     string valstring = itr2->value.GetString();
                     if (regex_match(valstring, submatches, re_eudate))
                     {
@@ -143,6 +143,9 @@ void AppGui::on_actionOpen_triggered()
         // ui->tableView->horizontalHeader()->setSectionResizeMode(
         //     QHeaderView::Stretch);
         ui->tableView->resizeColumnsToContents();
+
+        // Set the DateDelegate for column sorting by date
+        ui->tableView->setItemDelegateForColumn(0, new DateDelegate);
 
         // Fill the watchlist viewer
         vector<string> colWatchlist = {
@@ -193,10 +196,9 @@ void AppGui::on_actionAddKey_triggered()
 
     if (!_appControl->readApiKey())
     {
-        QString fmp_key = QInputDialog::getText(0, "Input FinancialModelingPrep API Key",
-                                                "FMP API Key:", QLineEdit::Normal,
+        QString fmp_key = QInputDialog::getText(0, "Input the API Key",
+                                                "Please insert your FMP API Key:\n(If you don't have one, please get it from financialmodelingprep.com or\ncontact the developer to buy one.)", QLineEdit::Normal,
                                                 "", &ok);
-
         if (ok && !fmp_key.isEmpty())
         {
             _appControl->setApiKey(fmp_key.toStdString());
@@ -399,7 +401,7 @@ void AppGui::updateWatchlistModel(UpdateData upd_data)
         index = _watchlist_model->index(item->row(), 7, QModelIndex());
         _watchlist_model->setData(
             index, AppControl::floatToString(upd_data._diff, 2).c_str());
-        
+
         setWatchlistColor(upd_data._diff, item->row(), 7);
         index = _watchlist_model->index(item->row(), 8, QModelIndex());
         _watchlist_model->setData(
@@ -443,12 +445,10 @@ void AppGui::initTvTransactions(unsigned int row, unsigned int col)
     if (_transaction_model)
     {
         _transaction_model->clear();
-        if(_watchlist_model)
+        if (_watchlist_model)
         {
             _watchlist_model.reset();
-            
         }
-            
     }
 
     _transaction_model = make_shared<QStandardItemModel>(row, col, this);

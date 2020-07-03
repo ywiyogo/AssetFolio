@@ -65,7 +65,9 @@ The `Price` and `Amount` values have to be a number (float).
 
 ## API Key
 
-Signup to [https://financialmodelingprep.com/register](https://financialmodelingprep.com/register) to get the API key. Then klick the key button on the toolbar icon to add the API key in order to update the price of your symbolic ticker assets, cryptocurrency and other commodities.
+An API key is required in order to update the price of the symbolic ticker assets, cryptocurrency and other commodities. The API Key can be obtain from[https://financialmodelingprep.com/register](https://financialmodelingprep.com/register) or by contacting me. After getting the API key, the user can insert the key by clicking the key toolbar button on the top.
 
+![API Key][key]
 
 [roi]: imgs/roi.png "Screenshot of the accumulated RoI plot"
+[key]: imgs/api_key.png "Add API Key toolbar"

@@ -6,6 +6,7 @@
 #include "customtableview.h"
 #include <QApplication>
 #include <QClipboard>
+#include <QDate>
 
 // Customizing the QTableView
 
@@ -63,4 +64,10 @@ void CustomTableView::keyPressEvent(QKeyEvent *event)
         // any other key was pressed, inform base class
         QTableView::keyPressEvent(event);
     }
+}
+
+
+QString DateDelegate::displayText(const QVariant &value, const QLocale &locale) const
+{
+    return locale.toString(value.toDate(), "dd.MM.yyyy");
 }

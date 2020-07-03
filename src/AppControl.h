@@ -11,8 +11,6 @@
 #include <memory>
 using namespace std;
 
-
-
 class Provider
 {
   public:

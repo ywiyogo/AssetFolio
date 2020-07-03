@@ -6,20 +6,26 @@
 #ifndef CUSTOMTABLEVIEW_H
 #define CUSTOMTABLEVIEW_H
 
-#include <QtWidgets/QWidget>
-#include <QtWidgets/QTableView>
 #include <QKeyEvent>
+#include <QStyledItemDelegate>
+#include <QtWidgets/QTableView>
+#include <QtWidgets/QWidget>
 
 class CustomTableView : public QTableView
 {
-  Q_OBJECT
+    Q_OBJECT
 
-public:
-  CustomTableView(QWidget *parent = nullptr);
-  ~CustomTableView();
+   public:
+    CustomTableView(QWidget* parent = nullptr);
+    ~CustomTableView();
 
-private slots:
-  void keyPressEvent(QKeyEvent *event);
+   private slots:
+    void keyPressEvent(QKeyEvent* event);
 };
 
+// DateDelegate class allows the column sort by date in the QTableView
+class DateDelegate : public QStyledItemDelegate
+{
+    QString displayText(const QVariant& value, const QLocale& locale) const;
+};
 #endif

@@ -1,8 +1,6 @@
 #ifndef APPGUI_H
 #define APPGUI_H
 
-#include "../AppControl.h"
-#include "../MsgQueue.h"
 #include <QFileDialog>
 #include <QInputDialog>
 #include <QLayout>
@@ -13,12 +11,14 @@
 #include <QThread>
 #include <QWaitCondition>
 #include <QtCharts/QChartView>
-#include <QtCharts/QPieSeries>
-#include <QtCharts/QLineSeries>
 #include <QtCharts/QDateTimeAxis>
+#include <QtCharts/QLineSeries>
+#include <QtCharts/QPieSeries>
 #include <QtCharts/QValueAxis>
 #include <QtWidgets/QTableView>
 #include <memory>
+#include "../AppControl.h"
+#include "../MsgQueue.h"
 
 QT_BEGIN_NAMESPACE
 namespace Ui
@@ -35,13 +35,13 @@ class UpdaterThread : public QThread
     QMutex mutex;
     QWaitCondition condition;
 
-  signals:
+   signals:
     void updatedAsset(UpdateData upd_data);
 
-  protected:
+   protected:
     void run() override;
 
-  public:
+   public:
     UpdaterThread() { _is_start = true; };
     explicit UpdaterThread(shared_ptr<AppControl> appCtrl,
                            QObject* parent = nullptr)
@@ -69,11 +69,11 @@ class AppGui : public QMainWindow
 {
     Q_OBJECT
 
-  public:
+   public:
     AppGui(QWidget* parent = nullptr);
     ~AppGui();
 
-  private slots:
+   private slots:
     void on_actionNew_triggered();
 
     void on_actionExit_triggered();
@@ -92,7 +92,7 @@ class AppGui : public QMainWindow
 
     void on_tbtnWatchlist_clicked();
 
-  private:
+   private:
     Ui::AppGui* ui;
     QtCharts::QChart* _qchart;
     QtCharts::QPieSeries* _pieseries;
@@ -115,13 +115,17 @@ class AppGui : public QMainWindow
     // internal function
     void initTvTransactions(unsigned int row, unsigned int col);
     void initWatchlistModel();
-    void showMsgWindow(QMessageBox::Icon&& msgtype, const std::string title,
+    void showMsgWindow(QMessageBox::Icon&& msgtype,
+                       const std::string title,
                        const std::string msg);
-    void closeEvent(QCloseEvent *event);
+    void closeEvent(QCloseEvent* event);
 
     void createPieChart(vector<string>& categories, vector<double>& data);
     void createRoiChart();
     void watchlistUpdater();
-    void setWatchlistColor(float update_var, uint rowidx, uint colidx, float threshold=10.);
+    void setWatchlistColor(float update_var,
+                           uint rowidx,
+                           uint colidx,
+                           float threshold = 10.);
 };
-#endif // APPGUI_H
+#endif  // APPGUI_H

@@ -60,7 +60,7 @@ Installing the dependency libraries:
 
 2. Updating the submodules `git submodule update --init --recursive`
 
-3. Clone the CPR library in the submodule folder: `cd submodules && https://github.com/whoshuu/cpr.git`.
+3. Clone the CPR library in the submodule folder: `cd submodules && git clone https://github.com/whoshuu/cpr.git`.
 
 
 ### Build and Start the Project
