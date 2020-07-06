@@ -147,6 +147,8 @@ void AppGui::on_actionOpen_triggered()
         // Set the DateDelegate for column sorting by date
         ui->tableView->setItemDelegateForColumn(0, new DateDelegate);
 
+        string status_bar = "Total invested value is " +AppControl::floatToString( _appControl->getTotalInvestedValues(),2) + " "+ _appControl->getCurrency().GetString();
+        statusBar()->showMessage(tr(status_bar.c_str()));
         // Fill the watchlist viewer
         vector<string> colWatchlist = {
             "Name", "Amount", "Total transaktion", "Buying price",
@@ -311,7 +313,7 @@ void AppGui::on_actionSave_triggered()
                         value.SetString(input.c_str(), allocator);
                     else
                     {
-                        throw runtime_error("Invalid value on Column 'AssetType', row " + std::to_string(row) + " !\nChoose one of these options:\nStock, ETF, Bond, Real Estate, Crypto, Commodity, or Certificate");
+                        throw runtime_error("Invalid value on Column 'AssetType', row " + std::to_string(row) + " !\nChoose one of these options:\nStock, ETF, Bond, Real Estate, Crypto, Commodity, or Others");
                     }
                 }
                 else
@@ -345,6 +347,8 @@ void AppGui::on_tbtnTransaction_clicked()
     ui->tableView->setModel(_transaction_model.get());
     ui->tableView->resizeColumnsToContents();
     _appControl->stopUpdateTasks();
+    string status_bar = "Total invested value is " +AppControl::floatToString( _appControl->getTotalInvestedValues(),2) + " "+ _appControl->getCurrency().GetString();
+    statusBar()->showMessage(tr(status_bar.c_str()));
 }
 
 void AppGui::on_tbtnWatchlist_clicked()
@@ -427,8 +431,8 @@ void AppGui::updateWatchlistModel(UpdateData upd_data)
     vector<double> data;
     vector<string> categories;
     _appControl->calcCurrentAllocation(categories, data);
-    // ui->tableView->horizontalHeader()->setSectionResizeMode(
-    //     QHeaderView::Stretch);
+    string status_bar = "Total current asset value is " +AppControl::floatToString( _appControl->getTotalCurrentValues(),2) + " "+ _appControl->getCurrency().GetString();
+    statusBar()->showMessage(tr(status_bar.c_str()));
 }
 
 // ---------------------------------------------------

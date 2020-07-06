@@ -37,7 +37,7 @@ class Asset : public std::enable_shared_from_this<Asset>
         Real_Estate,
         Crypto,
         Commodity,
-        Certificate
+        Others
     };
     static const map<string, Type> _typeMap;
     // constructor & destructor

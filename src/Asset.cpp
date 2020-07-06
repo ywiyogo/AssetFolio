@@ -17,7 +17,7 @@ const map<string, Asset::Type> Asset::_typeMap = {
     {"Real Estate", Type::Real_Estate},
     {"Crypto", Type::Crypto},
     {"Commodity", Type::Commodity},
-    {"Certificate", Type::Certificate}};
+    {"Others", Type::Others}};
 
 
 Asset::Asset(string id, string name, Type type)

@@ -57,7 +57,7 @@ Bond
 Real_Estate
 Crypto
 Commodity
-Certificate
+Others
 ```
 
 The `Price` and `Amount` values have to be a number (float).

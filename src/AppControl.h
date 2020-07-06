@@ -74,6 +74,10 @@ class AppControl
     void setQueryType(string type);
 
     rapidjson::Value getCurrency();
+
+    float getTotalInvestedValues() const;
+
+    float getTotalCurrentValues() const;
     
     void setCurrency(string currency);
 
@@ -100,13 +104,16 @@ class AppControl
     shared_ptr<map<string, shared_ptr<Asset>>> _assets;
     vector<future<void>> _futures;
     MsgQueue<UpdateData> _msg_queue;
-    float _total_values;
+    float _total_invested_values;
+    float _total_current_values;
+
     bool _isUpdateActive;
     string _api_key;
     unsigned int _update_freq;
     string _currency_ref;
     map<string, shared_ptr<Provider>> _providers;
     map<time_t, float> _accumulated_roi;
+
 
 };
 

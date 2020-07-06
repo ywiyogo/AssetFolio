@@ -33,7 +33,7 @@ Provider::Provider(string name, string url, string xpath)
 AppControl::AppControl(unsigned int upd_freq)
     : _jsonDoc(make_shared<rapidjson::Document>()),
       _assets(make_shared<map<string, shared_ptr<Asset>>>()), _futures(),
-      _msg_queue(), _isUpdateActive(false), _api_key(""), _update_freq(upd_freq),
+      _msg_queue(), _total_invested_values(0.), _total_current_values(0.),_isUpdateActive(false), _api_key(""), _update_freq(upd_freq),
       _currency_ref("USD"), _accumulated_roi()
 {
     // Add the HTML data provider
@@ -177,7 +177,7 @@ bool AppControl::readLocalRapidJson(const char *filePath)
             {
                 _assets->find(id)->second->registerTransaction(date, amount, price);
             }
-
+            _total_invested_values += price;
             // collecting dividends
             if ((amount==0) && (price>0))
             {
@@ -223,11 +223,11 @@ shared_ptr<map<string, shared_ptr<Asset>>> AppControl::getAssets() const
 
 void AppControl::calcCurrentTotalValues()
 {
-    _total_values = 0.;
+    _total_current_values = 0.;
     // creating all asset objects
     for (auto it = _assets->begin(); it != _assets->end(); it++)
     {
-        _total_values += it->second->getCurrValue();
+        _total_current_values += it->second->getCurrValue();
     }
 }
 
@@ -254,7 +254,7 @@ void AppControl::calcCurrentAllocation(vector<string> &categories,
     {
         categories.push_back(it->second->getName());
         values.push_back(
-            static_cast<double>(it->second->getCurrValue() / _total_values));
+            static_cast<double>(it->second->getCurrValue() / _total_current_values));
     }
 }
 
@@ -632,6 +632,17 @@ const map<time_t, float> &AppControl::getTotalRealizedRoi()
     }
     return _accumulated_roi;
 }
+
+float AppControl::getTotalInvestedValues() const
+{
+    return _total_invested_values;
+}
+
+float AppControl::getTotalCurrentValues() const
+{
+    return _total_current_values;
+}
+
 void AppControl::checkJson()
 {
     if (!_jsonDoc->IsObject())
