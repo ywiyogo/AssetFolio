@@ -50,7 +50,6 @@ class AppControl
     bool saveJson(string savepath);
 
     bool isAssetTypeValid(string input);
-    bool isTransactionTypeValid(string input);
 
     shared_ptr<rapidjson::Document> getJsonDoc() const;
 

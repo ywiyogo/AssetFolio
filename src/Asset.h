@@ -39,20 +39,12 @@ class Asset : public std::enable_shared_from_this<Asset>
         Commodity,
         Certificate
     };
-    enum class Transaction
-    {
-        Buy,
-        Sell,
-        ROI
-    };
     static const map<string, Type> _typeMap;
-    static const map<string, Transaction> _transactionMap;
     // constructor & destructor
     Asset(string id, string name, Type type);
     ~Asset();
 
-    void registerTransaction(Asset::Transaction transaction, time_t reg_date,
-                             float amount, float price_incl_fees);
+    void registerTransaction(time_t reg_date, float amount, float price_incl_fees);
 
     void updateYearlyReturn(time_t reg_date, float total_value,
                             float returns = 0.);

@@ -19,10 +19,6 @@ const map<string, Asset::Type> Asset::_typeMap = {
     {"Commodity", Type::Commodity},
     {"Certificate", Type::Certificate}};
 
-const map<string, Asset::Transaction> Asset::_transactionMap = {
-    {"Buy", Asset::Transaction::Buy},
-    {"Sell", Asset::Transaction::Sell},
-    {"ROI", Asset::Transaction::ROI}};
 
 Asset::Asset(string id, string name, Type type)
     : _id(id), _name(name), _type(type), _amount(0), _balance(0), _avg_price(0),
@@ -33,22 +29,25 @@ Asset::Asset(string id, string name, Type type)
 
 Asset::~Asset() {}
 
-void Asset::registerTransaction(Asset::Transaction transaction, time_t reg_date,
-                                float amount, float value_incl_fees)
+void Asset::registerTransaction(time_t reg_date, float amount, float value_incl_fees)
 {
-    if (transaction == Transaction::Buy)
-    {
+    if ((amount>0) && (value_incl_fees>0))
+    {// Buy transaction
         _amount = _amount + amount;
         _balance = _balance + value_incl_fees;
         _avg_price = _balance / _amount;
         updateYearlyReturn(reg_date, _balance, 0);
     }
-    else if (transaction == Transaction::Sell)
-    {
-        _profit_loss = value_incl_fees - (amount * _avg_price);
-        _amount = _amount - amount;
-        if (_amount < 0)
+    else if ((amount<0) && (value_incl_fees<0))
+    {// Sell transaction
+        float selling_price = -1 * value_incl_fees;
+        float selling_amount = -1 * amount;
+        if (_amount < selling_amount)
             throw std::runtime_error("Invalid transaction, selling amount is more than the existing amount!");
+        // calc the profit based on the previous average buying price
+        _profit_loss = selling_price - (selling_amount * _avg_price);
+        _amount = _amount - selling_amount;
+        
         if (_amount == 0)
         {
             _avg_price = 0;
@@ -56,7 +55,7 @@ void Asset::registerTransaction(Asset::Transaction transaction, time_t reg_date,
         }
         else
         {
-            _balance = _balance - value_incl_fees;
+            _balance = _balance - selling_price;
             // only update average price if balance more than 0
             if (_balance > 0)
                 _avg_price = _balance / _amount;
@@ -65,8 +64,8 @@ void Asset::registerTransaction(Asset::Transaction transaction, time_t reg_date,
 
         updateYearlyRoi(reg_date, _profit_loss);
     }
-    else if (transaction == Transaction::ROI)
-    {
+    else if ((amount==0) && (value_incl_fees>0))
+    {// Realized profit or dividend
         _return = _return + value_incl_fees;
         _return_in_percent = _return / _balance * 100;
         updateYearlyReturn(reg_date, _balance, value_incl_fees);

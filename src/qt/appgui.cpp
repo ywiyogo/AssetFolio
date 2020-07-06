@@ -314,13 +314,6 @@ void AppGui::on_actionSave_triggered()
                         throw runtime_error("Invalid value on Column 'AssetType', row " + std::to_string(row) + " !\nChoose one of these options:\nStock, ETF, Bond, Real Estate, Crypto, Commodity, or Certificate");
                     }
                 }
-                else if (column_name.compare("Transaction") == 0)
-                {
-                    if (_appControl->isTransactionTypeValid(input))
-                        value.SetString(input.c_str(), allocator);
-                    else
-                        throw runtime_error("Invalid value on Column 'Transaction', row " + std::to_string(row) + " !\nChoose one of these options:\nBuy, Sell, ROI");
-                }
                 else
                 {
                     value.SetString(input.c_str(), allocator);

@@ -21,7 +21,7 @@ If you never have a watchlist or a transaction list, you can just start a new em
 
 If have already a watchlist or an Excel list of your investments you can export it to a *JSON* file. The *JSON* file has to have three members: "QueryType", "Currency", and "Transactions". In order to create your own compatible json file, you can load the test json file [example.json](../data/example.json) for the symbol ticker or [example_isin.json](../data/example_isin.json) for ISIN.
 
-Below is an example of a simple *JSON* file.
+Below is an example of a simple *JSON* file with a buying entry.
 
 ```
 {
@@ -32,14 +32,15 @@ Below is an example of a simple *JSON* file.
             "ID": "IE00B0M63177",
             "Name": "iShares MSCI Emerging Market",
             "AssetType": "ETF",
-            "Type": "Buy",
-            "Transaction": 2149.7,
+            "Price": 2149.7,
             "Amount": 70,
-            "Broker": ""
+            "Broker": "MyBroker"
         }
     ]
 }
 ```
+
+For a selling transaction, the price and amount have to be negative. For dividends the price value is positive and the amount has to be 0. Since the version 1.4 the transaction type column is removed for simplicity.
 
 ## Dataset Format
 
@@ -58,8 +59,6 @@ Crypto
 Commodity
 Certificate
 ```
-
-For `Transaction`, the possible values are `Buy, Sell, ROI`. 
 
 The `Price` and `Amount` values have to be a number (float).
 

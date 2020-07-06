@@ -138,9 +138,7 @@ bool AppControl::readLocalRapidJson(const char *filePath)
         string id = json_act[i]["ID"].GetString();
         Asset::Type asset_type =
             Asset::_typeMap.at(json_act[i]["AssetType"].GetString());
-        string transactionType = json_act[i]["Transaction"].GetString();
 
-        Asset::Transaction transact_type = Asset::_transactionMap.at(transactionType);
 
         if (!json_act[i]["Amount"].IsNumber())
         {
@@ -164,24 +162,24 @@ bool AppControl::readLocalRapidJson(const char *filePath)
                     asset_type == Asset::Type::Bond)
                 {
                     unique_ptr<Stock> stock = make_unique<Stock>(id, name);
-                    stock->registerTransaction(transact_type, date, amount, price);
+                    stock->registerTransaction(date, amount, price);
                     _assets->emplace(stock->getId(), move(stock));
                 }
                 else
                 {
                     unique_ptr<Asset> asset =
                         make_unique<Asset>(id, name, asset_type);
-                    asset->registerTransaction(transact_type, date, amount, price);
+                    asset->registerTransaction(date, amount, price);
                     _assets->emplace(asset->getId(), move(asset));
                 }
             }
             else
             {
-                _assets->find(id)->second->registerTransaction(transact_type, date, amount, price);
+                _assets->find(id)->second->registerTransaction(date, amount, price);
             }
 
-            // collecting the ROI
-            if (transact_type == Asset::Transaction::ROI)
+            // collecting dividends
+            if ((amount==0) && (price>0))
             {
                 acc_roi += price;
                 _accumulated_roi.emplace(date, acc_roi);
@@ -693,18 +691,6 @@ void AppControl::setCurrency(string currency)
 bool AppControl::isAssetTypeValid(string input)
 {
     if (Asset::_typeMap.find(input) == Asset::_typeMap.end())
-    {
-        return false;
-    }
-    else
-    {
-        return true;
-    }
-}
-
-bool AppControl::isTransactionTypeValid(string input)
-{
-    if (Asset::_transactionMap.find(input) == Asset::_transactionMap.end())
     {
         return false;
     }

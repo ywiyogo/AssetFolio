@@ -6,7 +6,6 @@
       "ID": "ZGUSD",
       "Name": "Gold (oz)",
       "AssetType": "Commodity",
-      "Transaction": "Buy",
       "Price": 13000.0,
       "Amount": 10.0,
       "Broker": "YBroker"
@@ -16,7 +15,6 @@
       "ID": "EEM",
       "Name": "iShares MSCI Emerging Markets",
       "AssetType": "ETF",
-      "Transaction": "Buy",
       "Price": 1800.8,
       "Amount": 60.0,
       "Broker": "XBroker"
@@ -26,7 +24,6 @@
       "ID": "BTCUSD",
       "Name": "Bitcoin",
       "AssetType": "Crypto",
-      "Transaction": "Buy",
       "Price": 8500.0,
       "Amount": 1.0,
       "Broker": "Kraken"
@@ -36,7 +33,6 @@
       "ID": "QCOM",
       "Name": "Qualcomm",
       "AssetType": "Stock",
-      "Transaction": "Buy",
       "Price": 2185.9,
       "Amount": 50.0,
       "Broker": "BankX"
@@ -46,7 +42,6 @@
       "ID": "QCOM",
       "Name": "Qualcomm",
       "AssetType": "Stock",
-      "Transaction": "ROI",
       "Price": 22.52,
       "Amount": 0.0,
       "Broker": "BankX"
@@ -56,7 +51,6 @@
       "ID": "XWD.TO",
       "Name": "iShares MSCI World",
       "AssetType": "ETF",
-      "Transaction": "Buy",
       "Price": 4400.0,
       "Amount": 55.0,
       "Broker": "BankX"
@@ -66,10 +60,18 @@
       "ID": "QCOM",
       "Name": "Qualcomm",
       "AssetType": "Stock",
-      "Transaction": "ROI",
       "Price": 34.0,
       "Amount": 0.0,
       "Broker": ""
+    },
+    {
+      "Date": "25.06.2020",
+      "ID": "QCOM",
+      "Name": "Qualcomm",
+      "AssetType": "Stock",
+      "Price": -2000,
+      "Amount": -50.0,
+      "Broker": "BankX"
     }
   ]
 }
