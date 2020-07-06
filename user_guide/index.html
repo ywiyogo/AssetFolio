@@ -136,7 +136,7 @@
 <h2 id="transaction-data">Transaction Data<a class="headerlink" href="#transaction-data" title="Permanent link">&para;</a></h2>
 <p>If you never have a watchlist or a transaction list, you can just start a new empty sheet by choosing the new button on top left with the plus sign. Fill the sheet with your transactions history, and save it by clicking the save button (down arrow button). Choose your local currency or asset currency and save it as a <em>JSON</em> file (*<em>.json</em>).</p>
 <p>If have already a watchlist or an Excel list of your investments you can export it to a <em>JSON</em> file. The <em>JSON</em> file has to have three members: "QueryType", "Currency", and "Transactions". In order to create your own compatible json file, you can load the test json file <a href="../data/example.json">example.json</a> for the symbol ticker or <a href="../data/example_isin.json">example_isin.json</a> for ISIN.</p>
-<p>Below is an example of a simple <em>JSON</em> file.</p>
+<p>Below is an example of a simple <em>JSON</em> file with a buying entry.</p>
 <div class="codehilite"><pre><span></span><code>{
     &quot;Currency&quot;: &quot;EUR&quot;,
     &quot;Transactions&quot;: [
@@ -145,16 +145,16 @@
             &quot;ID&quot;: &quot;IE00B0M63177&quot;,
             &quot;Name&quot;: &quot;iShares MSCI Emerging Market&quot;,
             &quot;AssetType&quot;: &quot;ETF&quot;,
-            &quot;Type&quot;: &quot;Buy&quot;,
-            &quot;Transaction&quot;: 2149.7,
+            &quot;Price&quot;: 2149.7,
             &quot;Amount&quot;: 70,
-            &quot;Broker&quot;: &quot;&quot;
+            &quot;Broker&quot;: &quot;MyBroker&quot;
         }
     ]
 }
 </code></pre></div>
 
 
+<p>For a selling transaction, the price and amount have to be negative. For dividends the price value is positive and the amount has to be 0. Since the version 1.4 the transaction type column is removed for simplicity.</p>
 <h2 id="dataset-format">Dataset Format<a class="headerlink" href="#dataset-format" title="Permanent link">&para;</a></h2>
 <p>The application uses the JSON format for saving the transaction activity data. All the user data shall be located in the data folder. The user can see the example.json as the template. Three obligatory member names are <code>Currency</code> and <code>Activities</code>.</p>
 <p>An <code>ID</code> can be an ISIN or a symbol ticker. The symbol has to be found in https://financialmodelingprep.com/api/v3/company/stock/list or <a href="../data/FMPSymbolList.json">FMPSymbolList.json</a>.</p>
@@ -165,11 +165,10 @@ Bond
 Real_Estate
 Crypto
 Commodity
-Certificate
+Others
 </code></pre></div>
 
 
-<p>For <code>Transaction</code>, the possible values are <code>Buy, Sell, ROI</code>. </p>
 <p>The <code>Price</code> and <code>Amount</code> values have to be a number (float).</p>
 <h2 id="api-key">API Key<a class="headerlink" href="#api-key" title="Permanent link">&para;</a></h2>
 <p>An API key is required in order to update the price of the symbolic ticker assets, cryptocurrency and other commodities. The API key can be obtain from<a href="https://financialmodelingprep.com/register">https://financialmodelingprep.com</a> or by contacting me to order the API key. After getting the API key, the user can insert the key by clicking the key toolbar button on the top.</p>
