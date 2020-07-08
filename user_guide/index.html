@@ -136,7 +136,7 @@
 <h2 id="transaction-data">Transaction Data<a class="headerlink" href="#transaction-data" title="Permanent link">&para;</a></h2>
 <p>If you never have a watchlist or a transaction list, you can just start a new empty sheet by choosing the new button on top left with the plus sign. Fill the sheet with your transactions history, and save it by clicking the save button (down arrow button). Choose your local currency or asset currency and save it as a <em>JSON</em> file (*<em>.json</em>).</p>
 <p>If have already a watchlist or an Excel list of your investments you can export it to a <em>JSON</em> file. The <em>JSON</em> file has to have three members: "QueryType", "Currency", and "Transactions". In order to create your own compatible json file, you can load the test json file <a href="../data/example.json">example.json</a> for the symbol ticker or <a href="../data/example_isin.json">example_isin.json</a> for ISIN.</p>
-<p>Below is an example of a simple <em>JSON</em> file with a buying entry.</p>
+<p>Below is an example of a simple <em>JSON</em> file with a buying entry. The Broker entry is optional and can be empty.</p>
 <div class="codehilite"><pre><span></span><code>{
     &quot;Currency&quot;: &quot;EUR&quot;,
     &quot;Transactions&quot;: [
