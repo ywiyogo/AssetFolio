@@ -12,6 +12,9 @@ Preview for the activity list using Qt5 and Qt5 pie chart:
 
 ![Activity list][activity]
 
+Tracking the accumulated profit, loss and dividends:
+
+![Accumulated RoI][roi]
 
 Preview for the watchlist and asset tracker using WxWidget UI Library:
 
@@ -108,3 +111,4 @@ The C++ Request submodules include GTest to test its code. If we don't want to i
 
 [activity]: imgs/activity.png "Screenshot of the activity list"
 [watchlist]: imgs/watchlist.png "Screenshot of the watchlist and the tracker"
+[roi]: imgs/accumulated_roi.png "Screenshot of the acumulated RoI"

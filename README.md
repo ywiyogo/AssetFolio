@@ -10,6 +10,10 @@ Preview for the activity list using Qt5 and Qt5 pie chart:
 
 ![Activity list][activity]
 
+Tracking the accumulated profit, loss and dividends:
+
+![Accumulated RoI][roi]
+
 Preview for the watchlist and asset tracker using WxWidget UI Library:
 
 ![Watchlist][watchlist]
@@ -18,7 +22,7 @@ Go to the release tab to download the release binary either for Linux or for Win
 
 ## How to Use
 
-Please see the user guide in [docs/user_guide.md](docs/user_guide.md).
+Please see the user guide in [the documentation](https://ywiyogo.github.io/AssetFolio/).
 
 
 ## Donation
@@ -116,3 +120,4 @@ Licensed under the [GPL-3.0 License](LICENSE)
 
 [activity]: docs/imgs/activity.png "Screenshot of the activity list"
 [watchlist]: docs/imgs/watchlist.png "Screenshot of the watchlist and the tracker"
+[roi]: docs/imgs/accumulated_roi.png "Screenshot of the acumulated RoI"
