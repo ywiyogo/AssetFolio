@@ -13,10 +13,7 @@ AppGui::AppGui(QWidget *parent)
       _qchart(new QtCharts::QChart()),
       _pieseries(new QtCharts::QPieSeries()),
       _chartView(new QtCharts::QChartView(_qchart)),
-      _roichart(new QtCharts::QChart()),
-      _roiChartView(new QtCharts::QChartView(_roichart)),
-      _axisX(new QtCharts::QDateTimeAxis()),
-      _axisY(new QtCharts::QValueAxis()),
+      _roiChartView(new CustomGraphicView("Realized RoI", QString(Config::DATE_FORMAT.c_str()))),
       _roi_date_series(new QtCharts::QLineSeries()),
       _appControl(make_shared<AppControl>(Config::UPDATE_PERIODE)),
       _transaction_model(make_shared<QStandardItemModel>(
@@ -28,15 +25,12 @@ AppGui::AppGui(QWidget *parent)
     _qchart->setAnimationOptions(QtCharts::QChart::AllAnimations);
     _qchart->legend()->setAlignment(Qt::AlignRight);
     _chartView->setRenderHint(QPainter::Antialiasing);
-    _chartView->chart()->setTheme(QtCharts::QChart::ChartThemeBlueCerulean);
+    _chartView->chart()->setTheme(QtCharts::QChart::ChartThemeDark);
+    _chartView->setInteractive(true);
     layout.addWidget(_chartView);
     // set the chart to the tab widget
     ui->tab_alloc->setLayout(&layout);
 
-    // init ROI plot
-
-    _roiChartView->chart()->addAxis(_axisX, Qt::AlignBottom);
-    _roiChartView->chart()->addAxis(_axisY, Qt::AlignLeft);
     layout_roi.addWidget(_roiChartView);
     ui->tab_plots->setLayout(&layout_roi);
 }
@@ -69,7 +63,6 @@ void AppGui::on_actionOpen_triggered()
         shared_ptr<rapidjson::Document> jsonDoc = _appControl->getJsonDoc();
 
         auto json_entries = jsonDoc->GetObject()["Transactions"].GetArray();
-
         int rowPos = 0;
         int colPos = 0;
         int offset = 10;
@@ -147,7 +140,7 @@ void AppGui::on_actionOpen_triggered()
         // Set the DateDelegate for column sorting by date
         ui->tableView->setItemDelegateForColumn(0, new DateDelegate);
 
-        string status_bar = "Total invested value is " +AppControl::floatToString( _appControl->getTotalInvestedValues(),2) + " "+ _appControl->getCurrency().GetString();
+        string status_bar = "Total invested value is " + AppControl::floatToString(_appControl->getTotalInvestedValues(), 2) + " " + _appControl->getCurrency().GetString();
         statusBar()->showMessage(tr(status_bar.c_str()));
         // Fill the watchlist viewer
         vector<string> colWatchlist = {
@@ -156,9 +149,11 @@ void AppGui::on_actionOpen_triggered()
             "Change", "Yield %", "TotalYield"};
 
         // update the piechart
+
         vector<double> data;
         vector<string> categories;
         _appControl->calcAllocation(categories, data);
+
         createPieChart(categories, data);
         createRoiChart();
     }
@@ -184,7 +179,7 @@ void AppGui::on_actionExit_triggered()
 void AppGui::on_actionInfo_triggered()
 {
     showMsgWindow(
-        QMessageBox::Information, "About Assetfolio 1.0",
+        QMessageBox::Information, "About Assetfolio 1.5",
         "An Asset Portfolio Tracker Application that keeps your asset data "
         "private. We don't need to signup and give up our data to the cloud "
         "server.\nCheck and read the README in "
@@ -347,7 +342,7 @@ void AppGui::on_tbtnTransaction_clicked()
     ui->tableView->setModel(_transaction_model.get());
     ui->tableView->resizeColumnsToContents();
     _appControl->stopUpdateTasks();
-    string status_bar = "Total invested value is " +AppControl::floatToString( _appControl->getTotalInvestedValues(),2) + " "+ _appControl->getCurrency().GetString();
+    string status_bar = "Total invested value is " + AppControl::floatToString(_appControl->getTotalInvestedValues(), 2) + " " + _appControl->getCurrency().GetString();
     statusBar()->showMessage(tr(status_bar.c_str()));
 }
 
@@ -431,7 +426,7 @@ void AppGui::updateWatchlistModel(UpdateData upd_data)
     vector<double> data;
     vector<string> categories;
     _appControl->calcCurrentAllocation(categories, data);
-    string status_bar = "Total current asset value is " +AppControl::floatToString( _appControl->getTotalCurrentValues(),2) + " "+ _appControl->getCurrency().GetString();
+    string status_bar = "Total current asset value is " + AppControl::floatToString(_appControl->getTotalCurrentValues(), 2) + " " + _appControl->getCurrency().GetString();
     statusBar()->showMessage(tr(status_bar.c_str()));
 }
 
@@ -552,7 +547,6 @@ void AppGui::createPieChart(vector<string> &categories, vector<double> &data)
     {
         _pieseries->append(categories[i].c_str(), data[i]);
     }
-
     if (_qchart->series().size() == 0)
     {
         _pieseries->setHoleSize(0.35);
@@ -598,7 +592,8 @@ void AppGui::createRoiChart()
             maxdatetime.setDate(roidate);
         }
         numTick++;
-        orderedROI.insert(pair<QDate, float>(roidate, it->second));
+
+        orderedROI.emplace(roidate, it->second);
         values.push_back(it->second);
     }
     for (auto iter = orderedROI.begin(); iter != orderedROI.end(); ++iter)
@@ -611,25 +606,27 @@ void AppGui::createRoiChart()
     // Attach axes after adding the data series to the chart
     if (_roi_date_series->attachedAxes().size() == 0)
     {
-        _roiChartView->chart()->addSeries(_roi_date_series);
-        _roiChartView->chart()->setTitle("Realized RoI");
-        _roi_date_series->attachAxis(_axisX);
-        _axisX->setTickCount(numTick * 2);
-        _axisX->setFormat("MMM yyyy");
-        _axisX->setTitleText("Date");
-        _roi_date_series->attachAxis(_axisY);
-        _axisY->setLabelFormat("%i");
-    }
+        if (numTick < 5)
+            numTick = numTick * 2;
+        else if (numTick > 12)
+            numTick = 12;
 
+        _roiChartView->connectDataSeries(_roi_date_series, numTick);
+    }
     // Update the axis ranges
-    _axisX->setRange(mindatetime, maxdatetime);
-    std::vector<double>::iterator minIterator = min_element(values.begin(), values.end());
-    std::vector<double>::iterator maxIterator = max_element(values.begin(), values.end());
-    _axisY->setRange(*minIterator, *maxIterator);
+    _roiChartView->axisX()->setRange(mindatetime, maxdatetime);
+    if (values.size() > 1)
+    {
+        std::vector<double>::iterator minIterator = min_element(values.begin(), values.end());
+        std::vector<double>::iterator maxIterator = max_element(values.begin(), values.end());
+        _roiChartView->axisY()->setRange(*minIterator, *maxIterator);
+    }
+    else
+        _roiChartView->axisY()->setRange(0, 1);
+
     QString title = "RoI in ";
     title += _appControl->getCurrency().GetString();
-    _axisY->setTitleText(title);
-
+    _roiChartView->axisY()->setTitleText(title);
     _roiChartView->setRenderHint(QPainter::Antialiasing);
 }
 

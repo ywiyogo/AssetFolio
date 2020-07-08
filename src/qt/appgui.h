@@ -19,11 +19,12 @@
 #include <memory>
 #include "../AppControl.h"
 #include "../MsgQueue.h"
+#include "customgraphicview.h"
 
 QT_BEGIN_NAMESPACE
 namespace Ui
 {
-class AppGui;
+    class AppGui;
 }
 QT_END_NAMESPACE
 
@@ -35,16 +36,16 @@ class UpdaterThread : public QThread
     QMutex mutex;
     QWaitCondition condition;
 
-   signals:
+signals:
     void updatedAsset(UpdateData upd_data);
 
-   protected:
+protected:
     void run() override;
 
-   public:
+public:
     UpdaterThread() { _is_start = true; };
     explicit UpdaterThread(shared_ptr<AppControl> appCtrl,
-                           QObject* parent = nullptr)
+                           QObject *parent = nullptr)
         : QThread(parent)
     {
         // _app_control = appCtrl;
@@ -69,11 +70,11 @@ class AppGui : public QMainWindow
 {
     Q_OBJECT
 
-   public:
-    AppGui(QWidget* parent = nullptr);
+public:
+    AppGui(QWidget *parent = nullptr);
     ~AppGui();
 
-   private slots:
+private slots:
     void on_actionNew_triggered();
 
     void on_actionExit_triggered();
@@ -92,16 +93,15 @@ class AppGui : public QMainWindow
 
     void on_tbtnWatchlist_clicked();
 
-   private:
-    Ui::AppGui* ui;
-    QtCharts::QChart* _qchart;
-    QtCharts::QPieSeries* _pieseries;
-    QtCharts::QChartView* _chartView;
-    QtCharts::QChart* _roichart;
-    QtCharts::QChartView* _roiChartView;
-    QtCharts::QDateTimeAxis* _axisX;
-    QtCharts::QValueAxis* _axisY;
-    QtCharts::QLineSeries* _roi_date_series;
+private:
+    Ui::AppGui *ui;
+    QtCharts::QChart *_qchart;
+    QtCharts::QPieSeries *_pieseries;
+    QtCharts::QChartView *_chartView;
+    CustomGraphicView *_roiChartView;
+    // QtCharts::QDateTimeAxis *_axisX;
+    // QtCharts::QValueAxis *_axisY;
+    QtCharts::QLineSeries *_roi_date_series;
     QGridLayout layout;
     QGridLayout layout_roi;
 
@@ -115,12 +115,12 @@ class AppGui : public QMainWindow
     // internal function
     void initTvTransactions(unsigned int row, unsigned int col);
     void initWatchlistModel();
-    void showMsgWindow(QMessageBox::Icon&& msgtype,
+    void showMsgWindow(QMessageBox::Icon &&msgtype,
                        const std::string title,
                        const std::string msg);
-    void closeEvent(QCloseEvent* event);
+    void closeEvent(QCloseEvent *event);
 
-    void createPieChart(vector<string>& categories, vector<double>& data);
+    void createPieChart(vector<string> &categories, vector<double> &data);
     void createRoiChart();
     void watchlistUpdater();
     void setWatchlistColor(float update_var,
@@ -128,4 +128,4 @@ class AppGui : public QMainWindow
                            uint colidx,
                            float threshold = 10.);
 };
-#endif  // APPGUI_H
+#endif // APPGUI_H

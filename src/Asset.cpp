@@ -19,11 +19,10 @@ const map<string, Asset::Type> Asset::_typeMap = {
     {"Commodity", Type::Commodity},
     {"Others", Type::Others}};
 
-
 Asset::Asset(string id, string name, Type type)
     : _id(id), _name(name), _type(type), _amount(0), _balance(0), _avg_price(0),
       _curr_price(0), _curr_value(0), _diff(0), _diff_in_percent(0), _return(0),
-      _return_in_percent(0), _profit_loss(0), _return_years(), _rois()
+      _return_in_percent(0), _profit_loss(0), _profit_in_percent(0), _last_accumulated(0), _return_years(), _rois()
 {
 }
 
@@ -31,15 +30,15 @@ Asset::~Asset() {}
 
 void Asset::registerTransaction(time_t reg_date, float amount, float value_incl_fees)
 {
-    if ((amount>0) && (value_incl_fees>0))
-    {// Buy transaction
+    if ((amount > 0) && (value_incl_fees > 0))
+    { // Buy transaction
         _amount = _amount + amount;
         _balance = _balance + value_incl_fees;
         _avg_price = _balance / _amount;
         updateYearlyReturn(reg_date, _balance, 0);
     }
-    else if ((amount<0) && (value_incl_fees<0))
-    {// Sell transaction
+    else if ((amount < 0) && (value_incl_fees < 0))
+    { // Sell transaction
         float selling_price = -1 * value_incl_fees;
         float selling_amount = -1 * amount;
         if (_amount < selling_amount)
@@ -47,7 +46,7 @@ void Asset::registerTransaction(time_t reg_date, float amount, float value_incl_
         // calc the profit based on the previous average buying price
         _profit_loss = selling_price - (selling_amount * _avg_price);
         _amount = _amount - selling_amount;
-        
+
         if (_amount == 0)
         {
             _avg_price = 0;
@@ -64,8 +63,8 @@ void Asset::registerTransaction(time_t reg_date, float amount, float value_incl_
 
         updateYearlyRoi(reg_date, _profit_loss);
     }
-    else if ((amount==0) && (value_incl_fees>0))
-    {// Realized profit or dividend
+    else if ((amount == 0) && (value_incl_fees > 0))
+    { // Realized profit or dividend
         _return = _return + value_incl_fees;
         _return_in_percent = _return / _balance * 100;
         updateYearlyReturn(reg_date, _balance, value_incl_fees);
@@ -73,7 +72,7 @@ void Asset::registerTransaction(time_t reg_date, float amount, float value_incl_
     }
     else
     {
-        cout << "Error: Unknown transaction" << endl;
+        throw std::runtime_error("Invalid entry: Unknown transaction in " + _name + " " + _id);
     }
 }
 
@@ -110,8 +109,7 @@ void Asset::updateYearlyReturn(time_t reg_date, float total_value,
     { // create a new entry of the year
         YearlyReturn year_returns(register_year, total_value, returns,
                                   returns / total_value * 100.);
-        _return_years.insert(
-            pair<int, YearlyReturn>(register_year, year_returns));
+        _return_years.emplace(register_year, year_returns);
     }
 }
 
@@ -120,6 +118,7 @@ void Asset::updateYearlyRoi(time_t reg_date, float value)
     struct tm *tmp = gmtime(&reg_date);
     string date = to_string(tmp->tm_mday) + "." + to_string(tmp->tm_mon + 1) + "." + to_string(tmp->tm_year + 1900);
     map<time_t, float>::iterator find_it = _rois.find(reg_date);
+    _last_accumulated +=value;
     if (find_it != _rois.end())
     {
         find_it->second += value;
@@ -127,7 +126,7 @@ void Asset::updateYearlyRoi(time_t reg_date, float value)
     else
     {
         time_t newtime = reg_date;
-        _rois.insert(make_pair(newtime, value));
+        _rois.emplace(newtime, _last_accumulated);
     }
 }
 

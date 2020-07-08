@@ -181,6 +181,15 @@
             "Price": -8500,
             "Amount": -0.8,
             "Broker": "Brok"
+        },
+        {
+            "Date": "23.06.2020",
+            "ID": "US037833AK68",
+            "Name": "Apple DL notes",
+            "AssetType": "ETF",
+            "Price": -300,
+            "Amount": -10,
+            "Broker": "ING"
         }
     ]
 }

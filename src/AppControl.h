@@ -13,108 +13,106 @@ using namespace std;
 
 class Provider
 {
-  public:
-    string _name;
-    string _url;
-    string _xpath;
-    Provider();
-    Provider(string name, string url, string xpath);
+public:
+  string _name;
+  string _url;
+  string _xpath;
+  Provider();
+  Provider(string name, string url, string xpath);
 };
 
 class AppControl
 {
-  public:
-    AppControl(unsigned int upd_freq);
-    ~AppControl();
+public:
+  AppControl(unsigned int upd_freq);
+  ~AppControl();
 
-    enum class QueryType
-    {
-        ISIN,
-        SYMBOL
-    };
+  enum class QueryType
+  {
+    ISIN,
+    SYMBOL
+  };
 
-    bool isApiKeyEmpty();
+  bool isApiKeyEmpty();
 
-    void setApiKey(string key);
+  void setApiKey(string key);
 
-    string getApiKey();
+  string getApiKey();
 
-    bool readApiKey();
+  bool readApiKey();
 
-    bool isEmpty();
+  bool isEmpty();
 
-    bool readLocalRapidJson(const char* filePath);
+  bool readLocalRapidJson(const char *filePath);
 
-    void writeDataToJson(vector<string>& column_names);
+  void writeDataToJson(vector<string> &column_names);
 
-    bool saveJson(string savepath);
+  bool saveJson(string savepath);
 
-    bool isAssetTypeValid(string input);
+  bool isAssetTypeValid(string input);
 
-    shared_ptr<rapidjson::Document> getJsonDoc() const;
+  shared_ptr<rapidjson::Document> getJsonDoc() const;
 
-    shared_ptr<map<string, shared_ptr<Asset>>> getAssets() const;
+  shared_ptr<map<string, shared_ptr<Asset>>> getAssets() const;
 
-    unique_ptr<UpdateData> waitForUpdate();
+  unique_ptr<UpdateData> waitForUpdate();
 
-    void calcAllocation(vector<string>& categories, vector<double>& values);
-    void calcCurrentAllocation(vector<string>& categories,
-                               vector<double>& values);
-    void stopUpdateTasks();
+  void calcAllocation(vector<string> &categories, vector<double> &values);
+  void calcCurrentAllocation(vector<string> &categories,
+                             vector<double> &values);
+  void stopUpdateTasks();
 
-    void launchAssetUpdater();
+  void launchAssetUpdater();
 
-    bool getPriceFromTradegate(vector<unique_ptr<UpdateData>>& updates);
+  bool getPriceFromTradegate(vector<unique_ptr<UpdateData>> &updates);
 
-    void clearJsonData();
+  void clearJsonData();
 
-    static string floatToString(float number, int precision);
-    static float stringToFloat(string numstr, int precision);
-    rapidjson::Value getQueryType();
-    void setQueryType(string type);
+  static string floatToString(float number, int precision);
+  static float stringToFloat(string numstr, int precision);
+  rapidjson::Value getQueryType();
+  void setQueryType(string type);
 
-    rapidjson::Value getCurrency();
+  rapidjson::Value getCurrency();
 
-    float getTotalInvestedValues() const;
+  float getTotalInvestedValues() const;
 
-    float getTotalCurrentValues() const;
-    
-    void setCurrency(string currency);
+  float getTotalCurrentValues() const;
 
-    struct AppException : public exception
-    {
-        string str;
-        AppException(string ss) : str(ss) {}
-        ~AppException() throw() {} // Updated
-        const char* what() const throw() { return str.c_str(); }
-    };
-    
-    // year, realized RoI
-    const map<time_t, float, less<time_t>>& getTotalRealizedRoi();
+  void setCurrency(string currency);
 
-  private:
-    void calcCurrentTotalValues();
-    void update(MsgQueue<UpdateData>& msgqueue, bool& isActive,
-                unsigned int upd_frequency);
-    bool requestFmpApi(vector<unique_ptr<UpdateData>>& updates, string symbols);
-    float getExchangeRate(string from, string to);
-    void checkJson();
+  struct AppException : public exception
+  {
+    string str;
+    AppException(string ss) : str(ss) {}
+    ~AppException() throw() {} // Updated
+    const char *what() const throw() { return str.c_str(); }
+  };
 
-    shared_ptr<rapidjson::Document> _jsonDoc;
-    shared_ptr<map<string, shared_ptr<Asset>>> _assets;
-    vector<future<void>> _futures;
-    MsgQueue<UpdateData> _msg_queue;
-    float _total_invested_values;
-    float _total_current_values;
+  // year, realized RoI
+  const map<time_t, float, less<time_t>> &getTotalRealizedRoi();
 
-    bool _isUpdateActive;
-    string _api_key;
-    unsigned int _update_freq;
-    string _currency_ref;
-    map<string, shared_ptr<Provider>> _providers;
-    map<time_t, float> _accumulated_roi;
+private:
+  void calcCurrentTotalValues();
+  void update(MsgQueue<UpdateData> &msgqueue, bool &isActive,
+              unsigned int upd_frequency);
+  bool requestFmpApi(vector<unique_ptr<UpdateData>> &updates, string symbols);
+  float getExchangeRate(string from, string to);
+  void checkJson();
 
+  shared_ptr<rapidjson::Document> _jsonDoc;
+  shared_ptr<map<string, shared_ptr<Asset>>> _assets;
+  vector<future<void>> _futures;
+  MsgQueue<UpdateData> _msg_queue;
+  float _total_invested_values;
+  float _total_current_values;
 
+  bool _isUpdateActive;
+  string _api_key;
+  unsigned int _update_freq;
+  string _currency_ref;
+  map<string, shared_ptr<Provider>> _providers;
+  map<time_t, float> _accumulated_roi;
 };
 
 #endif

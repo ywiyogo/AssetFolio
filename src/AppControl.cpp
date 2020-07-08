@@ -18,7 +18,7 @@
 #include <libxml/tree.h>
 #include <libxml/xpath.h>
 #include <sstream> // stringstream
-
+#include "../Config.h"
 using namespace std;
 const unsigned int MAX_WRITE_BUFFER = 65536;
 
@@ -33,7 +33,7 @@ Provider::Provider(string name, string url, string xpath)
 AppControl::AppControl(unsigned int upd_freq)
     : _jsonDoc(make_shared<rapidjson::Document>()),
       _assets(make_shared<map<string, shared_ptr<Asset>>>()), _futures(),
-      _msg_queue(), _total_invested_values(0.), _total_current_values(0.),_isUpdateActive(false), _api_key(""), _update_freq(upd_freq),
+      _msg_queue(), _total_invested_values(0.), _total_current_values(0.), _isUpdateActive(false), _api_key(""), _update_freq(upd_freq),
       _currency_ref("USD"), _accumulated_roi()
 {
     // Add the HTML data provider
@@ -113,7 +113,6 @@ bool AppControl::readLocalRapidJson(const char *filePath)
     _currency_ref = _jsonDoc->GetObject()["Currency"].GetString();
 
     auto json_act = _jsonDoc->GetObject()["Transactions"].GetArray();
-    double acc_roi = 0;
 
     int yy;
     int mm;
@@ -123,6 +122,14 @@ bool AppControl::readLocalRapidJson(const char *filePath)
     time_t date;
     time(&rawtime);
     tm = *localtime(&rawtime);
+    if(json_act.Size()>0)
+    {
+        for (auto name = json_act[0].MemberBegin(); name < json_act[0].MemberEnd(); ++name)
+        {
+            Config::TRANSACTION_COL_NAMES.push_back(name->name.GetString());
+        }
+    }
+    _total_invested_values=0;
     // creating all asset objects
     for (unsigned int i = 0; i < json_act.Size(); i++)
     {
@@ -136,25 +143,23 @@ bool AppControl::readLocalRapidJson(const char *filePath)
         // Retrieve the asset information
         string name = json_act[i]["Name"].GetString();
         string id = json_act[i]["ID"].GetString();
-        Asset::Type asset_type =
-            Asset::_typeMap.at(json_act[i]["AssetType"].GetString());
-
-
-        if (!json_act[i]["Amount"].IsNumber())
-        {
-            throw AppException("JSON Amount of " + id + " has to be a number.");
-        }
-        float amount = json_act[i]["Amount"].GetFloat();
-        if (!json_act[i]["Price"].IsNumber())
-        {
-            throw AppException("JSON Transaction of " + id +
-                               " has to be a number.");
-        }
-        float price = json_act[i]["Price"].GetFloat();
-        // Check if the acquired id has already existed, if not then create
-        // a new asset
         try
         {
+            Asset::Type asset_type =
+                Asset::_typeMap.at(json_act[i]["AssetType"].GetString());
+            if (!json_act[i]["Amount"].IsNumber())
+            {
+                throw AppException("JSON Amount of " + id + " has to be a number.");
+            }
+            float amount = json_act[i]["Amount"].GetFloat();
+            if (!json_act[i]["Price"].IsNumber())
+            {
+                throw AppException("JSON Transaction of " + id +
+                                   " has to be a number.");
+            }
+            float price = json_act[i]["Price"].GetFloat();
+            // Check if the acquired id has already existed, if not then create
+            // a new asset
             if (_assets->find(id) == _assets->end())
             { // Differentiate the equity asset with the others
                 if (asset_type == Asset::Type::Stock ||
@@ -178,16 +183,12 @@ bool AppControl::readLocalRapidJson(const char *filePath)
                 _assets->find(id)->second->registerTransaction(date, amount, price);
             }
             _total_invested_values += price;
-            // collecting dividends
-            if ((amount==0) && (price>0))
-            {
-                acc_roi += price;
-                _accumulated_roi.emplace(date, acc_roi);
-            }
         }
         catch (const std::exception &e)
         {
-            throw AppException(e.what());
+            string msg = e.what();
+            msg += ". Please check the data entry in " + strdate + " " + name + ".\nAsset Type shall be valid and not empty";
+            throw AppException(msg);
         }
     }
     return true;
@@ -617,7 +618,7 @@ const map<time_t, float> &AppControl::getTotalRealizedRoi()
             map<time_t, float>::iterator iteration = sorted_entries.find(iter->first);
             if (iteration == sorted_entries.end())
             {
-                sorted_entries.insert(make_pair(iter->first, iter->second));
+                sorted_entries.emplace(iter->first, iter->second);
             }
             else
             {
@@ -627,9 +628,10 @@ const map<time_t, float> &AppControl::getTotalRealizedRoi()
     }
     for (auto entry : sorted_entries)
     {
-        acc_val += entry.second;
-        _accumulated_roi.insert(make_pair(entry.first, acc_val));
+        acc_val = acc_val + entry.second;
+        _accumulated_roi.emplace(entry.first, acc_val);
     }
+
     return _accumulated_roi;
 }
 

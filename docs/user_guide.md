@@ -21,7 +21,7 @@ If you never have a watchlist or a transaction list, you can just start a new em
 
 If have already a watchlist or an Excel list of your investments you can export it to a *JSON* file. The *JSON* file has to have three members: "QueryType", "Currency", and "Transactions". In order to create your own compatible json file, you can load the test json file [example.json](../data/example.json) for the symbol ticker or [example_isin.json](../data/example_isin.json) for ISIN.
 
-Below is an example of a simple *JSON* file with a buying entry.
+Below is an example of a simple *JSON* file with a buying entry. The Broker entry is optional and can be empty.
 
 ```
 {

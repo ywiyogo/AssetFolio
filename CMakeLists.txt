@@ -21,7 +21,9 @@ if("${GUI}" STREQUAL "Qt")
     set(GUI_SRCS 
     src/qt/appgui.cpp
     src/qt/main.cpp
+    src/qt/callout.cpp
     src/qt/customtableview.cpp
+    src/qt/customgraphicview.cpp
     src/qt/appgui.ui)
     
     # Windows application icon
