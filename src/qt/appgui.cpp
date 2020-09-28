@@ -13,8 +13,9 @@ AppGui::AppGui(QWidget *parent)
       _qchart(new QtCharts::QChart()),
       _pieseries(new QtCharts::QPieSeries()),
       _chartView(new QtCharts::QChartView(_qchart)),
-      _roiChartView(new CustomGraphicView("Realized RoI", QString(Config::DATE_FORMAT.c_str()))),
+      _roiChartView(new CustomGraphicView("Realized RoI & Dividends", QString(Config::DATE_FORMAT.c_str()))),
       _roi_date_series(new QtCharts::QLineSeries()),
+      _dividends_date_series(new QtCharts::QLineSeries()),
       _appControl(make_shared<AppControl>(Config::UPDATE_PERIODE)),
       _transaction_model(make_shared<QStandardItemModel>(
           0, Config::TRANSACTION_COL_NAMES.size(), this)),
@@ -563,6 +564,7 @@ void AppGui::createRoiChart()
 {
     //prepare the data
     _roi_date_series->clear();
+    _dividends_date_series->clear();
     QDateTime mindatetime, maxdatetime;
     QDate initdate(1900, 1, 1);
     mindatetime.setDate(initdate);
@@ -592,7 +594,7 @@ void AppGui::createRoiChart()
             maxdatetime.setDate(roidate);
         }
         numTick++;
-
+        
         orderedROI.emplace(roidate, it->second);
         values.push_back(it->second);
     }
@@ -601,7 +603,19 @@ void AppGui::createRoiChart()
 
         _roi_date_series->append(QDateTime(iter->first).toMSecsSinceEpoch(), iter->second);
     }
+    const map<time_t, float> &totalDividends = _appControl->getAccDividends();
 
+    for (auto iter = totalDividends.begin(); iter != totalDividends.end(); ++iter)
+    {
+
+        struct tm *tmp = gmtime(&iter->first);
+        string date = to_string(tmp->tm_mday) + "." + to_string(tmp->tm_mon + 1) + "." + to_string(tmp->tm_year + 1900);
+        QString str_date = date.c_str();
+        QStringList date_components = str_date.split(QLatin1Char('.'), Qt::SkipEmptyParts);
+        QDate roidate(date_components[2].toInt(), date_components[1].toInt(), date_components[0].toInt());
+        _dividends_date_series->append(QDateTime(roidate).toMSecsSinceEpoch(), iter->second);
+    }
+    
     // Set the X-Y axes and the data series to the chart
     // Attach axes after adding the data series to the chart
     if (_roi_date_series->attachedAxes().size() == 0)
@@ -612,7 +626,9 @@ void AppGui::createRoiChart()
             numTick = 12;
 
         _roiChartView->connectDataSeries(_roi_date_series, numTick);
+        _roiChartView->connectDataSeries(_dividends_date_series, numTick);
     }
+    
     // Update the axis ranges
     _roiChartView->axisX()->setRange(mindatetime, maxdatetime);
     if (values.size() > 1)

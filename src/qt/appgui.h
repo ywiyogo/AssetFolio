@@ -102,6 +102,7 @@ private:
     // QtCharts::QDateTimeAxis *_axisX;
     // QtCharts::QValueAxis *_axisY;
     QtCharts::QLineSeries *_roi_date_series;
+    QtCharts::QLineSeries *_dividends_date_series;
     QGridLayout layout;
     QGridLayout layout_roi;
 

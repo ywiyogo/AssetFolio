@@ -34,7 +34,7 @@ AppControl::AppControl(unsigned int upd_freq)
     : _jsonDoc(make_shared<rapidjson::Document>()),
       _assets(make_shared<map<string, shared_ptr<Asset>>>()), _futures(),
       _msg_queue(), _total_invested_values(0.), _total_current_values(0.), _isUpdateActive(false), _api_key(""), _update_freq(upd_freq),
-      _currency_ref("USD"), _accumulated_roi()
+      _currency_ref("USD"), _accumulated_roi(), _acc_dividends()
 {
     // Add the HTML data provider
     shared_ptr<Provider> tradegate(make_shared<Provider>(
@@ -169,6 +169,8 @@ bool AppControl::readLocalRapidJson(const char *filePath)
                     unique_ptr<Stock> stock = make_unique<Stock>(id, name);
                     stock->registerTransaction(date, amount, price);
                     _assets->emplace(stock->getId(), move(stock));
+
+                    
                 }
                 else
                 {
@@ -181,6 +183,13 @@ bool AppControl::readLocalRapidJson(const char *filePath)
             else
             {
                 _assets->find(id)->second->registerTransaction(date, amount, price);
+            }
+            if (amount == 0 && price > 0.)
+            {   // registered dividends
+                float accumulation = price;
+                if(!_acc_dividends.empty())
+                    accumulation += (--_acc_dividends.end())->second;
+                _acc_dividends.emplace(date, accumulation);
             }
             _total_invested_values += price;
         }
@@ -634,6 +643,10 @@ const map<time_t, float> &AppControl::getTotalRealizedRoi()
 
     return _accumulated_roi;
 }
+const map<time_t, float> &AppControl::getAccDividends()
+{
+    return _acc_dividends;
+}
 
 float AppControl::getTotalInvestedValues() const
 {
@@ -674,6 +687,7 @@ void AppControl::clearJsonData()
         _jsonDoc->RemoveAllMembers();
     _assets->clear();
     _accumulated_roi.clear();
+    _acc_dividends.clear();
 }
 
 string AppControl::floatToString(float number, int precision)

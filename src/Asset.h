@@ -105,7 +105,7 @@ protected:
   float _last_accumulated;
   // list of the returns with its value and its returns
   map<int, YearlyReturn> _return_years;
-  // date time, roi value
+  // date time, roi value not accumulated
   map<time_t, float> _rois;
   static mutex _mtx;
 };

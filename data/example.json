@@ -72,6 +72,33 @@
       "Price": -2000,
       "Amount": -40.0,
       "Broker": "BankX"
+    },
+    {
+      "Date": "20.05.2019",
+      "ID": "US88160R1014",
+      "Name": "Tesla Inc.",
+      "Price": 2178.96,
+      "Amount": 12.0,
+      "AssetType": "Stock",
+      "Broker": "ING-DIBA"
+    },
+    {
+      "Date": "06.01.2020",
+      "ID": "US88160R1014",
+      "Name": "Tesla Inc.",
+      "Price": -2761.5,
+      "Amount": -7.0,
+      "AssetType": "Stock",
+      "Broker": ""
+    },
+    {
+      "Date": "05.02.2020",
+      "ID": "US88160R1014",
+      "Name": "Tesla Inc.",
+      "Price": -3935.5,
+      "Amount": -5.0,
+      "AssetType": "Stock",
+      "Broker": ""
     }
   ]
 }

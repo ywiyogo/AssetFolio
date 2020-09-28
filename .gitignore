@@ -16,3 +16,5 @@ submodules/cpr
 
 # generated mkdocs folder
 site
+
+releases/

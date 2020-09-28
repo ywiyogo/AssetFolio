@@ -91,6 +91,8 @@ public:
 
   // year, realized RoI
   const map<time_t, float, less<time_t>> &getTotalRealizedRoi();
+  
+  const map<time_t, float, less<time_t>> &getAccDividends();
 
 private:
   void calcCurrentTotalValues();
@@ -113,6 +115,7 @@ private:
   string _currency_ref;
   map<string, shared_ptr<Provider>> _providers;
   map<time_t, float> _accumulated_roi;
+  map<time_t, float> _acc_dividends;
 };
 
 #endif
