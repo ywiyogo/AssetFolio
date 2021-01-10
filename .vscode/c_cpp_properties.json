@@ -15,10 +15,16 @@
                 "${workspaceFolder}/src/qt",
                 "/usr/include/libxml2",
                 "${workspaceFolder}/build/AssetFolio_autogen/include",
-                "/usr/include/qt5",
-                "/usr/include/qt5/QtWidgets",
-                "/usr/include/qt5/QtGui",
-                "/usr/include/qt5/QtCore"
+                //Fedora
+                //"/usr/include/qt5",
+                //"/usr/include/qt5/QtWidgets",
+                // "/usr/include/qt5/QtGui",
+                // "/usr/include/qt5/QtCore"
+                //Ubuntu
+                "/usr/include/x86_64-linux-gnu/qt5",
+                "/usr/include/x86_64-linux-gnu/qt5/QtWidgets",
+                "/usr/include/x86_64-linux-gnu/qt5/QtGui",
+                "/usr/include/x86_64-linux-gnu/qt5/QtCore",
             ],
             "defines": [],
             "compilerPath": "/usr/bin/g++",

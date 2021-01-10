@@ -423,10 +423,11 @@ void AppGui::updateWatchlistModel(UpdateData upd_data)
             (AppControl::floatToString(upd_data._profit_loss, 2)).c_str());
         setWatchlistColor(upd_data._profit_loss, item->row(), 11);
     }
-
+    // Update Pie chart
     vector<double> data;
     vector<string> categories;
     _appControl->calcCurrentAllocation(categories, data);
+    createPieChart(categories, data);
     string status_bar = "Total current asset value is " + AppControl::floatToString(_appControl->getTotalCurrentValues(), 2) + " " + _appControl->getCurrency().GetString();
     statusBar()->showMessage(tr(status_bar.c_str()));
 }
@@ -490,7 +491,7 @@ void AppGui::initWatchlistModel()
         item_list << new QStandardItem(QString(
             AppControl::floatToString(it->second->getAmount(), 2).c_str()));
         item_list << new QStandardItem(QString(
-            AppControl::floatToString(it->second->getBalance(), 2).c_str()));
+            AppControl::floatToString(it->second->getSpending(), 2).c_str()));
         item_list << new QStandardItem(QString(
             AppControl::floatToString(it->second->getAvgPrice(), 2).c_str()));
         item_list << new QStandardItem(QString(
@@ -543,7 +544,11 @@ void AppGui::showMsgWindow(QMessageBox::Icon &&msgtype, const std::string title,
 
 void AppGui::createPieChart(vector<string> &categories, vector<double> &data)
 {
-    _pieseries->clear();
+    if (_qchart->series().size() > 0)
+    {
+        _qchart->removeSeries(_pieseries);
+        _pieseries->clear();
+    }
     for (unsigned int i = 0; i < categories.size(); i++)
     {
         _pieseries->append(categories[i].c_str(), data[i]);
@@ -577,7 +582,7 @@ void AppGui::createRoiChart()
         struct tm *tmp = gmtime(&it->first);
         string date = to_string(tmp->tm_mday) + "." + to_string(tmp->tm_mon + 1) + "." + to_string(tmp->tm_year + 1900);
         QString str_date = date.c_str();
-        QStringList date_components = str_date.split(QLatin1Char('.'), Qt::SkipEmptyParts);
+        QStringList date_components = str_date.split(QLatin1Char('.'));
         QDate roidate(date_components[2].toInt(), date_components[1].toInt(), date_components[0].toInt());
         if (initdate == mindatetime.date())
         {
@@ -594,7 +599,7 @@ void AppGui::createRoiChart()
             maxdatetime.setDate(roidate);
         }
         numTick++;
-        
+
         orderedROI.emplace(roidate, it->second);
         values.push_back(it->second);
     }
@@ -611,11 +616,11 @@ void AppGui::createRoiChart()
         struct tm *tmp = gmtime(&iter->first);
         string date = to_string(tmp->tm_mday) + "." + to_string(tmp->tm_mon + 1) + "." + to_string(tmp->tm_year + 1900);
         QString str_date = date.c_str();
-        QStringList date_components = str_date.split(QLatin1Char('.'), Qt::SkipEmptyParts);
+        QStringList date_components = str_date.split(QLatin1Char('.'));
         QDate roidate(date_components[2].toInt(), date_components[1].toInt(), date_components[0].toInt());
         _dividends_date_series->append(QDateTime(roidate).toMSecsSinceEpoch(), iter->second);
     }
-    
+
     // Set the X-Y axes and the data series to the chart
     // Attach axes after adding the data series to the chart
     if (_roi_date_series->attachedAxes().size() == 0)
@@ -628,7 +633,7 @@ void AppGui::createRoiChart()
         _roiChartView->connectDataSeries(_roi_date_series, numTick);
         _roiChartView->connectDataSeries(_dividends_date_series, numTick);
     }
-    
+
     // Update the axis ranges
     _roiChartView->axisX()->setRange(mindatetime, maxdatetime);
     if (values.size() > 1)

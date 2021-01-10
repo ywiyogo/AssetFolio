@@ -57,7 +57,7 @@ Installing the dependency libraries:
 
 * Ubuntu
 
-        sudo apt-get install build-essential checkinstall libssl-dev libcurl4-openssl-dev libxml2-dev libgtest-dev <libgtk-3-dev|qt5-default qtcreator>
+        sudo apt-get install build-essential checkinstall libssl-dev libcurl4-openssl-dev libxml2-dev libgtest-dev <libgtk-3-dev|qt5-default qtcreator libqt5charts5-dev>
 
 * Fedora
 

@@ -122,14 +122,14 @@ bool AppControl::readLocalRapidJson(const char *filePath)
     time_t date;
     time(&rawtime);
     tm = *localtime(&rawtime);
-    if(json_act.Size()>0)
+    if (json_act.Size() > 0)
     {
         for (auto name = json_act[0].MemberBegin(); name < json_act[0].MemberEnd(); ++name)
         {
             Config::TRANSACTION_COL_NAMES.push_back(name->name.GetString());
         }
     }
-    _total_invested_values=0;
+    _total_invested_values = 0;
     // creating all asset objects
     for (unsigned int i = 0; i < json_act.Size(); i++)
     {
@@ -169,8 +169,6 @@ bool AppControl::readLocalRapidJson(const char *filePath)
                     unique_ptr<Stock> stock = make_unique<Stock>(id, name);
                     stock->registerTransaction(date, amount, price);
                     _assets->emplace(stock->getId(), move(stock));
-
-                    
                 }
                 else
                 {
@@ -185,9 +183,9 @@ bool AppControl::readLocalRapidJson(const char *filePath)
                 _assets->find(id)->second->registerTransaction(date, amount, price);
             }
             if (amount == 0 && price > 0.)
-            {   // registered dividends
+            { // registered dividends
                 float accumulation = price;
-                if(!_acc_dividends.empty())
+                if (!_acc_dividends.empty())
                     accumulation += (--_acc_dividends.end())->second;
                 _acc_dividends.emplace(date, accumulation);
             }
@@ -249,8 +247,11 @@ void AppControl::calcAllocation(vector<string> &categories,
 
     for (auto it = _assets->begin(); it != _assets->end(); it++)
     {
-        categories.push_back(it->second->getName());
-        values.push_back(static_cast<double>(it->second->getBalance()));
+        if (it->second->getAmount() > 0)
+        {
+            categories.push_back(it->second->getName());
+            values.push_back(static_cast<double>(it->second->getSpending()));
+        }
     }
 }
 
@@ -262,9 +263,12 @@ void AppControl::calcCurrentAllocation(vector<string> &categories,
     calcCurrentTotalValues();
     for (auto it = _assets->begin(); it != _assets->end(); it++)
     {
-        categories.push_back(it->second->getName());
-        values.push_back(
-            static_cast<double>(it->second->getCurrValue() / _total_current_values));
+        if (it->second->getAmount() > 0)
+        {
+            categories.push_back(it->second->getName());
+            values.push_back(
+                static_cast<double>(it->second->getCurrValue() / _total_current_values));
+        }
     }
 }
 
@@ -325,8 +329,10 @@ bool AppControl::getPriceFromTradegate(vector<unique_ptr<UpdateData>> &updates)
     for (auto it = _assets->begin(); it != _assets->end(); it++)
     {
         if (it->second->getType() == Asset::Type::Commodity ||
-            it->second->getType() == Asset::Type::Crypto)
-        { // collect the symbol first
+            it->second->getType() == Asset::Type::Crypto ||
+            it->second->getId().compare("DEA") == 0 ||        //Easterly Governm
+            it->second->getId().compare("LU0488317024") == 0) //Comstage DAX
+        {                                                     // collect the symbol first
             if (is_first)
             {
                 fmp_symbols += it->first;
@@ -380,6 +386,7 @@ bool AppControl::getPriceFromTradegate(vector<unique_ptr<UpdateData>> &updates)
             if (xmlXPathNodeSetIsEmpty(cur_result->nodesetval))
             {
                 xmlXPathFreeObject(cur_result);
+                std::cout << "ID: " << it->second->getId() << "\n";
                 printf("No result\n");
                 continue;
                 // return NULL;
@@ -394,13 +401,6 @@ bool AppControl::getPriceFromTradegate(vector<unique_ptr<UpdateData>> &updates)
                 ss << curr;
                 currency = ss.str();
                 xmlFree(curr);
-            }
-
-            if (xmlXPathNodeSetIsEmpty(result->nodesetval))
-            {
-                xmlXPathFreeObject(result);
-                printf("No result\n");
-                return NULL;
             }
 
             xmlNodeSetPtr nodeset = result->nodesetval;

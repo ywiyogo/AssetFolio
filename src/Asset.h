@@ -54,7 +54,7 @@ public:
   string getName() const;
   // Get the asset's amount
   float getAmount() const;
-  float getBalance() const;
+  float getSpending() const;
   float getAvgPrice() const;
   float getCurrPrice() const;
   float getCurrValue() const;
@@ -83,7 +83,7 @@ protected:
   // total amount of the asset
   float _amount;
   // total spending
-  float _balance;
+  float _spending;
   // average buying price
   float _avg_price;
   // current price
