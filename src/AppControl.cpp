@@ -305,14 +305,14 @@ void AppControl::stopUpdateTasks()
     _msg_queue.clear();
     _msg_queue.send(move(upd));
 
-    std::for_each(_futures.begin(), _futures.end(), [](std::future<void> &ftr) {
-        auto status = ftr.wait_for(std::chrono::milliseconds(10));
-        if (status == std::future_status::timeout ||
-            status == std::future_status::deferred)
-        {
-            std::cout << "   stopUpdateTasks timeout" << std::endl;
-        }
-    });
+    std::for_each(_futures.begin(), _futures.end(), [](std::future<void> &ftr)
+                  {
+                      auto status = ftr.wait_for(std::chrono::milliseconds(10));
+                      if (status == std::future_status::timeout || status == std::future_status::deferred)
+                      {
+                          std::cout << "   stopUpdateTasks timeout" << std::endl;
+                      }
+                  });
 }
 // Wait for update function for the GUI application
 unique_ptr<UpdateData> AppControl::waitForUpdate()
@@ -324,24 +324,15 @@ bool AppControl::getPriceFromTradegate(vector<unique_ptr<UpdateData>> &updates)
 {
     float curr_price = 0.;
     string currency;
-    string fmp_symbols = "";
-    bool is_first = true;
+    vector<string> fmp_symbols;
     for (auto it = _assets->begin(); it != _assets->end(); it++)
     {
-        if (it->second->getType() == Asset::Type::Commodity ||
-            it->second->getType() == Asset::Type::Crypto ||
-            it->second->getId().compare("DEA") == 0 ||        //Easterly Governm
-            it->second->getId().compare("LU0488317024") == 0) //Comstage DAX
-        {                                                     // collect the symbol first
-            if (is_first)
-            {
-                fmp_symbols += it->first;
-                is_first = false;
-            }
-            else
-            {
-                fmp_symbols += "," + it->first;
-            }
+        if (it->second->getAmount() == 0)
+            continue;
+        if (it->second->getType() == Asset::Type::Commodity || it->second->getType() == Asset::Type::Crypto || it->second->getId().compare("DEA") == 0 //Easterly Governm
+        )
+        { // collect the symbol first
+            fmp_symbols.push_back(it->first);
             continue;
         }
         // ISIN length is 12 chars
@@ -441,15 +432,7 @@ bool AppControl::getPriceFromTradegate(vector<unique_ptr<UpdateData>> &updates)
         }
         else
         {
-            if (is_first)
-            {
-                fmp_symbols += it->second->getId();
-                is_first = false;
-            }
-            else
-            {
-                fmp_symbols += "," + it->second->getId();
-            }
+            fmp_symbols.push_back(it->second->getId());
         }
     }
     // if FMP symbols exist
@@ -503,7 +486,7 @@ void AppControl::update(MsgQueue<UpdateData> &msgqueue, bool &isActive,
 }
 
 bool AppControl::requestFmpApi(vector<unique_ptr<UpdateData>> &updates,
-                               string symbols)
+                               vector<string> symbols)
 {
     if (_api_key.empty())
     {
@@ -511,52 +494,56 @@ bool AppControl::requestFmpApi(vector<unique_ptr<UpdateData>> &updates,
              << flush;
         return false;
     }
-    // e.g. https://financialmodelingprep.com/api/v3/quote/ZGUSD,BTCUSD,AAPL
-    string url = "https://financialmodelingprep.com/api/v3/quote/" + symbols + "?apikey=" + _api_key;
-    auto r = cpr::Get(cpr::Url{url});
     bool is_found = false;
-    // cout << "Result code: " << r.status_code
-    //      << "\nHeaders: " << r.header["content-type"] << "\n"
-    //      << r.text << endl
-    //      << flush;
-    if (r.status_code == 200)
+    // e.g. https://financialmodelingprep.com/api/v3/quote/ZGUSD,BTCUSD,AAPL
+    for (auto symbol : symbols)
     {
-        if (r.header["content-type"].find("application/json") !=
-            std::string::npos)
+        string url = "https://financialmodelingprep.com/api/v3/quote/" + symbol + "?apikey=" + _api_key;
+        auto r = cpr::Get(cpr::Url{url});
+
+        // cout << "Result code: " << r.status_code
+        //      << "\nHeaders: " << r.header["content-type"] << "\n"
+        //      << r.text << endl
+        //      << flush;
+        if (r.status_code == 200)
         {
-            rapidjson::Document json_resp;
-            json_resp.Parse(r.text.c_str());
+            if (r.header["content-type"].find("application/json") !=
+                std::string::npos)
+            {
+                rapidjson::Document json_resp;
+                json_resp.Parse(r.text.c_str());
 
-            if (json_resp.IsArray())
-            { // JSON is an array
-                is_found = true;
-                for (unsigned int i = 0; i < json_resp.Size(); i++)
-                { // create an update data and add to the vector reference
-                    string id = json_resp[i]["symbol"].GetString();
-                    shared_ptr<Asset> asset = _assets->at(id);
-                    asset->setCurrPrice(json_resp[i]["price"].GetFloat());
+                if (json_resp.IsArray())
+                { // JSON is an array
+                    is_found = true;
+                    for (unsigned int i = 0; i < json_resp.Size(); i++)
+                    { // create an update data and add to the vector reference
+                        string id = json_resp[i]["symbol"].GetString();
+                        shared_ptr<Asset> asset = _assets->at(id);
+                        asset->setCurrPrice(json_resp[i]["price"].GetFloat());
 
-                    unique_ptr<UpdateData> upd_data(new UpdateData(
-                        id, asset->getCurrPrice(), asset->getCurrValue(),
-                        asset->getDiff(), asset->getDiffInPercent(),
-                        asset->getReturn(), asset->getReturnInPercent(), asset->getProfitLoss()));
-                    updates.emplace_back(move(upd_data));
+                        unique_ptr<UpdateData> upd_data(new UpdateData(
+                            id, asset->getCurrPrice(), asset->getCurrValue(),
+                            asset->getDiff(), asset->getDiffInPercent(),
+                            asset->getReturn(), asset->getReturnInPercent(), asset->getProfitLoss()));
+                        updates.emplace_back(move(upd_data));
+                    }
                 }
-            }
-            else
-            { // JSON is an object
-                if (json_resp.HasMember("Error Message"))
-                {
-                    cout << r.text.c_str() << endl;
-                    return false;
+                else
+                { // JSON is an object
+                    if (json_resp.HasMember("Error Message"))
+                    {
+                        cout << r.text.c_str() << endl;
+                        return false;
+                    }
                 }
             }
         }
-    }
-    else
-    {
-        cout << "Request error " << r.status_code << ". " << r.text << endl
-             << flush;
+        else
+        {
+            cout << "Request error " << r.status_code << ". " << r.text << endl
+                 << flush;
+        }
     }
     return is_found;
 }

@@ -67,7 +67,7 @@ void Asset::registerTransaction(time_t reg_date, float amount, float value_incl_
     { // Realized profit or dividend
         _return = _return + value_incl_fees;
         _return_in_percent = _return / _spending * 100;
-        std::cout << "Dividend!, name: " << _name << " date: " << reg_date << " val: " << value_incl_fees << "total return: " << _return << endl;
+        // std::cout << "Dividend!, name: " << _name << " date: " << reg_date << " val: " << value_incl_fees << "total return: " << _return << endl;
         updateYearlyReturn(reg_date, _spending, value_incl_fees);
         updateYearlyRoi(reg_date, value_incl_fees);
     }

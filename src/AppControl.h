@@ -58,8 +58,7 @@ public:
   unique_ptr<UpdateData> waitForUpdate();
 
   void calcAllocation(vector<string> &categories, vector<double> &values);
-  void calcCurrentAllocation(vector<string> &categories,
-                             vector<double> &values);
+  void calcCurrentAllocation(vector<string> &categories, vector<double> &values);
   void stopUpdateTasks();
 
   void launchAssetUpdater();
@@ -91,14 +90,13 @@ public:
 
   // year, realized RoI
   const map<time_t, float, less<time_t>> &getTotalRealizedRoi();
-  
+
   const map<time_t, float, less<time_t>> &getAccDividends();
 
 private:
   void calcCurrentTotalValues();
-  void update(MsgQueue<UpdateData> &msgqueue, bool &isActive,
-              unsigned int upd_frequency);
-  bool requestFmpApi(vector<unique_ptr<UpdateData>> &updates, string symbols);
+  void update(MsgQueue<UpdateData> &msgqueue, bool &isActive, unsigned int upd_frequency);
+  bool requestFmpApi(vector<unique_ptr<UpdateData>> &updates, vector<string> symbols);
   float getExchangeRate(string from, string to);
   void checkJson();
 
