@@ -157,14 +157,11 @@ void AppGui::onBtnWatchlistClick(wxCommandEvent &event)
     if (_gridActivities && !_gridWatchlist)
     {
         _panelLeftActivity->Hide();
-
         initWatchlistGrid();
-
         _appControl->launchAssetUpdater();
     }
     else
     {
-
         if (_gridActivities && !_panelLeftWatchlist->IsShown())
         {
             _panelLeftActivity->Hide();
@@ -352,21 +349,7 @@ void AppGui::OnToolSaveClicked(wxCommandEvent &event)
                     rapidjson::Value name(column_name.c_str(), allocator);
                     rapidjson::Value value;
 
-                    if ((column_name.compare("Transaction") == 0) ||
-                        (column_name.compare("Amount") == 0))
-                    {
-                        value.SetFloat(AppControl::stringToFloat(
-                            _gridActivities->GetCellValue(row, col)
-                                .ToStdString(),
-                            2));
-                    }
-                    else
-                    {
-                        value.SetString(_gridActivities->GetCellValue(row, col)
-                                            .ToStdString()
-                                            .c_str(),
-                                        allocator);
-                    }
+                    value.SetString(_gridActivities->GetCellValue(row, col).ToStdString().c_str(), allocator);
 
                     entry_obj.AddMember(name, value, allocator);
                 }

@@ -117,10 +117,13 @@ void AppGui::on_actionOpen_triggered()
                     }
                 }
                 else if (itr2->value.IsNumber())
-                {
+                { 
+                    int precision = 2;
+                    if(string("Amount").compare(itr2->name.GetString()) == 0)
+                        precision = 3;
                     _transaction_model->setData(
                         index, QString(AppControl::floatToString(
-                                           itr2->value.GetFloat(), 2)
+                                           itr2->value.GetFloat(), precision)
                                            .c_str()));
                 }
                 else

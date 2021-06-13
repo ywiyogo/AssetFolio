@@ -101,7 +101,7 @@ bool AppControl::isEmpty()
 bool AppControl::readLocalRapidJson(const char *filePath)
 {
     FILE *fp = fopen(filePath, "rb"); // non-Windows use "r"
-    char readBuffer[65536];
+    char readBuffer[300000];
     rapidjson::FileReadStream is(fp, readBuffer, sizeof(readBuffer));
 
     fclose(fp);
@@ -154,7 +154,7 @@ bool AppControl::readLocalRapidJson(const char *filePath)
             float amount = json_act[i]["Amount"].GetFloat();
             if (!json_act[i]["Price"].IsNumber())
             {
-                throw AppException("JSON Transaction of " + id +
+                throw AppException("JSON Price of " + id +
                                    " has to be a number.");
             }
             float price = json_act[i]["Price"].GetFloat();
@@ -182,7 +182,7 @@ bool AppControl::readLocalRapidJson(const char *filePath)
             {
                 _assets->find(id)->second->registerTransaction(date, amount, price);
             }
-            if (amount == 0 && price > 0.)
+            if (amount == 0. && price > 0.)
             { // registered dividends
                 float accumulation = price;
                 if (!_acc_dividends.empty())
@@ -325,6 +325,7 @@ bool AppControl::getPriceFromTradegate(vector<unique_ptr<UpdateData>> &updates)
     float curr_price = 0.;
     string currency;
     vector<string> fmp_symbols;
+
     for (auto it = _assets->begin(); it != _assets->end(); it++)
     {
         if (it->second->getAmount() == 0)
@@ -654,11 +655,11 @@ void AppControl::checkJson()
 
     if (!_jsonDoc->GetObject().HasMember("Transactions"))
     {
-        throw AppException("JSON format has to have e member 'Transactions'");
+        throw AppException("JSON format has to have a member 'Transactions'");
     }
     if (!_jsonDoc->GetObject().HasMember("Currency"))
     {
-        throw AppException("JSON format has to have e member 'Currency'");
+        throw AppException("JSON format has to have a member 'Currency'");
     }
 
     if (!_jsonDoc->GetObject()["Transactions"].IsArray())
@@ -680,13 +681,30 @@ void AppControl::clearJsonData()
 string AppControl::floatToString(float number, int precision)
 {
     stringstream stream;
-    stream << fixed << setprecision(precision) << number;
-    return stream.str();
+    string res_str;
+    if (number == 0.0)
+    {
+        stream << 0;
+        res_str = stream.str();
+    }
+    else
+    {
+        stream << fixed << setprecision(precision) << number;
+        res_str = stream.str();
+        // res_str = res_str.substr(0, res_str.find_last_not_of('0') + 1);
+        size_t dot = res_str.find_first_of('.');
+        size_t last = res_str.find_last_not_of(".0");
+
+        if (dot != string::npos)
+            res_str = res_str.substr(0, max(dot, last + 1));
+    }
+
+    return res_str;
 }
 float AppControl::stringToFloat(string numstr, int precision)
 {
     stringstream stream;
-    stream << fixed << setprecision(precision) << stof(numstr);
+    stream << setprecision(precision) << stof(numstr);
     return stof(stream.str());
 }
 
